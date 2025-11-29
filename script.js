@@ -1,5 +1,5 @@
-// REPLACE THIS WITH YOUR GOOGLE SHEET CSV URL
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/15TWNJ1vCFzWeFrwBEieRBaY5mf3HcDo_HjX_eyInTfc/export?format=csv';
+// REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbz9XGORhNTslOlq7vgbTEhLbhjpe77d91q1A-F558002H3GVD5G4mGce-4KgqKpOIL0SA/exec';
 
 const tableBody = document.getElementById('Hospital');
 const toast = document.getElementById('toast');
@@ -17,6 +17,12 @@ const globalOverlay = document.getElementById('global-loading-overlay');
 const tableOverlay = document.getElementById('table-loading-overlay');
 const tableCard = document.querySelector('.table-card');
 
+// Modal Elements
+const editModal = document.getElementById('edit-modal');
+const editForm = document.getElementById('edit-form');
+const closeModalBtn = document.querySelector('.close-modal');
+const cancelBtn = document.querySelector('.btn-cancel');
+
 // Translations
 const translations = {
     th: {
@@ -26,12 +32,15 @@ const translations = {
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
         filter_district_default: 'เลือกอำเภอทั้งหมด',
         refresh_btn: 'รีเฟรช',
-        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่'],
+        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่', 'แก้ไข'],
         map_btn: 'แผนที่',
         loading: 'กำลังโหลดข้อมูล...',
         no_data: 'ไม่พบข้อมูล',
         rows_option: 'แถว',
-        copied: 'คัดลอกเรียบร้อย!'
+        copied: 'คัดลอกเรียบร้อย!',
+        saving: 'กำลังบันทึก...',
+        saved: 'บันทึกเรียบร้อย!',
+        save_error: 'เกิดข้อผิดพลาดในการบันทึก'
     },
     en: {
         title: 'POH Service Center Dashboard',
@@ -40,12 +49,15 @@ const translations = {
         search_placeholder: 'Search HCode / Name / District...',
         filter_district_default: 'All Districts',
         refresh_btn: 'Refresh',
-        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map'],
+        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map', 'Edit'],
         map_btn: 'Map',
         loading: 'Loading data...',
         no_data: 'No data found',
         rows_option: 'rows',
-        copied: 'Copied to clipboard!'
+        copied: 'Copied to clipboard!',
+        saving: 'Saving...',
+        saved: 'Saved successfully!',
+        save_error: 'Error saving data'
     }
 };
 
@@ -97,6 +109,18 @@ async function init() {
             });
         }
 
+        // Modal Event Listeners
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeEditModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeEditModal);
+        if (editModal) {
+            editModal.addEventListener('click', (e) => {
+                if (e.target === editModal) closeEditModal();
+            });
+        }
+        if (editForm) {
+            editForm.addEventListener('submit', handleEditSubmit);
+        }
+
         await fetchData();
         populateDistricts();
 
@@ -144,7 +168,7 @@ async function init() {
 
     } catch (error) {
         console.error('Error:', error);
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Failed to load data. Check console for details.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: red;">Failed to load data. Check console for details.</td></tr>';
     } finally {
         // Hide global overlay after initial load
         toggleGlobalLoading(false);
@@ -178,11 +202,11 @@ function updateUIText() {
 
     // Update Table Headers
     const ths = document.querySelectorAll('thead th');
-    if (ths.length === t.table_headers.length) {
-        ths.forEach((th, index) => {
-            th.textContent = t.table_headers[index];
-        });
-    }
+    // Note: We added an extra column for Edit, so length check might fail if not updated
+    // Let's just update by index safely
+    t.table_headers.forEach((header, index) => {
+        if (ths[index]) ths[index].textContent = header;
+    });
 
     // Update Loading Text
     const loadingSpans = document.querySelectorAll('.loading-overlay span');
@@ -196,6 +220,25 @@ function updateUIText() {
             options[i].textContent = `${val} ${t.rows_option}`;
         }
     }
+
+    // Update Modal Title
+    const modalTitle = document.getElementById('modal-title');
+    if (modalTitle) modalTitle.textContent = currentLang === 'th' ? 'แก้ไขข้อมูล' : 'Edit Information';
+
+    // Update Modal Labels
+    const labels = document.querySelectorAll('.form-group label');
+    if (labels.length >= 5) {
+        labels[0].textContent = currentLang === 'th' ? 'HCode (รหัสสถานบริการ)' : 'HCode';
+        labels[1].textContent = currentLang === 'th' ? 'ชื่อสถานบริการ' : 'Hospital Name';
+        labels[2].textContent = currentLang === 'th' ? 'อำเภอ' : 'District';
+        labels[3].textContent = currentLang === 'th' ? 'PC-ID' : 'PC-ID';
+        labels[4].textContent = currentLang === 'th' ? 'AnyDesk ID' : 'AnyDesk ID';
+    }
+
+    // Update Modal Buttons
+    if (cancelBtn) cancelBtn.textContent = currentLang === 'th' ? 'ยกเลิก' : 'Cancel';
+    const saveBtn = document.querySelector('.btn-save');
+    if (saveBtn) saveBtn.textContent = currentLang === 'th' ? 'บันทึก' : 'Save';
 }
 
 // Filter function
@@ -282,16 +325,33 @@ function renderPagination(totalPages) {
 
 async function fetchData() {
     try {
-        const response = await fetch(SHEET_CSV_URL);
+        // If API_URL is still placeholder, warn user but maybe try CSV or mock?
+        // For now, let's assume user will replace it. If not, it will fail.
+        if (API_URL.includes('REPLACE')) {
+            console.warn('API_URL not set. Please replace placeholder in script.js');
+            // Fallback to CSV for demo if needed, or just throw
+            // throw new Error('API_URL not configured');
+        }
+
+        const response = await fetch(API_URL);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.text();
-        hospitals = parseCSV(data);
+        const data = await response.json(); // Expecting JSON from GAS
+        hospitals = data; // GAS returns array of objects directly
         console.log(`Loaded ${hospitals.length} hospitals`);
     } catch (error) {
         console.error('Fetch error:', error);
-        throw error; // Re-throw to be caught in init
+        // Fallback to CSV if JSON fails (e.g. user hasn't deployed GAS yet)
+        // This helps prevent breaking the app completely during setup
+        console.log('Falling back to CSV...');
+        try {
+            const csvResponse = await fetch('https://docs.google.com/spreadsheets/d/15TWNJ1vCFzWeFrwBEieRBaY5mf3HcDo_HjX_eyInTfc/export?format=csv');
+            const csvText = await csvResponse.text();
+            hospitals = parseCSV(csvText);
+        } catch (csvError) {
+            throw error; // Re-throw original error if fallback fails
+        }
     }
 }
 
@@ -347,7 +407,7 @@ function renderTable(data, startIndex = 0) {
     const t = translations[currentLang];
 
     if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">${t.no_data}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">${t.no_data}</td></tr>`;
         return;
     }
 
@@ -370,6 +430,13 @@ function renderTable(data, startIndex = 0) {
             </td>
             <td>
                 <button class="map-btn">${t.map_btn}</button>
+            </td>
+            <td>
+                <button class="edit-btn" onclick="openEditModal('${hospital.hcode}')" aria-label="Edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                    </svg>
+                </button>
             </td>
         </tr>
     `).join('');
@@ -447,6 +514,83 @@ function showToast(message) {
     toastTimeout = setTimeout(() => {
         toast.classList.add('hidden');
     }, 2000);
+}
+
+// --- Edit Functions ---
+
+window.openEditModal = function (hcode) {
+    const hospital = hospitals.find(h => h.hcode === hcode);
+    if (!hospital) return;
+
+    document.getElementById('edit-hcode').value = hospital.hcode;
+    document.getElementById('edit-name').value = hospital.name;
+    document.getElementById('edit-district').value = hospital.district;
+    document.getElementById('edit-pcid').value = hospital.pcId;
+    document.getElementById('edit-anydesk').value = hospital.anydesk;
+
+    editModal.classList.remove('hidden');
+};
+
+function closeEditModal() {
+    editModal.classList.add('hidden');
+}
+
+async function handleEditSubmit(e) {
+    e.preventDefault();
+    const t = translations[currentLang];
+
+    const hcode = document.getElementById('edit-hcode').value;
+    const newData = {
+        name: document.getElementById('edit-name').value,
+        district: document.getElementById('edit-district').value,
+        pcId: document.getElementById('edit-pcid').value,
+        anydesk: document.getElementById('edit-anydesk').value
+    };
+
+    // Show loading state
+    const saveBtn = document.querySelector('.btn-save');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = t.saving;
+    saveBtn.disabled = true;
+
+    try {
+        if (API_URL.includes('REPLACE')) {
+            throw new Error('API_URL not configured');
+        }
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'update',
+                hcode: hcode,
+                data: newData
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            // Update local data
+            const index = hospitals.findIndex(h => h.hcode === hcode);
+            if (index !== -1) {
+                hospitals[index] = { ...hospitals[index], ...newData };
+            }
+
+            // Re-render
+            filterData();
+            showToast(t.saved);
+            closeEditModal();
+        } else {
+            throw new Error(result.message || 'Unknown error');
+        }
+
+    } catch (error) {
+        console.error('Save error:', error);
+        alert(`${t.save_error}: ${error.message}`);
+    } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    }
 }
 
 // Start the app

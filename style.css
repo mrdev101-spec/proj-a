@@ -598,3 +598,178 @@ body.dark-mode #global-loading-overlay {
 body.dark-mode #table-loading-overlay {
     background: rgba(30, 41, 59, 0.8);
 }
+
+/* --- Modal Styles --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(0);
+    transition: transform 0.3s;
+}
+
+.modal.hidden .modal-content {
+    transform: translateY(20px);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: var(--text-primary);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.readonly-input {
+    background-color: #f1f5f9;
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-cancel {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #f8fafc;
+    color: var(--text-primary);
+}
+
+.btn-save {
+    background: var(--primary-blue);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: white;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-save:hover {
+    background: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+/* Dark Mode Modal Overrides */
+body.dark-mode .modal {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .readonly-input {
+    background-color: #0f172a;
+    color: #64748b;
+    border-color: #334155;
+}
+
+body.dark-mode .btn-cancel {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+body.dark-mode .btn-cancel:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+/* Edit Button in Table */
+.edit-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+}
+
+.edit-btn:hover {
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    background: #eff6ff;
+}
+
+body.dark-mode .edit-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+body.dark-mode .edit-btn:hover {
+    background: #334155;
+    color: #3b82f6;
+    border-color: #3b82f6;
+}
