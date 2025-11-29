@@ -9,17 +9,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=99">
 </head>
 
 <body>
+    <div id="global-loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <span>กำลังโหลดข้อมูล...</span>
+    </div>
+
     <header class="main-header">
         <div class="header-content">
             <h1>POH Service Center Dashboard</h1>
             <div class="header-controls">
                 <div class="lang-switch">
-                    <button class="active">TH</button>
-                    <button>EN</button>
+                    <button class="active" onclick="setLanguage('th')">TH</button>
+                    <button onclick="setLanguage('en')">EN</button>
                 </div>
                 <div class="toggle-switch">
                     <input type="checkbox" id="mode-toggle">
@@ -57,11 +62,22 @@
                     <option value="20">20 แถว</option>
                 </select>
             </div>
-            <button class="refresh-btn">รีเฟรช</button>
+            <button class="refresh-btn" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                    <path
+                        d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                </svg>
+                รีเฟรช
+            </button>
         </div>
 
         <!-- Table -->
         <div class="table-card">
+            <div id="table-loading-overlay" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <span>กำลังโหลดข้อมูล...</span>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -88,7 +104,7 @@
 
     <div id="toast" class="toast hidden">Copied to clipboard!</div>
 
-    <script src="script.js"></script>
+    <script src="main.js?v=2"></script>
 </body>
 
 </html>

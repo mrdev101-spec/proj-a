@@ -10,37 +10,79 @@ let toastTimeout;
 let hospitals = []; // Store fetched data
 let filteredHospitals = []; // Store filtered data
 let currentPage = 1;
+let currentLang = 'th'; // Default language
+
+const refreshBtn = document.querySelector('.refresh-btn');
+const globalOverlay = document.getElementById('global-loading-overlay');
+const tableOverlay = document.getElementById('table-loading-overlay');
+const tableCard = document.querySelector('.table-card');
+
+// Translations
+const translations = {
+    th: {
+        title: 'POH Service Center Dashboard',
+        stat_centers: 'จำนวนศูนย์บริการ',
+        stat_districts: 'จำนวนอำเภอทั้งหมด',
+        search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
+        filter_district_default: 'เลือกอำเภอทั้งหมด',
+        refresh_btn: 'รีเฟรช',
+        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่'],
+        map_btn: 'แผนที่',
+        loading: 'กำลังโหลดข้อมูล...',
+        no_data: 'ไม่พบข้อมูล',
+        rows_option: 'แถว',
+        copied: 'คัดลอกเรียบร้อย!'
+    },
+    en: {
+        title: 'POH Service Center Dashboard',
+        stat_centers: 'Service Centers',
+        stat_districts: 'Total Districts',
+        search_placeholder: 'Search HCode / Name / District...',
+        filter_district_default: 'All Districts',
+        refresh_btn: 'Refresh',
+        table_headers: ['No.', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map'],
+        map_btn: 'Map',
+        loading: 'Loading data...',
+        no_data: 'No data found',
+        rows_option: 'rows',
+        copied: 'Copied to clipboard!'
+    }
+};
 
 async function init() {
     try {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading data...</td></tr>';
+        // Initial load: Global overlay is visible by default in HTML
+        // Ensure it's visible just in case
+        toggleGlobalLoading(true);
+
+        // Language Switcher Logic
+        // We will use inline onclick in HTML for robustness
+        const langBtns = document.querySelectorAll('.lang-switch button');
+        console.log('Found language buttons:', langBtns.length);
+
+        // Expose setLanguage globally
+        window.setLanguage = function (lang) {
+            console.log('setLanguage called with:', lang);
+            if (lang !== currentLang) {
+                switchLanguage(lang);
+                // Update active class manually since we might not have the button reference
+                langBtns.forEach(btn => {
+                    if (btn.textContent.toLowerCase() === lang) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+        };
+
         await fetchData();
         populateDistricts();
 
         // Initial render with default limit
         filterData();
         updateStats(); // Update stats if we have them
-
-        // Filter function
-        function filterData() {
-            const selectedDistrict = districtFilter ? districtFilter.value : '';
-            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-            filteredHospitals = hospitals.filter(h => {
-                const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
-                const matchesSearch = query ? (
-                    (h.name && h.name.toLowerCase().includes(query)) ||
-                    (h.district && h.district.toLowerCase().includes(query)) ||
-                    (h.hcode && h.hcode.toLowerCase().includes(query))
-                ) : true;
-
-                return matchesDistrict && matchesSearch;
-            });
-
-            // Reset to page 1 on new filter
-            currentPage = 1;
-            updateTableDisplay();
-        }
+        updateUIText(); // Initial UI text update
 
         // Add event listeners
         if (districtFilter) {
@@ -58,9 +100,122 @@ async function init() {
             });
         }
 
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                // Refresh button: Use table overlay (Local refresh only)
+                toggleTableLoading(true);
+
+                // Artificial delay to show loading effect
+                await new Promise(r => setTimeout(r, 500));
+                try {
+                    await fetchData();
+
+                    // Keep current filters, just re-apply them to new data
+                    filterData(); // Re-apply filters
+                    updateStats();
+                } catch (err) {
+                    console.error("Refresh failed", err);
+                } finally {
+                    toggleTableLoading(false);
+                }
+            });
+        }
+
     } catch (error) {
         console.error('Error:', error);
         tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Failed to load data. Check console for details.</td></tr>';
+    } finally {
+        // Hide global overlay after initial load
+        toggleGlobalLoading(false);
+    }
+}
+
+function switchLanguage(lang) {
+    currentLang = lang;
+    updateUIText();
+    populateDistricts(); // Re-populate to update default option
+    updateTableDisplay(); // Re-render table to update headers/buttons
+    updateStats(); // Re-render stats
+}
+
+function updateUIText() {
+    const t = translations[currentLang];
+
+    // Update static elements
+    document.querySelector('h1').textContent = t.title;
+
+    // Update placeholders
+    if (searchInput) searchInput.placeholder = t.search_placeholder;
+
+    // Update Refresh Button Text (preserve icon)
+    if (refreshBtn) {
+        const icon = refreshBtn.querySelector('svg');
+        refreshBtn.innerHTML = '';
+        if (icon) refreshBtn.appendChild(icon);
+        refreshBtn.appendChild(document.createTextNode(' ' + t.refresh_btn));
+    }
+
+    // Update Table Headers
+    const ths = document.querySelectorAll('thead th');
+    if (ths.length === t.table_headers.length) {
+        ths.forEach((th, index) => {
+            th.textContent = t.table_headers[index];
+        });
+    }
+
+    // Update Loading Text
+    const loadingSpans = document.querySelectorAll('.loading-overlay span');
+    loadingSpans.forEach(span => span.textContent = t.loading);
+
+    // Update Rows Filter Options
+    if (rowsFilter) {
+        const options = rowsFilter.options;
+        for (let i = 0; i < options.length; i++) {
+            const val = options[i].value;
+            options[i].textContent = `${val} ${t.rows_option}`;
+        }
+    }
+}
+
+// Filter function
+function filterData() {
+    const selectedDistrict = districtFilter ? districtFilter.value : '';
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    filteredHospitals = hospitals.filter(h => {
+        const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
+        const matchesSearch = query ? (
+            (h.name && h.name.toLowerCase().includes(query)) ||
+            (h.district && h.district.toLowerCase().includes(query)) ||
+            (h.hcode && h.hcode.toLowerCase().includes(query))
+        ) : true;
+
+        return matchesDistrict && matchesSearch;
+    });
+
+    // Reset to page 1 on new filter
+    currentPage = 1;
+    updateTableDisplay();
+}
+
+function toggleGlobalLoading(isLoading) {
+    if (!globalOverlay) return;
+    if (isLoading) {
+        globalOverlay.classList.remove('hidden');
+    } else {
+        // Add a small delay for smooth transition if needed, or immediate
+        setTimeout(() => {
+            globalOverlay.classList.add('hidden');
+        }, 500);
+    }
+}
+
+function toggleTableLoading(isLoading) {
+    if (!tableOverlay) return;
+    if (isLoading) {
+        tableOverlay.classList.remove('hidden');
+    } else {
+        tableOverlay.classList.add('hidden');
     }
 }
 
@@ -91,11 +246,6 @@ function renderPagination(totalPages) {
 
     if (totalPages <= 1) return;
 
-    // Generate page buttons
-    // For a large number of pages, we might want to limit this, but for now let's show all
-    // or a simple window if it gets too large. 
-    // Given the mockup showed 1-11, let's try to show a reasonable amount.
-
     for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.classList.add('page-btn');
@@ -104,8 +254,6 @@ function renderPagination(totalPages) {
         btn.onclick = () => {
             currentPage = i;
             updateTableDisplay();
-            // Optional: Scroll to top of table
-            // document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
         };
         paginationContainer.appendChild(btn);
     }
@@ -136,20 +284,10 @@ function parseCSV(csvText) {
         if (!line) continue;
 
         // Handle CSV with potential quotes (basic implementation)
-        // This regex splits by comma but ignores commas inside quotes
         const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-
-        // Fallback to simple split if regex doesn't match expected structure or for simple data
-        // The previous simple split is often sufficient for Google Sheets CSV if no commas in data
         const columns = line.split(',');
 
         // Check if we have enough columns
-        // Index 0: No
-        // Index 1: Service Center (Name)
-        // Index 2: HCode
-        // Index 3: District
-        // Index 4: PC-ID
-        // Index 5: AnyDesk
         if (columns.length >= 6) {
             result.push({
                 name: columns[1].trim(),
@@ -166,19 +304,29 @@ function parseCSV(csvText) {
 function populateDistricts() {
     if (!districtFilter) return;
 
+    const t = translations[currentLang];
+    const currentVal = districtFilter.value; // Preserve selection if possible
+
     const districts = [...new Set(hospitals.map(h => h.district))].sort();
-    districtFilter.innerHTML = '<option value="">เลือกอำเภอทั้งหมด</option>';
+    districtFilter.innerHTML = `<option value="">${t.filter_district_default}</option>`;
     districts.forEach(district => {
         const option = document.createElement('option');
         option.value = district;
         option.textContent = district;
         districtFilter.appendChild(option);
     });
+
+    // Restore selection if it still exists
+    if (currentVal) {
+        districtFilter.value = currentVal;
+    }
 }
 
 function renderTable(data, startIndex = 0) {
+    const t = translations[currentLang];
+
     if (!data || data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">ไม่พบข้อมูล</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">${t.no_data}</td></tr>`;
         return;
     }
 
@@ -200,39 +348,48 @@ function renderTable(data, startIndex = 0) {
                 </div>
             </td>
             <td>
-                <button class="map-btn">แผนที่</button>
+                <button class="map-btn">${t.map_btn}</button>
             </td>
         </tr>
     `).join('');
 }
 
 function updateStats() {
-    // Example: Update stats based on data
-    // document.querySelector('.stat-card:nth-child(1) h3').textContent = `จำนวนศูนย์บริการ: ${hospitals.length}`;
+    const t = translations[currentLang];
+    const statCards = document.querySelectorAll('.stat-card h3');
+
+    if (statCards.length >= 2) {
+        // Assuming first card is centers, second is districts
+        // We need to keep the numbers dynamic
+        const totalCenters = hospitals.length;
+        const totalDistricts = new Set(hospitals.map(h => h.district)).size;
+
+        statCards[0].textContent = `${t.stat_centers}: ${totalCenters}`;
+        statCards[1].textContent = `${t.stat_districts}: ${totalDistricts}`;
+    }
 }
 
 function copyToClipboard(text) {
+    const t = translations[currentLang];
     if (!text) return;
 
-    // Try modern API first
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => {
-            showToast();
+            showToast(t.copied);
         }).catch(err => {
             console.error('Failed to copy: ', err);
             fallbackCopyTextToClipboard(text);
         });
     } else {
-        // Fallback for non-secure contexts or older browsers
         fallbackCopyTextToClipboard(text);
     }
 }
 
 function fallbackCopyTextToClipboard(text) {
+    const t = translations[currentLang];
     const textArea = document.createElement("textarea");
     textArea.value = text;
 
-    // Ensure it's not visible but part of DOM
     textArea.style.top = "0";
     textArea.style.left = "0";
     textArea.style.position = "fixed";
@@ -245,7 +402,7 @@ function fallbackCopyTextToClipboard(text) {
     try {
         const successful = document.execCommand('copy');
         if (successful) {
-            showToast();
+            showToast(t.copied);
         } else {
             console.error('Fallback: Copying text command was unsuccessful');
             alert('Copy failed. Please copy manually.');
@@ -258,7 +415,8 @@ function fallbackCopyTextToClipboard(text) {
     document.body.removeChild(textArea);
 }
 
-function showToast() {
+function showToast(message) {
+    if (message) toast.textContent = message;
     toast.classList.remove('hidden');
 
     if (toastTimeout) {
