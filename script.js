@@ -26,7 +26,7 @@ const cancelBtn = document.querySelector('.btn-cancel');
 // Translations
 const translations = {
     th: {
-        title: 'POH Service Center Dashboard',
+        title: 'POH Dashboard',
         stat_centers: 'จำนวนศูนย์บริการ',
         stat_districts: 'จำนวนอำเภอทั้งหมด',
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
@@ -43,7 +43,7 @@ const translations = {
         save_error: 'เกิดข้อผิดพลาดในการบันทึก'
     },
     en: {
-        title: 'POH Service Center Dashboard',
+        title: 'POH Dashboard',
         stat_centers: 'Service Centers',
         stat_districts: 'Total Districts',
         search_placeholder: 'Search HCode / Name / District...',
@@ -64,48 +64,35 @@ const translations = {
 async function init() {
     try {
         // Initial load: Global overlay is visible by default in HTML
-        // Ensure it's visible just in case
         toggleGlobalLoading(true);
 
         // Language Switcher Logic
-        // We will use inline onclick in HTML for robustness
         const langBtns = document.querySelectorAll('.lang-switch button');
-        console.log('Found language buttons:', langBtns.length);
 
         // Expose setLanguage globally
         window.setLanguage = function (lang) {
-            console.log('setLanguage called with:', lang);
             if (lang !== currentLang) {
                 switchLanguage(lang);
-                // Update active class manually since we might not have the button reference
-                langBtns.forEach(btn => {
-                    if (btn.textContent.toLowerCase() === lang) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
+                updateLanguageButtons(lang);
             }
         };
 
         // Dark Mode Logic
-        const modeToggle = document.getElementById('mode-toggle');
+        const modeToggleBtn = document.getElementById('mode-toggle-btn');
+        const modeToggle = document.getElementById('mode-toggle'); // Hidden checkbox
 
         // Check localStorage
         if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
+            document.documentElement.classList.add('dark');
             if (modeToggle) modeToggle.checked = true;
         }
 
-        if (modeToggle) {
-            modeToggle.addEventListener('change', () => {
-                if (modeToggle.checked) {
-                    document.body.classList.add('dark-mode');
-                    localStorage.setItem('darkMode', 'enabled');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                    localStorage.setItem('darkMode', 'disabled');
-                }
+        if (modeToggleBtn) {
+            modeToggleBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+                if (modeToggle) modeToggle.checked = isDark;
             });
         }
 
@@ -124,39 +111,29 @@ async function init() {
         await fetchData();
         populateDistricts();
 
-        // Initial render with default limit
+        // Initial render
         filterData();
-        updateStats(); // Update stats if we have them
-        updateUIText(); // Initial UI text update
+        updateStats();
+        updateUIText();
+        updateLanguageButtons(currentLang);
 
         // Add event listeners
-        if (districtFilter) {
-            districtFilter.addEventListener('change', filterData);
-        }
-
-        if (searchInput) {
-            searchInput.addEventListener('input', filterData);
-        }
-
+        if (districtFilter) districtFilter.addEventListener('change', filterData);
+        if (searchInput) searchInput.addEventListener('input', filterData);
         if (rowsFilter) {
             rowsFilter.addEventListener('change', () => {
-                currentPage = 1; // Reset to page 1 when changing rows per page
+                currentPage = 1;
                 updateTableDisplay();
             });
         }
 
         if (refreshBtn) {
             refreshBtn.addEventListener('click', async () => {
-                // Refresh button: Use table overlay (Local refresh only)
                 toggleTableLoading(true);
-
-                // Artificial delay to show loading effect
                 await new Promise(r => setTimeout(r, 500));
                 try {
                     await fetchData();
-
-                    // Keep current filters, just re-apply them to new data
-                    filterData(); // Re-apply filters
+                    filterData();
                     updateStats();
                 } catch (err) {
                     console.error("Refresh failed", err);
@@ -168,19 +145,32 @@ async function init() {
 
     } catch (error) {
         console.error('Error:', error);
-        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: red;">Failed to load data. Check console for details.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-500">Failed to load data. Check console for details.</td></tr>';
     } finally {
-        // Hide global overlay after initial load
         toggleGlobalLoading(false);
     }
+}
+
+function updateLanguageButtons(lang) {
+    const langBtns = document.querySelectorAll('.lang-switch button');
+    langBtns.forEach(btn => {
+        const btnLang = btn.textContent.toLowerCase();
+        if (btnLang === lang) {
+            // Active State
+            btn.className = 'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 shadow-sm bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400';
+        } else {
+            // Inactive State
+            btn.className = 'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400';
+        }
+    });
 }
 
 function switchLanguage(lang) {
     currentLang = lang;
     updateUIText();
-    populateDistricts(); // Re-populate to update default option
-    updateTableDisplay(); // Re-render table to update headers/buttons
-    updateStats(); // Re-render stats
+    populateDistricts();
+    updateTableDisplay();
+    updateStats();
 }
 
 function updateUIText() {
@@ -192,18 +182,18 @@ function updateUIText() {
     // Update placeholders
     if (searchInput) searchInput.placeholder = t.search_placeholder;
 
-    // Update Refresh Button Text (preserve icon)
+    // Update Refresh Button Text
     if (refreshBtn) {
         const icon = refreshBtn.querySelector('svg');
         refreshBtn.innerHTML = '';
         if (icon) refreshBtn.appendChild(icon);
-        refreshBtn.appendChild(document.createTextNode(' ' + t.refresh_btn));
+        const span = document.createElement('span');
+        span.textContent = t.refresh_btn;
+        refreshBtn.appendChild(span);
     }
 
     // Update Table Headers
     const ths = document.querySelectorAll('thead th');
-    // Note: We added an extra column for Edit, so length check might fail if not updated
-    // Let's just update by index safely
     t.table_headers.forEach((header, index) => {
         if (ths[index]) ths[index].textContent = header;
     });
@@ -241,7 +231,6 @@ function updateUIText() {
     if (saveBtn) saveBtn.textContent = currentLang === 'th' ? 'บันทึก' : 'Save';
 }
 
-// Filter function
 function filterData() {
     const selectedDistrict = districtFilter ? districtFilter.value : '';
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -257,7 +246,6 @@ function filterData() {
         return matchesDistrict && matchesSearch;
     });
 
-    // Reset to page 1 on new filter
     currentPage = 1;
     updateTableDisplay();
 }
@@ -265,12 +253,16 @@ function filterData() {
 function toggleGlobalLoading(isLoading) {
     if (!globalOverlay) return;
     if (isLoading) {
-        globalOverlay.classList.remove('hidden');
+        globalOverlay.classList.remove('hidden'); // Ensure it's in DOM
+        // Small delay to allow display:block to apply before opacity transition
+        requestAnimationFrame(() => {
+            globalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        });
     } else {
-        // Add a small delay for smooth transition if needed, or immediate
+        globalOverlay.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
             globalOverlay.classList.add('hidden');
-        }, 500);
+        }, 300); // Match duration-300
     }
 }
 
@@ -287,15 +279,11 @@ function updateTableDisplay() {
     const limit = rowsFilter ? parseInt(rowsFilter.value) : 5;
     const totalPages = Math.ceil(filteredHospitals.length / limit);
 
-    // Ensure currentPage is valid
     if (currentPage > totalPages) currentPage = totalPages;
     if (currentPage < 1) currentPage = 1;
 
-    // Calculate slice range
     const startIndex = (currentPage - 1) * limit;
-    // If limit is 0 or invalid, show all (though UI doesn't allow it, safe fallback)
     const endIndex = limit > 0 ? startIndex + limit : filteredHospitals.length;
-
     const paginatedData = filteredHospitals.slice(startIndex, endIndex);
 
     renderTable(paginatedData, startIndex);
@@ -312,8 +300,12 @@ function renderPagination(totalPages) {
 
     for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
-        btn.classList.add('page-btn');
-        if (i === currentPage) btn.classList.add('active');
+        // Tailwind classes for pagination buttons
+        btn.className = `w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center ${i === currentPage
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
+            }`;
+
         btn.textContent = i;
         btn.onclick = () => {
             currentPage = i;
@@ -325,50 +317,37 @@ function renderPagination(totalPages) {
 
 async function fetchData() {
     try {
-        // If API_URL is still placeholder, warn user but maybe try CSV or mock?
-        // For now, let's assume user will replace it. If not, it will fail.
         if (API_URL.includes('REPLACE')) {
-            console.warn('API_URL not set. Please replace placeholder in script.js');
-            // Fallback to CSV for demo if needed, or just throw
-            // throw new Error('API_URL not configured');
+            console.warn('API_URL not set.');
         }
 
         const response = await fetch(API_URL);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json(); // Expecting JSON from GAS
-        hospitals = data; // GAS returns array of objects directly
+        const data = await response.json();
+        hospitals = data;
         console.log(`Loaded ${hospitals.length} hospitals`);
     } catch (error) {
         console.error('Fetch error:', error);
-        // Fallback to CSV if JSON fails (e.g. user hasn't deployed GAS yet)
-        // This helps prevent breaking the app completely during setup
         console.log('Falling back to CSV...');
         try {
             const csvResponse = await fetch('https://docs.google.com/spreadsheets/d/15TWNJ1vCFzWeFrwBEieRBaY5mf3HcDo_HjX_eyInTfc/export?format=csv');
             const csvText = await csvResponse.text();
             hospitals = parseCSV(csvText);
         } catch (csvError) {
-            throw error; // Re-throw original error if fallback fails
+            throw error;
         }
     }
 }
 
 function parseCSV(csvText) {
-    const lines = csvText.split(/\r?\n/); // Handle both \n and \r\n
+    const lines = csvText.split(/\r?\n/);
     const result = [];
-
-    // Start from index 1 to skip header
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-
-        // Handle CSV with potential quotes (basic implementation)
-        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
         const columns = line.split(',');
-
-        // Check if we have enough columns
         if (columns.length >= 6) {
             result.push({
                 name: columns[1].trim(),
@@ -384,10 +363,8 @@ function parseCSV(csvText) {
 
 function populateDistricts() {
     if (!districtFilter) return;
-
     const t = translations[currentLang];
-    const currentVal = districtFilter.value; // Preserve selection if possible
-
+    const currentVal = districtFilter.value;
     const districts = [...new Set(hospitals.map(h => h.district))].sort();
     districtFilter.innerHTML = `<option value="">${t.filter_district_default}</option>`;
     districts.forEach(district => {
@@ -396,46 +373,44 @@ function populateDistricts() {
         option.textContent = district;
         districtFilter.appendChild(option);
     });
-
-    // Restore selection if it still exists
-    if (currentVal) {
-        districtFilter.value = currentVal;
-    }
+    if (currentVal) districtFilter.value = currentVal;
 }
 
 function renderTable(data, startIndex = 0) {
     const t = translations[currentLang];
 
     if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">${t.no_data}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 dark:text-slate-400">${t.no_data}</td></tr>`;
         return;
     }
 
     tableBody.innerHTML = data.map((hospital, index) => `
-        <tr>
-            <td>${startIndex + index + 1}</td>
-            <td>${hospital.name}</td>
-            <td>${hospital.hcode}</td>
-            <td>${hospital.district}</td>
-            <td>${hospital.pcId}</td>
-            <td>
-                <div class="copy-wrapper">
-                    <span class="anydesk-id">${hospital.anydesk}</span>
-                    <button class="copy-btn" onclick="copyToClipboard('${hospital.anydesk}')" aria-label="Copy Anydesk ID">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                        </svg>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group border-b border-slate-100 dark:border-slate-700 last:border-0">
+            <td class="py-4 px-6 text-sm text-slate-500 dark:text-slate-400 font-mono">${startIndex + index + 1}</td>
+            <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-slate-100">${hospital.name}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono bg-slate-50/50 dark:bg-slate-800/50 rounded-lg">${hospital.hcode}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    ${hospital.district}
+                </span>
+            </td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono">${hospital.pcId}</td>
+            <td class="py-4 px-6">
+                <div class="flex items-center gap-2 group/copy">
+                    <span class="text-sm font-mono text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded select-all">${hospital.anydesk}</span>
+                    <button onclick="copyToClipboard('${hospital.anydesk}')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all opacity-0 group-hover/copy:opacity-100 focus:opacity-100" aria-label="Copy">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </button>
                 </div>
             </td>
-            <td>
-                <button class="map-btn">${t.map_btn}</button>
+            <td class="py-4 px-6 text-center">
+                <button class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all" title="${t.map_btn}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 7m0 13V7m0 0L9.553 4.553A1 1 0 009 4.553"/></svg>
+                </button>
             </td>
-            <td>
-                <button class="edit-btn" onclick="openEditModal('${hospital.hcode}')" aria-label="Edit">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                    </svg>
+            <td class="py-4 px-6 text-center">
+                <button onclick="openEditModal('${hospital.hcode}')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" title="Edit">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 </button>
             </td>
         </tr>
@@ -447,13 +422,12 @@ function updateStats() {
     const statCards = document.querySelectorAll('.stat-card h3');
 
     if (statCards.length >= 2) {
-        // Assuming first card is centers, second is districts
-        // We need to keep the numbers dynamic
         const totalCenters = hospitals.length;
         const totalDistricts = new Set(hospitals.map(h => h.district)).size;
 
-        statCards[0].textContent = `${t.stat_centers}: ${totalCenters}`;
-        statCards[1].textContent = `${t.stat_districts}: ${totalDistricts}`;
+        // Use span for the number to keep color
+        statCards[0].innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
+        statCards[1].innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${totalDistricts}</span>`;
     }
 }
 
@@ -477,42 +451,35 @@ function fallbackCopyTextToClipboard(text) {
     const t = translations[currentLang];
     const textArea = document.createElement("textarea");
     textArea.value = text;
-
-    textArea.style.top = "0";
-    textArea.style.left = "0";
     textArea.style.position = "fixed";
     textArea.style.opacity = "0";
-
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
 
     try {
         const successful = document.execCommand('copy');
-        if (successful) {
-            showToast(t.copied);
-        } else {
-            console.error('Fallback: Copying text command was unsuccessful');
-            alert('Copy failed. Please copy manually.');
-        }
+        if (successful) showToast(t.copied);
+        else alert('Copy failed.');
     } catch (err) {
-        console.error('Fallback: Oops, unable to copy', err);
-        alert('Copy failed. Please copy manually.');
+        alert('Copy failed.');
     }
-
     document.body.removeChild(textArea);
 }
 
 function showToast(message) {
-    if (message) toast.textContent = message;
-    toast.classList.remove('hidden');
-
-    if (toastTimeout) {
-        clearTimeout(toastTimeout);
+    if (message) {
+        const span = toast.querySelector('span');
+        if (span) span.textContent = message;
     }
 
+    // Use Tailwind classes for animation
+    toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+
+    if (toastTimeout) clearTimeout(toastTimeout);
+
     toastTimeout = setTimeout(() => {
-        toast.classList.add('hidden');
+        toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
     }, 2000);
 }
 
@@ -529,10 +496,22 @@ window.openEditModal = function (hcode) {
     document.getElementById('edit-anydesk').value = hospital.anydesk;
 
     editModal.classList.remove('hidden');
+    // Animation
+    requestAnimationFrame(() => {
+        editModal.classList.remove('opacity-0');
+        const content = editModal.querySelector('.modal-content');
+        if (content) content.classList.remove('scale-95');
+    });
 };
 
 function closeEditModal() {
-    editModal.classList.add('hidden');
+    editModal.classList.add('opacity-0');
+    const content = editModal.querySelector('.modal-content');
+    if (content) content.classList.add('scale-95');
+
+    setTimeout(() => {
+        editModal.classList.add('hidden');
+    }, 300);
 }
 
 async function handleEditSubmit(e) {
@@ -547,16 +526,14 @@ async function handleEditSubmit(e) {
         anydesk: document.getElementById('edit-anydesk').value
     };
 
-    // Show loading state
     const saveBtn = document.querySelector('.btn-save');
     const originalText = saveBtn.textContent;
     saveBtn.textContent = t.saving;
     saveBtn.disabled = true;
+    saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
     try {
-        if (API_URL.includes('REPLACE')) {
-            throw new Error('API_URL not configured');
-        }
+        if (API_URL.includes('REPLACE')) throw new Error('API_URL not configured');
 
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -570,22 +547,20 @@ async function handleEditSubmit(e) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            // Update local data
             const index = hospitals.findIndex(h => h.hcode === hcode);
             if (index !== -1) {
                 hospitals[index] = { ...hospitals[index], ...newData };
             }
-
-            // Re-render
             filterData();
             closeEditModal();
-
-            // Success Alert
             Swal.fire({
                 icon: 'success',
                 title: t.saved,
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1500,
+                customClass: {
+                    popup: 'dark:bg-slate-800 dark:text-white'
+                }
             });
         } else {
             throw new Error(result.message || 'Unknown error');
@@ -593,18 +568,20 @@ async function handleEditSubmit(e) {
 
     } catch (error) {
         console.error('Save error:', error);
-        // Error Alert
         Swal.fire({
             icon: 'error',
             title: t.save_error,
             text: error.message,
-            confirmButtonText: 'OK'
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'dark:bg-slate-800 dark:text-white'
+            }
         });
     } finally {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
+        saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
     }
 }
 
-// Start the app
 init();
