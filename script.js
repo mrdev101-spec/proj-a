@@ -578,15 +578,28 @@ async function handleEditSubmit(e) {
 
             // Re-render
             filterData();
-            showToast(t.saved);
             closeEditModal();
+
+            // Success Alert
+            Swal.fire({
+                icon: 'success',
+                title: t.saved,
+                showConfirmButton: false,
+                timer: 1500
+            });
         } else {
             throw new Error(result.message || 'Unknown error');
         }
 
     } catch (error) {
         console.error('Save error:', error);
-        alert(`${t.save_error}: ${error.message}`);
+        // Error Alert
+        Swal.fire({
+            icon: 'error',
+            title: t.save_error,
+            text: error.message,
+            confirmButtonText: 'OK'
+        });
     } finally {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
