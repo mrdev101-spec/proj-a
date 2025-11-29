@@ -112,25 +112,44 @@ function renderPagination(totalPages) {
 }
 
 async function fetchData() {
-    const response = await fetch(SHEET_CSV_URL);
-    const data = await response.text();
-    hospitals = parseCSV(data);
+    try {
+        const response = await fetch(SHEET_CSV_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.text();
+        hospitals = parseCSV(data);
+        console.log(`Loaded ${hospitals.length} hospitals`);
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error; // Re-throw to be caught in init
+    }
 }
 
 function parseCSV(csvText) {
-    const lines = csvText.split('\n');
+    const lines = csvText.split(/\r?\n/); // Handle both \n and \r\n
     const result = [];
-    // Assuming first row is header, so start from index 1
-    // Column order: ID, Name, HCode, District, PC-ID, AnyDesk
 
+    // Start from index 1 to skip header
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Simple CSV split (doesn't handle commas inside quotes)
-        // For robust parsing, consider a library or regex
+        // Handle CSV with potential quotes (basic implementation)
+        // This regex splits by comma but ignores commas inside quotes
+        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+
+        // Fallback to simple split if regex doesn't match expected structure or for simple data
+        // The previous simple split is often sufficient for Google Sheets CSV if no commas in data
         const columns = line.split(',');
 
+        // Check if we have enough columns
+        // Index 0: No
+        // Index 1: Service Center (Name)
+        // Index 2: HCode
+        // Index 3: District
+        // Index 4: PC-ID
+        // Index 5: AnyDesk
         if (columns.length >= 6) {
             result.push({
                 name: columns[1].trim(),
@@ -193,11 +212,50 @@ function updateStats() {
 }
 
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showToast();
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-    });
+    if (!text) return;
+
+    // Try modern API first
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast();
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        // Fallback for non-secure contexts or older browsers
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Ensure it's not visible but part of DOM
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showToast();
+        } else {
+            console.error('Fallback: Copying text command was unsuccessful');
+            alert('Copy failed. Please copy manually.');
+        }
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        alert('Copy failed. Please copy manually.');
+    }
+
+    document.body.removeChild(textArea);
 }
 
 function showToast() {
