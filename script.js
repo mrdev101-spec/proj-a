@@ -456,11 +456,6 @@ function renderTable(data, startIndex = 0) {
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 </button>
             </td>
-            <td class="py-4 px-6 text-center">
-                <button onclick="deleteItem('${hospital.hcode}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-            </td>
         </tr>
     `).join('');
 }
@@ -560,7 +555,7 @@ function showToast(message) {
 // --- Edit Functions ---
 
 window.openEditModal = function (hcode) {
-    const hospital = hospitals.find(h => h.hcode === hcode);
+    const hospital = hospitals.find(h => String(h.hcode) === String(hcode));
     if (!hospital) return;
 
     document.getElementById('edit-hcode').value = hospital.hcode;
@@ -576,6 +571,12 @@ window.openEditModal = function (hcode) {
         const content = editModal.querySelector('.modal-content');
         if (content) content.classList.remove('scale-95');
     });
+
+    // Setup delete button in modal
+    const deleteBtn = document.getElementById('delete-btn-modal');
+    if (deleteBtn) {
+        deleteBtn.onclick = () => deleteItem(hcode);
+    }
 };
 
 function closeEditModal() {
@@ -621,7 +622,7 @@ async function handleEditSubmit(e) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            const index = hospitals.findIndex(h => h.hcode === hcode);
+            const index = hospitals.findIndex(h => String(h.hcode) === String(hcode));
             if (index !== -1) {
                 hospitals[index] = { ...hospitals[index], ...newData };
             }
@@ -797,9 +798,10 @@ window.deleteItem = async function (hcode) {
 
             if (data.status === 'success') {
                 // Remove from local array
-                hospitals = hospitals.filter(h => h.hcode !== hcode);
+                hospitals = hospitals.filter(h => String(h.hcode) !== String(hcode));
                 filterData();
                 updateStats();
+                closeEditModal();
 
                 Swal.fire({
                     icon: 'success',
