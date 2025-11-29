@@ -45,13 +45,6 @@
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .glass {
-                @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700;
-            }
-        }
-    </style>
 </head>
 
 <body
@@ -65,7 +58,8 @@
     </div>
 
     <!-- Header -->
-    <header class="sticky top-0 z-40 glass shadow-sm transition-all duration-300">
+    <header
+        class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-blue-500/10 rounded-lg">
@@ -200,15 +194,25 @@
                 </div>
             </div>
 
-            <button
-                class="refresh-btn flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium"
-                type="button">
-                <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span>รีเฟรช</span>
-            </button>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="openAddModal()"
+                    class="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium"
+                    type="button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span id="add-btn-text">เพิ่มรายการ</span>
+                </button>
+                <button
+                    class="refresh-btn flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium"
+                    type="button">
+                    <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>รีเฟรช</span>
+                </button>
+            </div>
         </div>
 
         <!-- Table Card -->
@@ -249,6 +253,9 @@
                             <th
                                 class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
                                 แก้ไข</th>
+                            <th
+                                class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+                                ลบ</th>
                         </tr>
                     </thead>
                     <tbody id="Hospital" class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -333,7 +340,67 @@
         </div>
     </div>
 
-    <script src="script.js?v=16"></script>
+    <!-- Add Modal -->
+    <div id="add-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
+        aria-labelledby="add-modal-title" role="dialog" aria-modal="true">
+        <div
+            class="modal-content bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-transform duration-300 border border-slate-100 dark:border-slate-700">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700">
+                <h2 id="add-modal-title" class="text-xl font-bold text-slate-800 dark:text-white">เพิ่มรายการใหม่</h2>
+                <button onclick="closeAddModal()"
+                    class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="add-form" class="space-y-4">
+                    <div class="form-group">
+                        <label for="add-hcode"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">HCode
+                            (รหัสสถานบริการ)</label>
+                        <input type="text" id="add-hcode" required
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-name"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ชื่อสถานบริการ</label>
+                        <input type="text" id="add-name" required
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-district"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">อำเภอ</label>
+                        <input type="text" id="add-district" required
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-pcid"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PC-ID</label>
+                        <input type="text" id="add-pcid"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-anydesk"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">AnyDesk ID</label>
+                        <input type="text" id="add-anydesk"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-actions flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeAddModal()"
+                            class="btn-cancel px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors">ยกเลิก</button>
+                        <button type="submit"
+                            class="btn-save-add px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium shadow-lg shadow-green-500/30 transition-all active:scale-95">บันทึก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=25"></script>
 </body>
 
 </html>

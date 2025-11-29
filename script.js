@@ -1,5 +1,5 @@
 // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-const API_URL = 'https://script.google.com/macros/s/AKfycbz9XGORhNTslOlq7vgbTEhLbhjpe77d91q1A-F558002H3GVD5G4mGce-4KgqKpOIL0SA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbysuZhmkzyJBszYj0BbY4qsnNXxleoqYREe51oX_0E3a6bI8BwmZtgHYUWyCnzkz0WugA/exec';
 
 const tableBody = document.getElementById('Hospital');
 const toast = document.getElementById('toast');
@@ -32,15 +32,25 @@ const translations = {
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
         filter_district_default: 'เลือกอำเภอทั้งหมด',
         refresh_btn: 'รีเฟรช',
-        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่', 'แก้ไข'],
+        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่', 'แก้ไข', 'ลบ'],
         map_btn: 'แผนที่',
         loading: 'กำลังโหลดข้อมูล...',
         no_data: 'ไม่พบข้อมูล',
         rows_option: 'แถว',
         copied: 'คัดลอกเรียบร้อย!',
+        add_btn: 'เพิ่มรายการ',
+        save_btn: 'บันทึก',
+        cancel_btn: 'ยกเลิก',
+        edit_modal_title: 'แก้ไขข้อมูล',
+        add_modal_title: 'เพิ่มรายการใหม่',
         saving: 'กำลังบันทึก...',
         saved: 'บันทึกเรียบร้อย!',
-        save_error: 'เกิดข้อผิดพลาดในการบันทึก'
+        save_error: 'เกิดข้อผิดพลาดในการบันทึก',
+        delete_btn: 'ลบ',
+        confirm_delete_title: 'ยืนยันการลบ?',
+        confirm_delete_text: 'คุณต้องการลบข้อมูลนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้!',
+        deleted_success: 'ลบข้อมูลเรียบร้อยแล้ว',
+        delete_error: 'เกิดข้อผิดพลาดในการลบ'
     },
     en: {
         title: 'POH Dashboard',
@@ -49,15 +59,25 @@ const translations = {
         search_placeholder: 'Search HCode / Name / District...',
         filter_district_default: 'All Districts',
         refresh_btn: 'Refresh',
-        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map', 'Edit'],
+        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map', 'Edit', 'Delete'],
         map_btn: 'Map',
         loading: 'Loading data...',
         no_data: 'No data found',
         rows_option: 'rows',
         copied: 'Copied to clipboard!',
+        add_btn: 'Add Item',
+        save_btn: 'Save',
+        cancel_btn: 'Cancel',
+        edit_modal_title: 'Edit Information',
+        add_modal_title: 'Add New Item',
         saving: 'Saving...',
         saved: 'Saved successfully!',
-        save_error: 'Error saving data'
+        save_error: 'Error saving data',
+        delete_btn: 'Delete',
+        confirm_delete_title: 'Are you sure?',
+        confirm_delete_text: 'You won\'t be able to revert this!',
+        deleted_success: 'Deleted successfully',
+        delete_error: 'Error deleting data'
     }
 };
 
@@ -151,6 +171,26 @@ async function init() {
     }
 }
 
+function filterData() {
+    const selectedDistrict = districtFilter ? districtFilter.value : '';
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    filteredHospitals = hospitals.filter(h => {
+        const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
+        const matchesSearch = query ? (
+            (h.name && h.name.toLowerCase().includes(query)) ||
+            (h.district && h.district.toLowerCase().includes(query)) ||
+            (h.hcode && h.hcode.toLowerCase().includes(query))
+        ) : true;
+
+        return matchesDistrict && matchesSearch;
+    });
+
+    currentPage = 1;
+    updateTableDisplay();
+}
+
+
 function updateLanguageButtons(lang) {
     const langBtns = document.querySelectorAll('.lang-switch button');
     langBtns.forEach(btn => {
@@ -192,6 +232,10 @@ function updateUIText() {
         refreshBtn.appendChild(span);
     }
 
+    // Update Add Button Text
+    const addBtnText = document.getElementById('add-btn-text');
+    if (addBtnText) addBtnText.textContent = t.add_btn;
+
     // Update Table Headers
     const ths = document.querySelectorAll('thead th');
     t.table_headers.forEach((header, index) => {
@@ -211,43 +255,39 @@ function updateUIText() {
         }
     }
 
-    // Update Modal Title
-    const modalTitle = document.getElementById('modal-title');
-    if (modalTitle) modalTitle.textContent = currentLang === 'th' ? 'แก้ไขข้อมูล' : 'Edit Information';
+    // Update Modal Titles
+    const editModalTitle = document.getElementById('modal-title');
+    if (editModalTitle) editModalTitle.textContent = t.edit_modal_title;
+
+    const addModalTitle = document.getElementById('add-modal-title');
+    if (addModalTitle) addModalTitle.textContent = t.add_modal_title;
 
     // Update Modal Labels
-    const labels = document.querySelectorAll('.form-group label');
-    if (labels.length >= 5) {
-        labels[0].textContent = currentLang === 'th' ? 'HCode (รหัสสถานบริการ)' : 'HCode';
-        labels[1].textContent = currentLang === 'th' ? 'ชื่อสถานบริการ' : 'Hospital Name';
-        labels[2].textContent = currentLang === 'th' ? 'อำเภอ' : 'District';
-        labels[3].textContent = currentLang === 'th' ? 'PC-ID' : 'PC-ID';
-        labels[4].textContent = currentLang === 'th' ? 'AnyDesk ID' : 'AnyDesk ID';
-    }
+    const updateLabels = (formId) => {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        const formLabels = form.querySelectorAll('label');
+        if (formLabels.length >= 5) {
+            formLabels[0].textContent = currentLang === 'th' ? 'HCode (รหัสสถานบริการ)' : 'HCode';
+            formLabels[1].textContent = currentLang === 'th' ? 'ชื่อสถานบริการ' : 'Hospital Name';
+            formLabels[2].textContent = currentLang === 'th' ? 'อำเภอ' : 'District';
+            formLabels[3].textContent = currentLang === 'th' ? 'PC-ID' : 'PC-ID';
+            formLabels[4].textContent = currentLang === 'th' ? 'AnyDesk ID' : 'AnyDesk ID';
+        }
+    };
+
+    updateLabels('edit-form');
+    updateLabels('add-form');
 
     // Update Modal Buttons
-    if (cancelBtn) cancelBtn.textContent = currentLang === 'th' ? 'ยกเลิก' : 'Cancel';
+    const cancelBtns = document.querySelectorAll('.btn-cancel');
+    cancelBtns.forEach(btn => btn.textContent = t.cancel_btn);
+
     const saveBtn = document.querySelector('.btn-save');
-    if (saveBtn) saveBtn.textContent = currentLang === 'th' ? 'บันทึก' : 'Save';
-}
+    if (saveBtn) saveBtn.textContent = t.save_btn;
 
-function filterData() {
-    const selectedDistrict = districtFilter ? districtFilter.value : '';
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-    filteredHospitals = hospitals.filter(h => {
-        const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
-        const matchesSearch = query ? (
-            (h.name && h.name.toLowerCase().includes(query)) ||
-            (h.district && h.district.toLowerCase().includes(query)) ||
-            (h.hcode && h.hcode.toLowerCase().includes(query))
-        ) : true;
-
-        return matchesDistrict && matchesSearch;
-    });
-
-    currentPage = 1;
-    updateTableDisplay();
+    const saveAddBtn = document.querySelector('.btn-save-add');
+    if (saveAddBtn) saveAddBtn.textContent = t.save_btn;
 }
 
 function toggleGlobalLoading(isLoading) {
@@ -302,8 +342,8 @@ function renderPagination(totalPages) {
         const btn = document.createElement('button');
         // Tailwind classes for pagination buttons
         btn.className = `w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center ${i === currentPage
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
+            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
             }`;
 
         btn.textContent = i;
@@ -379,6 +419,8 @@ function populateDistricts() {
 function renderTable(data, startIndex = 0) {
     const t = translations[currentLang];
 
+    if (!tableBody) return;
+
     if (!data || data.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 dark:text-slate-400">${t.no_data}</td></tr>`;
         return;
@@ -389,18 +431,19 @@ function renderTable(data, startIndex = 0) {
             <td class="py-4 px-6 text-sm text-slate-500 dark:text-slate-400 font-mono">${startIndex + index + 1}</td>
             <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-slate-100">${hospital.name}</td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono bg-slate-50/50 dark:bg-slate-800/50 rounded-lg">${hospital.hcode}</td>
-            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                     ${hospital.district}
                 </span>
             </td>
-            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono">${hospital.pcId}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono whitespace-nowrap">${hospital.pcId}</td>
             <td class="py-4 px-6">
-                <div class="flex items-center gap-2 group/copy">
+                <div class="flex items-center gap-2 group/copy relative">
                     <span class="text-sm font-mono text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded select-all">${hospital.anydesk}</span>
-                    <button onclick="copyToClipboard('${hospital.anydesk}')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all opacity-0 group-hover/copy:opacity-100 focus:opacity-100" aria-label="Copy">
+                    <button onclick="copyToClipboard('${hospital.anydesk}', this)" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all opacity-0 group-hover/copy:opacity-100 focus:opacity-100 relative" aria-label="Copy">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </button>
+                    <span class="copy-feedback absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">Copied!</span>
                 </div>
             </td>
             <td class="py-4 px-6 text-center">
@@ -411,6 +454,11 @@ function renderTable(data, startIndex = 0) {
             <td class="py-4 px-6 text-center">
                 <button onclick="openEditModal('${hospital.hcode}')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" title="Edit">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+            </td>
+            <td class="py-4 px-6 text-center">
+                <button onclick="deleteItem('${hospital.hcode}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
             </td>
         </tr>
@@ -431,23 +479,43 @@ function updateStats() {
     }
 }
 
-function copyToClipboard(text) {
+function copyToClipboard(text, btnElement) {
     const t = translations[currentLang];
     if (!text) return;
 
+    // Helper to show inline feedback
+    const showInlineFeedback = () => {
+        if (btnElement) {
+            const container = btnElement.closest('.group\\/copy');
+            if (container) {
+                const feedback = container.querySelector('.copy-feedback');
+                if (feedback) {
+                    feedback.textContent = t.copied;
+                    feedback.classList.remove('opacity-0');
+                    setTimeout(() => {
+                        feedback.classList.add('opacity-0');
+                    }, 2000);
+                }
+            }
+        } else {
+            // Fallback to global toast if button not passed
+            showToast(t.copied);
+        }
+    };
+
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => {
-            showToast(t.copied);
+            showInlineFeedback();
         }).catch(err => {
             console.error('Failed to copy: ', err);
-            fallbackCopyTextToClipboard(text);
+            fallbackCopyTextToClipboard(text, showInlineFeedback);
         });
     } else {
-        fallbackCopyTextToClipboard(text);
+        fallbackCopyTextToClipboard(text, showInlineFeedback);
     }
 }
 
-function fallbackCopyTextToClipboard(text) {
+function fallbackCopyTextToClipboard(text, callback) {
     const t = translations[currentLang];
     const textArea = document.createElement("textarea");
     textArea.value = text;
@@ -459,10 +527,16 @@ function fallbackCopyTextToClipboard(text) {
 
     try {
         const successful = document.execCommand('copy');
-        if (successful) showToast(t.copied);
-        else alert('Copy failed.');
+        if (successful) {
+            if (callback) callback();
+            else showToast(t.copied);
+        } else {
+            console.error('Fallback: Copying text command was unsuccessful');
+            alert('Copy failed. Please copy manually.');
+        }
     } catch (err) {
-        alert('Copy failed.');
+        console.error('Fallback: Oops, unable to copy', err);
+        alert('Copy failed. Please copy manually.');
     }
     document.body.removeChild(textArea);
 }
@@ -583,5 +657,174 @@ async function handleEditSubmit(e) {
         saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
     }
 }
+
+// --- Add Functions ---
+
+const addModal = document.getElementById('add-modal');
+
+window.openAddModal = function () {
+    document.getElementById('add-form').reset();
+    addModal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        addModal.classList.remove('opacity-0');
+        const content = addModal.querySelector('.modal-content');
+        if (content) content.classList.remove('scale-95');
+    });
+};
+
+window.closeAddModal = function () {
+    addModal.classList.add('opacity-0');
+    const content = addModal.querySelector('.modal-content');
+    if (content) content.classList.add('scale-95');
+
+    setTimeout(() => {
+        addModal.classList.add('hidden');
+    }, 300);
+};
+
+document.getElementById('add-form').addEventListener('submit', handleAddSubmit);
+
+async function handleAddSubmit(e) {
+    e.preventDefault();
+    const t = translations[currentLang];
+
+    const newData = {
+        hcode: document.getElementById('add-hcode').value,
+        name: document.getElementById('add-name').value,
+        district: document.getElementById('add-district').value,
+        pcId: document.getElementById('add-pcid').value,
+        anydesk: document.getElementById('add-anydesk').value
+    };
+
+    const saveBtn = document.querySelector('.btn-save-add');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = t.saving;
+    saveBtn.disabled = true;
+    saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+    try {
+        if (API_URL.includes('REPLACE')) throw new Error('API_URL not configured');
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'add',
+                data: newData
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            await fetchData(); // Reload data
+            filterData();
+            closeAddModal();
+            Swal.fire({
+                icon: 'success',
+                title: t.saved,
+                showConfirmButton: false,
+                timer: 1500,
+                customClass: {
+                    popup: 'dark:bg-slate-800 dark:text-white'
+                }
+            });
+        } else {
+            throw new Error(result.message || 'Unknown error');
+        }
+
+    } catch (error) {
+        console.error('Save error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: t.save_error,
+            text: error.message,
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'dark:bg-slate-800 dark:text-white'
+            }
+        });
+    } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+    }
+}
+
+// --- Delete Function ---
+
+window.deleteItem = async function (hcode) {
+    const t = translations[currentLang];
+
+    const result = await Swal.fire({
+        title: t.confirm_delete_title,
+        text: t.confirm_delete_text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: t.delete_btn,
+        cancelButtonText: t.cancel_btn,
+        customClass: {
+            popup: 'dark:bg-slate-800 dark:text-white'
+        }
+    });
+
+    if (result.isConfirmed) {
+        // Show loading state
+        Swal.fire({
+            title: t.saving,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+            customClass: {
+                popup: 'dark:bg-slate-800 dark:text-white'
+            }
+        });
+
+        try {
+            if (API_URL.includes('REPLACE')) throw new Error('API_URL not configured');
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'delete',
+                    hcode: hcode
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                // Remove from local array
+                hospitals = hospitals.filter(h => h.hcode !== hcode);
+                filterData();
+                updateStats();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: t.deleted_success,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    customClass: {
+                        popup: 'dark:bg-slate-800 dark:text-white'
+                    }
+                });
+            } else {
+                throw new Error(data.message || 'Unknown error');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: t.delete_error,
+                text: error.message,
+                customClass: {
+                    popup: 'dark:bg-slate-800 dark:text-white'
+                }
+            });
+        }
+    }
+};
 
 init();

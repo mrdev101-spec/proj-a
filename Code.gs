@@ -63,6 +63,29 @@ function handleRequest(e) {
     // POST Request: Update data
     const payload = JSON.parse(e.postData.contents);
     
+    if (payload.action === 'add') {
+      const newData = payload.data;
+      // Generate new ID (Column A)
+      const lastRow = sheet.getLastRow();
+      let nextId = 1;
+      if (lastRow > 1) {
+          const lastIdVal = sheet.getRange(lastRow, 1).getValue();
+          if (!isNaN(lastIdVal)) nextId = Number(lastIdVal) + 1;
+      }
+      
+      sheet.appendRow([
+        nextId,
+        newData.name,
+        newData.hcode,
+        newData.district,
+        newData.pcId,
+        newData.anydesk
+      ]);
+      
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Added successfully' }))
+          .setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (payload.action === 'update') {
       const hcodeToUpdate = payload.hcode;
       const newData = payload.data;
@@ -90,6 +113,27 @@ function handleRequest(e) {
         if (newData.anydesk) sheet.getRange(rowIndex, 6).setValue(newData.anydesk);
         
         return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Updated successfully' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } else {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'HCode not found' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    if (payload.action === 'delete') {
+      const hcodeToDelete = payload.hcode;
+      
+      let rowIndex = -1;
+      for (let i = 0; i < rows.length; i++) {
+        if (String(rows[i][2]) === String(hcodeToDelete)) {
+          rowIndex = i + 2;
+          break;
+        }
+      }
+
+      if (rowIndex !== -1) {
+        sheet.deleteRow(rowIndex);
+        return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Deleted successfully' }))
           .setMimeType(ContentService.MimeType.JSON);
       } else {
         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'HCode not found' }))

@@ -1,0 +1,41 @@
+function fallbackCopyTextToClipboard(text, callback) {
+    const t = translations[currentLang];
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            if (callback) callback();
+            else showToast(t.copied);
+        } else {
+            console.error('Fallback: Copying text command was unsuccessful');
+            alert('Copy failed. Please copy manually.');
+        }
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        alert('Copy failed. Please copy manually.');
+    }
+    document.body.removeChild(textArea);
+}
+
+function showToast(message) {
+    if (message) {
+        const span = toast.querySelector('span');
+        if (span) span.textContent = message;
+    }
+
+    // Use Tailwind classes for animation
+    toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+
+    if (toastTimeout) clearTimeout(toastTimeout);
+
+    toastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+    }, 2000);
+}
