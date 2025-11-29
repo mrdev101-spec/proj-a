@@ -40,7 +40,7 @@ const translations = {
         search_placeholder: 'Search HCode / Name / District...',
         filter_district_default: 'All Districts',
         refresh_btn: 'Refresh',
-        table_headers: ['No.', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map'],
+        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map'],
         map_btn: 'Map',
         loading: 'Loading data...',
         no_data: 'No data found',
@@ -75,6 +75,27 @@ async function init() {
                 });
             }
         };
+
+        // Dark Mode Logic
+        const modeToggle = document.getElementById('mode-toggle');
+
+        // Check localStorage
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            if (modeToggle) modeToggle.checked = true;
+        }
+
+        if (modeToggle) {
+            modeToggle.addEventListener('change', () => {
+                if (modeToggle.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        }
 
         await fetchData();
         populateDistricts();
