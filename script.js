@@ -11,36 +11,23 @@ let hospitals = []; // Store fetched data
 let filteredHospitals = []; // Store filtered data
 let currentPage = 1;
 
+const refreshBtn = document.querySelector('.refresh-btn');
+const globalOverlay = document.getElementById('global-loading-overlay');
+const tableOverlay = document.getElementById('table-loading-overlay');
+const tableCard = document.querySelector('.table-card');
+
 async function init() {
     try {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading data...</td></tr>';
+        // Initial load: Global overlay is visible by default in HTML
+        // Ensure it's visible just in case
+        toggleGlobalLoading(true);
+
         await fetchData();
         populateDistricts();
 
         // Initial render with default limit
         filterData();
         updateStats(); // Update stats if we have them
-
-        // Filter function
-        function filterData() {
-            const selectedDistrict = districtFilter ? districtFilter.value : '';
-            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-            filteredHospitals = hospitals.filter(h => {
-                const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
-                const matchesSearch = query ? (
-                    (h.name && h.name.toLowerCase().includes(query)) ||
-                    (h.district && h.district.toLowerCase().includes(query)) ||
-                    (h.hcode && h.hcode.toLowerCase().includes(query))
-                ) : true;
-
-                return matchesDistrict && matchesSearch;
-            });
-
-            // Reset to page 1 on new filter
-            currentPage = 1;
-            updateTableDisplay();
-        }
 
         // Add event listeners
         if (districtFilter) {
@@ -58,9 +45,75 @@ async function init() {
             });
         }
 
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                // Refresh button: Use table overlay (Local refresh only)
+                toggleTableLoading(true);
+
+                // Artificial delay to show loading effect
+                await new Promise(r => setTimeout(r, 500));
+                try {
+                    await fetchData();
+
+                    // Keep current filters, just re-apply them to new data
+                    filterData(); // Re-apply filters
+                    updateStats();
+                } catch (err) {
+                    console.error("Refresh failed", err);
+                } finally {
+                    toggleTableLoading(false);
+                }
+            });
+        }
+
     } catch (error) {
         console.error('Error:', error);
         tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Failed to load data. Check console for details.</td></tr>';
+    } finally {
+        // Hide global overlay after initial load
+        toggleGlobalLoading(false);
+    }
+}
+
+// Filter function
+function filterData() {
+    const selectedDistrict = districtFilter ? districtFilter.value : '';
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    filteredHospitals = hospitals.filter(h => {
+        const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
+        const matchesSearch = query ? (
+            (h.name && h.name.toLowerCase().includes(query)) ||
+            (h.district && h.district.toLowerCase().includes(query)) ||
+            (h.hcode && h.hcode.toLowerCase().includes(query))
+        ) : true;
+
+        return matchesDistrict && matchesSearch;
+    });
+
+    // Reset to page 1 on new filter
+    currentPage = 1;
+    updateTableDisplay();
+}
+
+function toggleGlobalLoading(isLoading) {
+    if (!globalOverlay) return;
+    if (isLoading) {
+        globalOverlay.classList.remove('hidden');
+    } else {
+        // Add a small delay for smooth transition if needed, or immediate
+        setTimeout(() => {
+            globalOverlay.classList.add('hidden');
+        }, 500);
+    }
+}
+
+function toggleTableLoading(isLoading) {
+    if (!tableOverlay) return;
+    if (isLoading) {
+        tableOverlay.classList.remove('hidden');
+    } else {
+        tableOverlay.classList.add('hidden');
     }
 }
 
@@ -91,11 +144,6 @@ function renderPagination(totalPages) {
 
     if (totalPages <= 1) return;
 
-    // Generate page buttons
-    // For a large number of pages, we might want to limit this, but for now let's show all
-    // or a simple window if it gets too large. 
-    // Given the mockup showed 1-11, let's try to show a reasonable amount.
-
     for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.classList.add('page-btn');
@@ -104,8 +152,6 @@ function renderPagination(totalPages) {
         btn.onclick = () => {
             currentPage = i;
             updateTableDisplay();
-            // Optional: Scroll to top of table
-            // document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
         };
         paginationContainer.appendChild(btn);
     }
@@ -136,20 +182,10 @@ function parseCSV(csvText) {
         if (!line) continue;
 
         // Handle CSV with potential quotes (basic implementation)
-        // This regex splits by comma but ignores commas inside quotes
         const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-
-        // Fallback to simple split if regex doesn't match expected structure or for simple data
-        // The previous simple split is often sufficient for Google Sheets CSV if no commas in data
         const columns = line.split(',');
 
         // Check if we have enough columns
-        // Index 0: No
-        // Index 1: Service Center (Name)
-        // Index 2: HCode
-        // Index 3: District
-        // Index 4: PC-ID
-        // Index 5: AnyDesk
         if (columns.length >= 6) {
             result.push({
                 name: columns[1].trim(),
@@ -214,7 +250,6 @@ function updateStats() {
 function copyToClipboard(text) {
     if (!text) return;
 
-    // Try modern API first
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => {
             showToast();
@@ -223,7 +258,6 @@ function copyToClipboard(text) {
             fallbackCopyTextToClipboard(text);
         });
     } else {
-        // Fallback for non-secure contexts or older browsers
         fallbackCopyTextToClipboard(text);
     }
 }
@@ -232,7 +266,6 @@ function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
 
-    // Ensure it's not visible but part of DOM
     textArea.style.top = "0";
     textArea.style.left = "0";
     textArea.style.position = "fixed";
