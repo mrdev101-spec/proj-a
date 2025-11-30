@@ -72,37 +72,51 @@ function handleRequest(e) {
       }
 
       const usersData = usersSheet.getDataRange().getValues();
-      // Skip header (row 1)
+      // Get headers and normalize them for search
+      const headers = usersData[0].map(h => String(h).toLowerCase().trim());
       const users = usersData.slice(1);
       
+      // Dynamic Column Mapping: Find indices based on header names
+      const colMap = {
+        username: headers.indexOf('username'),
+        password: headers.indexOf('password'),
+        // Use findIndex for fuzzy matching on display names
+        name: headers.findIndex(h => h.includes('name')), 
+        empId: headers.findIndex(h => h.includes('employee') || h.includes('emp id')),
+        dept: headers.findIndex(h => h.includes('department') || h.includes('dept')),
+        role: headers.indexOf('role'),
+        status: headers.indexOf('status')
+      };
+
+      // Critical check: Ensure we found at least Username and Password columns
+      if (colMap.username === -1 || colMap.password === -1) {
+         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Critical columns (Username/Password) not found in sheet.' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
       const username = payload.username;
       const password = payload.password;
 
-      // Find user
-      // Col A(0): Username, B(1): Password, C(2): EmpID, D(3): Dept, E(4): Role, F(5): Status
-      const user = users.find(u => String(u[0]) === String(username) && String(u[1]) === String(password));
+      // Find user matching username and password
+      const user = users.find(u => String(u[colMap.username]) === String(username) && String(u[colMap.password]) === String(password));
 
       if (user) {
-        if (String(user[5]).toLowerCase() === 'active') {
+        // Check Status: Default to 'active' if status column is missing, otherwise check value
+        // Trim whitespace to avoid "Active " issues
+        const status = colMap.status !== -1 ? String(user[colMap.status]).trim().toLowerCase() : 'active';
+        
+        if (status === 'active') {
           return ContentService.createTextOutput(JSON.stringify({ 
             status: 'success', 
             user: {
-              username: user[0],
-              empId: user[2],
-              name: user[2], // Using EmpID as name if name col is missing? Wait, user said: Username, Password, Emp ID, Department, Role, Status. 
-                             // Ah, previous plan had Name. Let's check user request: "Username, Passwor,Emp ID, Department, Role, Status"
-                             // It seems "Name" might be missing or implied? 
-                             // Let's assume Emp ID is the display identifier for now, or maybe I should have asked. 
-                             // Actually, usually there is a Name. 
-                             // Let's look at the user request again: "Username, Passwor,Emp ID, Department, Role, Status"
-                             // It seems Name is NOT in the list. I will use Emp ID or Username as display name.
-                             // Wait, earlier request: "username , password ,ชื่อ-นามสกุล, แผนก/ฝ่าย, รหัสพนักงาน"
-                             // The latest request "Username, Passwor,Emp ID, Department, Role, Status" might have replaced Name with Emp ID or just omitted it.
-                             // I will return all available fields.
-              department: user[3],
-              role: user[4]
+              username: user[colMap.username],
+              name: colMap.name !== -1 ? user[colMap.name] : '',
+              empId: colMap.empId !== -1 ? user[colMap.empId] : '',
+              department: colMap.dept !== -1 ? user[colMap.dept] : '',
+              role: colMap.role !== -1 ? user[colMap.role] : 'User'
             }
           })).setMimeType(ContentService.MimeType.JSON);
+
         } else {
           return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Account is Inactive' }))
             .setMimeType(ContentService.MimeType.JSON);
