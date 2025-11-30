@@ -421,7 +421,7 @@
         }
 
         // REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyCgMCzKOnDr0ijUilksYHokaCHJPoWQ7T1ctU08WgXlVpMbkYviGik4Wb3M41ZcURg_g/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzLCQrq0Vr_1mRzWBHJyr5le1z7n3_KIsd718szles4ce6wmgz-StoU58zSYcXtmjyZ_Q/exec';
 
         loginForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -445,12 +445,9 @@
                     throw new Error('Please update the API_URL in the code with your Web App URL.');
                 }
 
+                // Standard fetch (cors mode)
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Important for GAS
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({
                         action: 'login',
                         username: username,
@@ -458,24 +455,7 @@
                     })
                 });
 
-                // Since mode is 'no-cors', we can't read the response directly in standard fetch.
-                // However, for login verification we NEED the response.
-                // GAS Web App MUST be deployed as "Anyone" (including anonymous) for this to work easily without OAuth.
-                // BUT 'no-cors' returns an opaque response, meaning we can't see the status or body.
-                // To read the response, we must use 'cors' mode (default) or not specify mode if the server supports it.
-                // Our GAS script adds CORS headers, so we SHOULD use default (cors) mode.
-
-                // Let's retry with standard fetch (cors mode)
-                const corsResponse = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'login',
-                        username: username,
-                        password: password
-                    })
-                });
-
-                const result = await corsResponse.json();
+                const result = await response.json();
 
                 if (result.status === 'success') {
                     // Save user session

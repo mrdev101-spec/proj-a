@@ -63,6 +63,43 @@ function handleRequest(e) {
     // POST Request: Handle Actions
     const payload = JSON.parse(e.postData.contents);
     
+    // --- GET USERS ACTION ---
+    if (payload.action === 'getUsers') {
+      const usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users");
+      if (!usersSheet) {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Users sheet not found' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const usersData = usersSheet.getDataRange().getValues();
+      const headers = usersData[0].map(h => String(h).toLowerCase().trim());
+      const users = usersData.slice(1);
+
+      const colMap = {
+        username: headers.indexOf('username'),
+        password: headers.indexOf('password'),
+        name: headers.findIndex(h => h.includes('name') && !h.includes('username')),
+        empId: headers.findIndex(h => h.includes('employee') || h.includes('emp id')),
+        dept: headers.findIndex(h => h.includes('department') || h.includes('dept')),
+        role: headers.indexOf('role'),
+        status: headers.indexOf('status')
+      };
+
+      const result = users.map((u, index) => ({
+        id: index + 1, // Use row index as ID for now
+        username: colMap.username !== -1 ? u[colMap.username] : '',
+        password: colMap.password !== -1 ? u[colMap.password] : '',
+        name: colMap.name !== -1 ? u[colMap.name] : '',
+        empId: colMap.empId !== -1 ? u[colMap.empId] : '',
+        dept: colMap.dept !== -1 ? u[colMap.dept] : '',
+        role: colMap.role !== -1 ? u[colMap.role] : 'User',
+        status: colMap.status !== -1 ? u[colMap.status] : 'Active'
+      }));
+
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', users: result }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // --- LOGIN ACTION ---
     if (payload.action === 'login') {
       const usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users");
@@ -81,7 +118,7 @@ function handleRequest(e) {
         username: headers.indexOf('username'),
         password: headers.indexOf('password'),
         // Use findIndex for fuzzy matching on display names
-        name: headers.findIndex(h => h.includes('name')), 
+        name: headers.findIndex(h => h.includes('name') && !h.includes('username')), 
         empId: headers.findIndex(h => h.includes('employee') || h.includes('emp id')),
         dept: headers.findIndex(h => h.includes('department') || h.includes('dept')),
         role: headers.indexOf('role'),
@@ -199,6 +236,140 @@ function handleRequest(e) {
         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'HCode not found' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
+    }
+
+    // --- ADD USER ACTION ---
+    if (payload.action === 'addUser') {
+      const usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users");
+      if (!usersSheet) {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Users sheet not found' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const newUser = payload.user;
+      
+      // Basic validation
+      if (!newUser.username || !newUser.password) {
+         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Username and Password are required' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      // Check for duplicate username
+      const usersData = usersSheet.getDataRange().getValues();
+      const headers = usersData[0].map(h => String(h).toLowerCase().trim());
+      const usernameIdx = headers.indexOf('username');
+      
+      if (usernameIdx !== -1) {
+        const existingUser = usersData.slice(1).find(row => String(row[usernameIdx]) === String(newUser.username));
+        if (existingUser) {
+          return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Username already exists' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+
+      // Append new row
+      // We need to map the incoming data to the correct columns based on headers
+      // Default order if headers not found: Username, Password, Name, EmpID, Dept, Role, Status
+      const newRow = [];
+      const colMap = {
+        username: headers.indexOf('username'),
+        password: headers.indexOf('password'),
+        name: headers.findIndex(h => h.includes('name') && !h.includes('username')),
+        empId: headers.findIndex(h => h.includes('employee') || h.includes('emp id')),
+        dept: headers.findIndex(h => h.includes('department') || h.includes('dept')),
+        role: headers.indexOf('role'),
+        status: headers.indexOf('status')
+      };
+
+      // Determine max column index to ensure row is long enough
+      const maxCol = Math.max(...Object.values(colMap));
+      
+      for (let i = 0; i <= maxCol; i++) {
+        newRow.push(''); // Initialize with empty strings
+      }
+
+      if (colMap.username !== -1) newRow[colMap.username] = newUser.username;
+      if (colMap.password !== -1) newRow[colMap.password] = newUser.password;
+      if (colMap.name !== -1) newRow[colMap.name] = newUser.name;
+      if (colMap.empId !== -1) newRow[colMap.empId] = newUser.empId;
+      if (colMap.dept !== -1) newRow[colMap.dept] = newUser.dept;
+      if (colMap.role !== -1) newRow[colMap.role] = newUser.role;
+      if (colMap.status !== -1) newRow[colMap.status] = newUser.status;
+
+      usersSheet.appendRow(newRow);
+
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'User added successfully' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- UPDATE USER ACTION ---
+    if (payload.action === 'updateUser') {
+      const usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users");
+      if (!usersSheet) {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Users sheet not found' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const updatedUser = payload.user;
+      // We use the ORIGINAL username to find the row, in case username is being changed (though usually ID is better, we'll stick to username/id logic)
+      // Since we don't have a stable ID column in the sheet explicitly enforced, we'll rely on the 'id' passed from frontend which was the row index.
+      // However, row index can change if rows are deleted. 
+      // BETTER APPROACH: Use the 'id' passed from frontend which we set as (index + 1) in getUsers.
+      // So row number = id + 1 (because of header row).
+      
+      const rowNum = parseInt(updatedUser.id) + 1; // 1-based index, +1 for header
+      
+      if (rowNum < 2 || rowNum > usersSheet.getLastRow()) {
+         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid User ID' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const usersData = usersSheet.getDataRange().getValues();
+      const headers = usersData[0].map(h => String(h).toLowerCase().trim());
+      
+      const colMap = {
+        username: headers.indexOf('username'),
+        password: headers.indexOf('password'),
+        name: headers.findIndex(h => h.includes('name') && !h.includes('username')),
+        empId: headers.findIndex(h => h.includes('employee') || h.includes('emp id')),
+        dept: headers.findIndex(h => h.includes('department') || h.includes('dept')),
+        role: headers.indexOf('role'),
+        status: headers.indexOf('status')
+      };
+
+      // Update cells
+      if (colMap.username !== -1) usersSheet.getRange(rowNum, colMap.username + 1).setValue(updatedUser.username);
+      if (colMap.password !== -1) usersSheet.getRange(rowNum, colMap.password + 1).setValue(updatedUser.password);
+      if (colMap.name !== -1) usersSheet.getRange(rowNum, colMap.name + 1).setValue(updatedUser.name);
+      if (colMap.empId !== -1) usersSheet.getRange(rowNum, colMap.empId + 1).setValue(updatedUser.empId);
+      if (colMap.dept !== -1) usersSheet.getRange(rowNum, colMap.dept + 1).setValue(updatedUser.dept);
+      if (colMap.role !== -1) usersSheet.getRange(rowNum, colMap.role + 1).setValue(updatedUser.role);
+      if (colMap.status !== -1) usersSheet.getRange(rowNum, colMap.status + 1).setValue(updatedUser.status);
+
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'User updated successfully' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- DELETE USER ACTION ---
+    if (payload.action === 'deleteUser') {
+      const usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users");
+      if (!usersSheet) {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Users sheet not found' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const userId = payload.id;
+      const rowNum = parseInt(userId) + 1; // 1-based index, +1 for header
+
+      if (rowNum < 2 || rowNum > usersSheet.getLastRow()) {
+         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid User ID' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      usersSheet.deleteRow(rowNum);
+
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'User deleted successfully' }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid action' }))
