@@ -180,7 +180,7 @@
                 <p class="text-slate-400 text-sm" data-i18n="login_subtitle">Enter your credentials to continue</p>
             </div>
 
-            <form class="space-y-5" id="login-form">
+            <form class="space-y-5" id="login-form" novalidate>
                 <!-- Username -->
                 <div>
                     <label for="username" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1"
@@ -188,6 +188,7 @@
                     <input type="text" id="username" name="username" required
                         class="block w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
                         placeholder="Enter your username" data-i18n-placeholder="username_placeholder">
+                    <p id="username-error" class="text-red-500 text-xs mt-1 hidden"></p>
                 </div>
 
                 <!-- Password -->
@@ -217,6 +218,7 @@
                             </svg>
                         </button>
                     </div>
+                    <p id="password-error" class="text-red-500 text-xs mt-1 hidden"></p>
                 </div>
 
                 <!-- Remember Me -->
@@ -266,7 +268,10 @@
                 footer: '© 2024 POH Dashboard. All rights reserved.',
                 welcome_title: 'WELCOME',
                 welcome_subtitle: 'Maintenance Agreement',
-                welcome_desc: 'Access the POH Dashboard to manage service requests, track maintenance jobs, and monitor system performance efficiently.'
+                welcome_desc: 'Access the POH Dashboard to manage service requests, track maintenance jobs, and monitor system performance efficiently.',
+                validation_error: 'Validation Error',
+                username_required: 'Please enter your username',
+                password_required: 'Please enter your password'
             },
             th: {
                 login_title: 'เข้าสู่ระบบ',
@@ -281,7 +286,10 @@
                 footer: '© 2024 POH Dashboard. สงวนลิขสิทธิ์',
                 welcome_title: 'ยินดีต้อนรับ',
                 welcome_subtitle: 'ข้อตกลงการบำรุงรักษา',
-                welcome_desc: 'เข้าถึงแดชบอร์ด POH เพื่อจัดการคำขอบริการ ติดตามงานบำรุงรักษา และตรวจสอบประสิทธิภาพของระบบอย่างมีประสิทธิภาพ'
+                welcome_desc: 'เข้าถึงแดชบอร์ด POH เพื่อจัดการคำขอบริการ ติดตามงานบำรุงรักษา และตรวจสอบประสิทธิภาพของระบบอย่างมีประสิทธิภาพ',
+                validation_error: 'ข้อมูลไม่ครบถ้วน',
+                username_required: 'กรุณากรอกชื่อผู้ใช้งาน',
+                password_required: 'กรุณากรอกรหัสผ่าน'
             }
         };
 
@@ -412,6 +420,8 @@
         const loginSpinner = document.getElementById('login-spinner');
         const rememberMeCheckbox = document.getElementById('remember-me');
         const usernameInput = document.getElementById('username');
+        const usernameError = document.getElementById('username-error');
+        const passwordError = document.getElementById('password-error');
 
         // Check for saved username
         const savedUsername = localStorage.getItem('rememberedUsername');
@@ -420,14 +430,44 @@
             rememberMeCheckbox.checked = true;
         }
 
+        // Clear errors on input
+        usernameInput.addEventListener('input', () => {
+            usernameError.classList.add('hidden');
+            usernameInput.classList.remove('border-red-500');
+        });
+
+        document.getElementById('password').addEventListener('input', () => {
+            passwordError.classList.add('hidden');
+            document.getElementById('password').classList.remove('border-red-500');
+        });
+
         // REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzLCQrq0Vr_1mRzWBHJyr5le1z7n3_KIsd718szles4ce6wmgz-StoU58zSYcXtmjyZ_Q/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxA2EvvSsoQSh5XSLGW4CpHcc-Ez3Dq4epQhXBqS9wXBkga67pMbeEieyEQDBH44HilFw/exec';
 
         loginForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const username = usernameInput.value;
-            const password = document.getElementById('password').value;
+            const username = usernameInput.value.trim();
+            const password = document.getElementById('password').value.trim();
+            const t = translations[currentLang];
+            let isValid = true;
+
+            // Custom Validation
+            if (!username) {
+                usernameError.textContent = t.username_required;
+                usernameError.classList.remove('hidden');
+                usernameInput.classList.add('border-red-500');
+                isValid = false;
+            }
+
+            if (!password) {
+                passwordError.textContent = t.password_required;
+                passwordError.classList.remove('hidden');
+                document.getElementById('password').classList.add('border-red-500');
+                isValid = false;
+            }
+
+            if (!isValid) return;
 
             // Handle Remember Me
             if (rememberMeCheckbox.checked) {

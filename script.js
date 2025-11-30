@@ -128,8 +128,14 @@ async function init() {
             editForm.addEventListener('submit', handleEditSubmit);
         }
 
+        console.log('Fetching data...');
         await fetchData();
-        populateDistricts();
+        console.log('Data fetched:', hospitals.length);
+        try {
+            populateDistricts();
+        } catch (e) {
+            console.error('Error in populateDistricts:', e);
+        }
 
         // Initial render
         filterData();
@@ -356,6 +362,7 @@ function renderPagination(totalPages) {
 }
 
 async function fetchData() {
+    console.log('fetchData called');
     try {
         if (API_URL.includes('REPLACE')) {
             console.warn('API_URL not set.');
@@ -402,6 +409,7 @@ function parseCSV(csvText) {
 }
 
 function populateDistricts() {
+    // Ensure no ReferenceError here
     if (!districtFilter) return;
     const t = translations[currentLang];
     const currentVal = districtFilter.value;
@@ -417,6 +425,7 @@ function populateDistricts() {
 }
 
 function renderTable(data, startIndex = 0) {
+    console.log('renderTable called with', data ? data.length : 0, 'rows');
     const t = translations[currentLang];
 
     if (!tableBody) return;
