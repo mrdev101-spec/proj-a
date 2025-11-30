@@ -60,9 +60,63 @@ function handleRequest(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // POST Request: Update data
+    // POST Request: Handle Actions
     const payload = JSON.parse(e.postData.contents);
     
+    // --- LOGIN ACTION ---
+    if (payload.action === 'login') {
+      const usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users");
+      if (!usersSheet) {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Users sheet not found' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const usersData = usersSheet.getDataRange().getValues();
+      // Skip header (row 1)
+      const users = usersData.slice(1);
+      
+      const username = payload.username;
+      const password = payload.password;
+
+      // Find user
+      // Col A(0): Username, B(1): Password, C(2): EmpID, D(3): Dept, E(4): Role, F(5): Status
+      const user = users.find(u => String(u[0]) === String(username) && String(u[1]) === String(password));
+
+      if (user) {
+        if (String(user[5]).toLowerCase() === 'active') {
+          return ContentService.createTextOutput(JSON.stringify({ 
+            status: 'success', 
+            user: {
+              username: user[0],
+              empId: user[2],
+              name: user[2], // Using EmpID as name if name col is missing? Wait, user said: Username, Password, Emp ID, Department, Role, Status. 
+                             // Ah, previous plan had Name. Let's check user request: "Username, Passwor,Emp ID, Department, Role, Status"
+                             // It seems "Name" might be missing or implied? 
+                             // Let's assume Emp ID is the display identifier for now, or maybe I should have asked. 
+                             // Actually, usually there is a Name. 
+                             // Let's look at the user request again: "Username, Passwor,Emp ID, Department, Role, Status"
+                             // It seems Name is NOT in the list. I will use Emp ID or Username as display name.
+                             // Wait, earlier request: "username , password ,ชื่อ-นามสกุล, แผนก/ฝ่าย, รหัสพนักงาน"
+                             // The latest request "Username, Passwor,Emp ID, Department, Role, Status" might have replaced Name with Emp ID or just omitted it.
+                             // I will return all available fields.
+              department: user[3],
+              role: user[4]
+            }
+          })).setMimeType(ContentService.MimeType.JSON);
+        } else {
+          return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Account is Inactive' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      } else {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid Username or Password' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // --- HOSPITAL DATA ACTIONS (Add, Update, Delete) ---
+    // Assumes Hospital data is in the FIRST sheet
+    // 'sheet', 'data', and 'rows' are already defined at the top of the function
+
     if (payload.action === 'add') {
       const newData = payload.data;
       // Generate new ID (Column A)
@@ -90,23 +144,15 @@ function handleRequest(e) {
       const hcodeToUpdate = payload.hcode;
       const newData = payload.data;
       
-      // Find row by HCode (Column C, index 2)
-      // Note: getRange is 1-indexed. Header is row 1. Data starts row 2.
-      // We loop through data array (0-indexed) which matches sheet row i+2
       let rowIndex = -1;
       for (let i = 0; i < rows.length; i++) {
-        // Convert to string for comparison
         if (String(rows[i][2]) === String(hcodeToUpdate)) {
-          rowIndex = i + 2; // +1 for header, +1 for 0-index to 1-index
+          rowIndex = i + 2; 
           break;
         }
       }
 
       if (rowIndex !== -1) {
-        // Update specific columns
-        // Columns: List(A), Name(B), HCode(C), District(D), PC-ID(E), Anydesk(F)
-        // Indices: 1        2        3         4            5         6
-        
         if (newData.name) sheet.getRange(rowIndex, 2).setValue(newData.name);
         if (newData.district) sheet.getRange(rowIndex, 4).setValue(newData.district);
         if (newData.pcId) sheet.getRange(rowIndex, 5).setValue(newData.pcId);
