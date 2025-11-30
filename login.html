@@ -50,6 +50,22 @@
             }
         }
 
+        @keyframes fade-slide-up {
+            0% {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-slide-up {
+            animation: fade-slide-up 3s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+        }
+
         .animate-spin-stop {
             animation-name: spin-stop;
         }
@@ -101,7 +117,7 @@
 
     <!-- Floating Card Container -->
     <div
-        class="relative z-10 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row w-full max-w-4xl min-h-[550px]">
+        class="relative z-10 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row w-full max-w-4xl min-h-[550px] animate-fade-slide-up">
 
         <!-- Left Zone: Welcome / Info -->
         <div
@@ -468,7 +484,6 @@
 
                 // Handle specific known errors or generic ones
                 let errorMsg = error.message;
-
                 if (errorMsg === 'Failed to fetch') {
                     errorMsg = 'Connection failed. Please check your internet or API URL.';
                 }
