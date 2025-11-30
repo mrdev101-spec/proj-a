@@ -410,6 +410,15 @@
         const loginBtn = document.getElementById('login-btn');
         const loginBtnText = document.getElementById('login-btn-text');
         const loginSpinner = document.getElementById('login-spinner');
+        const rememberMeCheckbox = document.getElementById('remember-me');
+        const usernameInput = document.getElementById('username');
+
+        // Check for saved username
+        const savedUsername = localStorage.getItem('rememberedUsername');
+        if (savedUsername) {
+            usernameInput.value = savedUsername;
+            rememberMeCheckbox.checked = true;
+        }
 
         // REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbwiew_6A540qkK76cJvSj0wxf9nnLQR1PBrf1WBGmVC3DqZ8_ikOco2aWKPTjEpX5tL7A/exec';
@@ -417,8 +426,15 @@
         loginForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const username = document.getElementById('username').value;
+            const username = usernameInput.value;
             const password = document.getElementById('password').value;
+
+            // Handle Remember Me
+            if (rememberMeCheckbox.checked) {
+                localStorage.setItem('rememberedUsername', username);
+            } else {
+                localStorage.removeItem('rememberedUsername');
+            }
 
             // UI Loading State
             setLoading(true);
