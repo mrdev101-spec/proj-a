@@ -34,7 +34,7 @@
 </head>
 
 <body
-    class="bg-gradient-to-br from-blue-600 to-blue-800 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
+    class="bg-gradient-to-br from-blue-600 to-blue-800 dark:from-slate-900 dark:to-slate-950 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
     <!-- Floating Card Container -->
     <div
@@ -53,9 +53,10 @@
 
             <!-- Content -->
             <div class="relative z-10">
-                <h1 class="text-5xl font-bold mb-2 tracking-wide">WELCOME</h1>
-                <h2 class="text-xl font-medium text-blue-100 mb-6 tracking-wider uppercase">Maintenance Agreement</h2>
-                <p class="text-blue-50 text-sm leading-relaxed opacity-90 max-w-xs">
+                <h1 class="text-5xl font-bold mb-2 tracking-wide" data-i18n="welcome_title">WELCOME</h1>
+                <h2 class="text-xl font-medium text-blue-100 mb-6 tracking-wider uppercase"
+                    data-i18n="welcome_subtitle">Maintenance Agreement</h2>
+                <p class="text-blue-50 text-sm leading-relaxed opacity-90 max-w-xs" data-i18n="welcome_desc">
                     Access the POH Dashboard to manage service requests, track maintenance jobs, and monitor system
                     performance efficiently.
                 </p>
@@ -148,7 +149,8 @@
                         data-i18n="remember_me">
                         Remember me
                     </label>
-                    <a href="#" class="ml-auto text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    <a href="#" id="forgot-password-link"
+                        class="ml-auto text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                         data-i18n="forgot_password_link">Forgot Password?</a>
                 </div>
 
@@ -167,8 +169,6 @@
                         </svg>
                     </div>
                 </button>
-
-                <!-- Sign Up Removed -->
             </form>
         </div>
     </div>
@@ -186,7 +186,10 @@
                 forgot_password: 'SHOW',
                 forgot_password_link: 'Forgot Password?',
                 login_btn: 'Sign In',
-                footer: '© 2024 POH Dashboard. All rights reserved.'
+                footer: '© 2024 POH Dashboard. All rights reserved.',
+                welcome_title: 'WELCOME',
+                welcome_subtitle: 'Maintenance Agreement',
+                welcome_desc: 'Access the POH Dashboard to manage service requests, track maintenance jobs, and monitor system performance efficiently.'
             },
             th: {
                 login_title: 'เข้าสู่ระบบ',
@@ -198,7 +201,10 @@
                 forgot_password: 'แสดง',
                 forgot_password_link: 'ลืมรหัสผ่าน?',
                 login_btn: 'เข้าสู่ระบบ',
-                footer: '© 2024 POH Dashboard. สงวนลิขสิทธิ์'
+                footer: '© 2024 POH Dashboard. สงวนลิขสิทธิ์',
+                welcome_title: 'ยินดีต้อนรับ',
+                welcome_subtitle: 'ข้อตกลงการบำรุงรักษา',
+                welcome_desc: 'เข้าถึงแดชบอร์ด POH เพื่อจัดการคำขอบริการ ติดตามงานบำรุงรักษา และตรวจสอบประสิทธิภาพของระบบอย่างมีประสิทธิภาพ'
             }
         };
 
@@ -301,6 +307,26 @@
             });
         }
 
+        // --- Forgot Password Logic ---
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        if (forgotPasswordLink) {
+            forgotPasswordLink.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const isThai = currentLang === 'th';
+                const title = isThai ? 'ลืมรหัสผ่าน?' : 'Forgot Password?';
+                const text = isThai ? 'กรุณาติดต่อผู้ดูแลระบบ' : 'Please contact the administrator';
+
+                Swal.fire({
+                    icon: 'info',
+                    title: title,
+                    text: text,
+                    confirmButtonText: isThai ? 'ตกลง' : 'OK',
+                    confirmButtonColor: '#3b82f6' // blue-500
+                });
+            });
+        }
+
         // --- Login Logic ---
         const loginForm = document.getElementById('login-form');
         const loginBtn = document.getElementById('login-btn');
@@ -369,8 +395,7 @@
                         timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
-                        // window.location.href = 'dashboard.html';
-                        console.log('Login successful, but redirect is disabled for testing.');
+                        window.location.href = 'dashboard.html';
                     });
                 } else {
                     throw new Error(result.message || 'Login failed');
