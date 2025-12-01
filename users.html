@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=103">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -36,37 +37,18 @@
             }
         }
     </script>
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-    </style>
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans">
+
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay"
+        class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-300">
+        <div class="relative">
+            <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <div class="mt-4 text-center text-slate-600 dark:text-slate-300 font-medium">Loading...</div>
+        </div>
+    </div>
 
     <div class="flex h-screen overflow-hidden">
 
@@ -159,9 +141,9 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900">
-            <!-- Header -->
+            <!-- Header (Modified) -->
             <header
-                class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
+                class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md shadow-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 transition-all duration-300">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <h1 class="text-2xl font-bold text-slate-800 dark:text-white" data-i18n="header_title">User
                         Management
@@ -195,28 +177,65 @@
             </header>
 
             <!-- Content -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+                <!-- Controls Bar -->
                 <div
-                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h2 class="text-lg font-bold text-slate-800 dark:text-white" data-i18n="users_list_title">Users
-                            List</h2>
-                        <button onclick="openModal('add')"
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span data-i18n="btn_add_user">Add User</span>
-                        </button>
+                    class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto flex-1">
+                        <!-- Search -->
+                        <div class="relative w-full md:w-80 group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" id="search-input"
+                                class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl leading-5 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                                placeholder="Search users..." data-i18n="search_placeholder">
+                        </div>
+
+                        <!-- Role Filter -->
+                        <div class="relative w-full md:w-48">
+                            <select id="role-filter"
+                                class="block w-full pl-3 pr-10 py-2.5 text-base border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 appearance-none cursor-pointer transition-all">
+                                <option value="">All Roles</option>
+                                <option value="Super Admin">Super Admin</option>
+                                <option value="Admin">Admin</option>
+                                <option value="User">User</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
+                    <button onclick="openModal('add')"
+                        class="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span data-i18n="btn_add_user">Add User</span>
+                    </button>
+                </div>
+
+                <!-- Table Card (Modified) -->
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-600 dark:text-slate-400">
                             <thead
-                                class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
+                                class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                                 <tr>
-                                    <th class="px-6 py-4 whitespace-nowrap">User Profile</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Username</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Password</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Name - Lastname</th>
                                     <th class="px-6 py-4 whitespace-nowrap">Employee ID</th>
                                     <th class="px-6 py-4 whitespace-nowrap">Department</th>
                                     <th class="px-6 py-4 whitespace-nowrap">Role</th>
@@ -249,56 +268,56 @@
                 <div class="bg-white dark:bg-slate-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white" id="modal-title">
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6" id="modal-title">
                                 User Details
                             </h3>
-                            <div class="mt-4 space-y-4">
-                                <input type="hidden" id="user-id">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-slate-700 dark:text-slate-300">Username</label>
+                            <input type="hidden" id="user-id">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="col-span-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                                        data-i18n="col_username">Username</label>
                                     <input type="text" id="user-username"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                 </div>
-                                <div>
+                                <div class="col-span-1">
                                     <label
-                                        class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+                                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
                                     <input type="text" id="user-password"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Name -
-                                        Lastname</label>
+                                <div class="col-span-1 sm:col-span-2">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                                        data-i18n="col_name">Name - Lastname</label>
                                     <input type="text" id="user-name"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Employee
-                                        ID</label>
+                                <div class="col-span-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                                        data-i18n="col_emp_id">Employee ID</label>
                                     <input type="text" id="user-emp-id"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                 </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
+                                <div class="col-span-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                                        data-i18n="col_dept">Department</label>
                                     <input type="text" id="user-dept"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                 </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-slate-700 dark:text-slate-300">Role</label>
+                                <div class="col-span-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                                        data-i18n="col_role">Role</label>
                                     <select id="user-role"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none">
                                         <option value="Super Admin">Super Admin</option>
                                         <option value="Admin">Admin</option>
                                         <option value="User">User</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-slate-700 dark:text-slate-300">Status</label>
+                                <div class="col-span-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                                        data-i18n="col_status">Status</label>
                                     <select id="user-status"
-                                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none">
                                         <option value="Active">Active</option>
                                         <option value="Inactive">Inactive</option>
                                     </select>
@@ -307,22 +326,24 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
                     <button type="button" onclick="saveUser()"
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm transition-all active:scale-95">
                         Save
                     </button>
                     <button type="button" onclick="closeModal()"
-                        class="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm transition-all">
                         Cancel
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbxA2EvvSsoQSh5XSLGW4CpHcc-Ez3Dq4epQhXBqS9wXBkga67pMbeEieyEQDBH44HilFw/exec';
         let users = [];
+        let filteredUsers = [];
 
         // --- Access Control (Admin Only) ---
         (function checkAccess() {
@@ -335,9 +356,15 @@
             try {
                 const user = JSON.parse(userStr);
                 // Check if role is admin (case-insensitive)
-                if (!user.role || user.role.toLowerCase() !== 'admin') {
-                    alert('Access Denied: Admins only.');
-                    window.location.href = 'dashboard.html';
+                if (!user.role || (user.role.toLowerCase() !== 'admin' && user.role.toLowerCase() !== 'super admin')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Access Denied',
+                        text: 'You do not have permission to access this page.',
+                        confirmButtonText: 'Go to Dashboard'
+                    }).then(() => {
+                        window.location.href = 'dashboard.html';
+                    });
                 }
             } catch (e) {
                 console.error('Error parsing user data', e);
@@ -350,36 +377,19 @@
             tbody.innerHTML = '';
 
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-slate-500">No users found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-slate-500">No users found.</td></tr>';
                 return;
             }
 
-            users.forEach(user => {
+            filteredUsers.forEach(user => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0';
-
-                const initials = getInitials(user.name);
-                const avatarColor = getAvatarColor(user.name);
-
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors';
                 tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm ${avatarColor}">
-                                ${initials}
-                            </div>
-                            <div>
-                                <div class="font-medium text-slate-900 dark:text-white">${user.name || 'Unknown'}</div>
-                                <div class="text-xs text-slate-500 dark:text-slate-400">@${user.username || '-'}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-mono">${user.empId || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-                            ${user.dept || '-'}
-                        </div>
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">${user.username || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">******</td>
+                    <td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">${user.name || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${user.empId || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${user.dept || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2.5 py-1 rounded-full text-xs font-medium border ${getRoleBadgeClass(user.role)}">
                             ${user.role || 'User'}
@@ -392,39 +402,12 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="openModal('edit', ${user.id})" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" title="Edit">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                            </button>
-                            <button onclick="deleteUser(${user.id})" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            </button>
-                        </div>
+                        <button onclick="openModal('edit', ${user.id})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium mr-3">Edit</button>
+                        <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-        }
-
-        function getInitials(name) {
-            if (!name) return '??';
-            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        }
-
-        function getAvatarColor(name) {
-            const colors = [
-                'bg-red-500', 'bg-orange-500', 'bg-amber-500',
-                'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
-                'bg-cyan-500', 'bg-sky-500', 'bg-blue-500',
-                'bg-indigo-500', 'bg-violet-500', 'bg-purple-500',
-                'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500'
-            ];
-            if (!name) return colors[0];
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) {
-                hash = name.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return colors[Math.abs(hash) % colors.length];
         }
 
         function getRoleBadgeClass(role) {
@@ -508,10 +491,9 @@
             let action = 'addUser';
             if (id) {
                 action = 'updateUser';
-                userPayload.id = id; // Pass the ID (row index) for updates
+                userPayload.id = id;
             }
 
-            // Show loading state
             Swal.fire({
                 title: 'Saving...',
                 text: 'Please wait',
@@ -531,7 +513,7 @@
                 if (data.status === 'success') {
                     Swal.fire('Success', data.message, 'success');
                     closeModal();
-                    loadUsers(); // Reload table to get fresh data
+                    loadUsers();
                 } else {
                     Swal.fire('Error', data.message || 'Failed to save user', 'error');
                 }
@@ -552,7 +534,6 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    // Show loading state
                     Swal.fire({
                         title: 'Deleting...',
                         text: 'Please wait',
@@ -571,7 +552,7 @@
 
                         if (data.status === 'success') {
                             Swal.fire('Deleted!', 'User has been deleted.', 'success');
-                            loadUsers(); // Reload table
+                            loadUsers();
                         } else {
                             Swal.fire('Error', data.message || 'Failed to delete user', 'error');
                         }
@@ -589,7 +570,7 @@
 
         async function loadUsers() {
             const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Loading...</td></tr>';
 
             try {
                 const response = await fetch(API_URL, {
@@ -597,29 +578,26 @@
                     body: JSON.stringify({ action: 'getUsers' })
                 });
                 const data = await response.json();
-                console.log('API Response:', data);
 
                 if (data.status === 'success' && Array.isArray(data.users)) {
                     users = data.users;
+                    filteredUsers = users;
                     saveUsersToStorage();
-                    renderTable();
-                    // Swal.fire('Success', `Loaded ${users.length} users`, 'success');
+                    filterUsers();
                 } else {
                     console.error('Invalid data format:', data);
-                    Swal.fire('Error', 'Invalid data format received from server: ' + JSON.stringify(data), 'error');
-                    throw new Error(data.message || 'Invalid data format received');
+                    Swal.fire('Error', 'Invalid data format received from server', 'error');
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
-                Swal.fire('Error', 'Failed to load users: ' + error.message, 'error');
-                // Fallback to local storage
                 const storedUsers = localStorage.getItem('users');
                 if (storedUsers) {
                     users = JSON.parse(storedUsers);
-                    renderTable();
+                    filteredUsers = users;
+                    filterUsers();
                     Swal.fire('Warning', 'Could not load live data. Showing cached data.', 'warning');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-red-500">Error loading users.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>';
                 }
             }
         }
@@ -634,7 +612,15 @@
                 nav_logout: 'Logout',
                 header_title: 'User Management',
                 users_list_title: 'Users List',
-                btn_add_user: 'Add User'
+                btn_add_user: 'Add User',
+                search_placeholder: 'Search users...',
+                col_username: 'Username',
+                col_name: 'Name - Lastname',
+                col_emp_id: 'Employee ID',
+                col_dept: 'Department',
+                col_role: 'Role',
+                col_status: 'Status',
+                col_actions: 'Actions'
             },
             th: {
                 nav_dashboard: 'แดชบอร์ด',
@@ -645,11 +631,18 @@
                 nav_logout: 'ออกจากระบบ',
                 header_title: 'จัดการผู้ใช้งาน',
                 users_list_title: 'รายชื่อผู้ใช้งาน',
-                btn_add_user: 'เพิ่มผู้ใช้งาน'
+                btn_add_user: 'เพิ่มผู้ใช้งาน',
+                search_placeholder: 'ค้นหาผู้ใช้งาน...',
+                col_username: 'ชื่อผู้ใช้',
+                col_name: 'ชื่อ - นามสกุล',
+                col_emp_id: 'รหัสพนักงาน',
+                col_dept: 'แผนก',
+                col_role: 'สิทธิ์',
+                col_status: 'สถานะ',
+                col_actions: 'จัดการ'
             }
         };
 
-        // --- Language Logic ---
         let currentLang = localStorage.getItem('language') || 'th';
 
         function switchLanguage(lang) {
@@ -661,22 +654,24 @@
 
         function updateUIText() {
             const t = translations[currentLang];
-
-            // Update text content
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (t[key]) el.textContent = t[key];
+                if (t[key]) {
+                    if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
+                        el.placeholder = t[key];
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
             });
         }
 
         function updateLanguageButtons(lang) {
             const thBtn = document.getElementById('lang-th');
             const enBtn = document.getElementById('lang-en');
-
             const activeClass = 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm';
             const inactiveClass = 'hover:bg-white dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400';
 
-            // Reset classes
             thBtn.className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200';
             enBtn.className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200';
 
@@ -694,7 +689,6 @@
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
 
-        // Check preference
         if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) &&
             window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -707,7 +701,6 @@
         themeToggleBtn.addEventListener('click', function () {
             darkIcon.classList.toggle('hidden');
             lightIcon.classList.toggle('hidden');
-
             if (localStorage.getItem('darkMode')) {
                 if (localStorage.getItem('darkMode') === 'enabled') {
                     document.documentElement.classList.remove('dark');
@@ -731,16 +724,31 @@
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function () {
-                // Clear user session
                 localStorage.removeItem('user');
-                // Redirect to login
                 window.location.href = 'login.html';
             });
         }
 
         // --- Init ---
+        // Hide global loading overlay when page is fully loaded
+        window.addEventListener('load', () => {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (overlay) {
+                setTimeout(() => {
+                    overlay.classList.add('opacity-0');
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 300);
+                }, 500);
+            }
+        });
+
         switchLanguage(currentLang);
         loadUsers();
+
+        // Event Listeners for Search and Filter
+        document.getElementById('search-input').addEventListener('input', filterUsers);
+        document.getElementById('role-filter').addEventListener('change', filterUsers);
     </script>
 </body>
 
