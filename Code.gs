@@ -85,6 +85,11 @@ function handleRequest(e) {
         status: headers.indexOf('status')
       };
 
+      if (colMap.username === -1) {
+        return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Username column not found in Users sheet' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
       const result = users.map((u, index) => ({
         id: index + 1, // Use row index as ID for now
         username: colMap.username !== -1 ? u[colMap.username] : '',
