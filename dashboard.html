@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -30,6 +31,36 @@
                             700: '#1d4ed8',
                             800: '#1e40af',
                             900: '#1e3a8a',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUpBlur 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-up-card': 'slideUpCard 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-in-left': 'slideInLeft 0.5s ease-out forwards',
+                        'slide-in-down': 'slideInDown 0.5s ease-out forwards',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'pop-in': 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        fadeInUpBlur: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)', filter: 'blur(8px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
+                        },
+                        slideUpCard: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)', filter: 'blur(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
+                        },
+                        slideInLeft: {
+                            '0%': { opacity: '0', transform: 'translateX(-20px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        slideInDown: {
+                            '0%': { opacity: '0', transform: 'translateY(-20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.5)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
                         }
                     }
                 }
@@ -82,6 +113,43 @@
             transform: translateY(-4px);
             box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
         }
+
+        /* Staggered Animation Delays */
+        .delay-100 {
+            animation-delay: 100ms;
+        }
+
+        .delay-200 {
+            animation-delay: 200ms;
+        }
+
+        .delay-300 {
+            animation-delay: 300ms;
+        }
+
+        .delay-400 {
+            animation-delay: 400ms;
+        }
+
+        .delay-500 {
+            animation-delay: 500ms;
+        }
+
+        .delay-600 {
+            animation-delay: 600ms;
+        }
+
+        .delay-700 {
+            animation-delay: 700ms;
+        }
+
+        .delay-800 {
+            animation-delay: 800ms;
+        }
+
+        .delay-900 {
+            animation-delay: 900ms;
+        }
     </style>
 </head>
 
@@ -91,26 +159,26 @@
 
         <!-- Sidebar -->
         <aside
-            class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 z-20 shadow-lg">
+            class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 z-20 shadow-lg animate-slide-in-left">
             <!-- Logo -->
             <div
                 class="flex items-center justify-center h-16 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <div class="flex items-center gap-3 font-bold text-xl text-slate-800 dark:text-white">
                     <div
-                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 animate-pop-in delay-300">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                     </div>
-                    <span class="tracking-tight">POH System</span>
+                    <span class="tracking-tight animate-fade-in-up delay-300">POH System</span>
                 </div>
             </div>
 
             <!-- Navigation -->
             <nav class="flex-1 flex flex-col overflow-y-auto py-4 px-3 space-y-1">
                 <a href="#"
-                    class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium transition-all shadow-sm">
+                    class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium transition-all shadow-sm hover:translate-x-1 duration-200 animate-fade-in-up delay-100 opacity-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -119,7 +187,7 @@
                 </a>
 
                 <a href="index.html"
-                    class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm">
+                    class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm hover:translate-x-1 duration-200 animate-fade-in-up delay-200 opacity-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -128,7 +196,7 @@
                 </a>
 
                 <a href="#"
-                    class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm">
+                    class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm hover:translate-x-1 duration-200 animate-fade-in-up delay-300 opacity-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -137,7 +205,7 @@
                 </a>
 
                 <a href="#"
-                    class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm">
+                    class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm hover:translate-x-1 duration-200 animate-fade-in-up delay-400 opacity-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -146,9 +214,9 @@
                 </a>
 
                 <!-- User Management Link (Admin Only) -->
-                <li id="nav-users" class="hidden list-none">
+                <li id="nav-users" class="hidden list-none animate-fade-in-up delay-500 opacity-0">
                     <a href="users.html"
-                        class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm">
+                        class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all hover:shadow-sm hover:translate-x-1 duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -158,9 +226,10 @@
                 </li>
 
                 <!-- Sidebar Footer -->
-                <div class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-700 animate-fade-in-up delay-500 opacity-0">
                     <button id="logout-btn"
-                        class="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:shadow-sm">
+                        class="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:shadow-sm hover:translate-x-1 duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -176,12 +245,12 @@
             class="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
             <!-- Header -->
             <header
-                class="glass-effect shadow-sm border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-10 transition-all duration-300">
+                class="glass-effect shadow-sm border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-10 transition-all duration-300 animate-slide-in-down">
                 <div class="w-full px-6 sm:px-8 lg:px-10 h-16 flex items-center justify-between">
-                    <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300"
+                    <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 animate-fade-in-up delay-200 opacity-0"
                         data-i18n="header_title">MA Dashboard</h1>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 animate-fade-in-up delay-300 opacity-0">
                         <!-- Search -->
                         <div class="relative hidden md:block group">
                             <input type="text" data-i18n-placeholder="search_placeholder"
@@ -226,21 +295,22 @@
 
                 <!-- Welcome Section -->
                 <div
-                    class="flex flex-col md:flex-row justify-between items-end gap-6 bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                    class="flex flex-col md:flex-row justify-between items-end gap-6 bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden animate-fade-in-up delay-100 opacity-0">
                     <div
-                        class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none">
+                        class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none animate-pulse-slow">
                     </div>
                     <div class="relative z-10">
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Welcome back, <span
-                                id="user-name-display"
+                        <h2
+                            class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-fade-in-up delay-200 opacity-0">
+                            Welcome back, <span id="user-name-display"
                                 class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">Admin</span>
                             👋</h2>
-                        <p class="text-slate-500 dark:text-slate-400 text-lg">Here's what's happening with your
-                            maintenance requests today.</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-lg animate-fade-in-up delay-300 opacity-0">
+                            Here's what's happening with your maintenance requests today.</p>
                     </div>
-                    <div class="flex gap-3 relative z-10">
+                    <div class="flex gap-3 relative z-10 animate-fade-in-up delay-400 opacity-0">
                         <button
-                            class="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm hover:shadow-md active:scale-95 font-medium">
+                            class="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm hover:shadow-md active:scale-95 font-medium hover:-translate-y-0.5 duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -248,7 +318,7 @@
                             <span>Export Report</span>
                         </button>
                         <button
-                            class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-95 font-medium">
+                            class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-95 font-medium hover:-translate-y-0.5 duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
@@ -262,17 +332,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Pending Jobs -->
                     <div
-                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-orange-500">
+                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-orange-500 animate-slide-up-card delay-200 opacity-0">
                         <div class="flex items-center justify-between mb-4">
                             <div
-                                class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-2xl text-orange-600 dark:text-orange-400">
+                                class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-2xl text-orange-600 dark:text-orange-400 animate-pop-in delay-300 opacity-0">
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <span
-                                class="flex items-center text-xs font-bold text-red-600 bg-red-100 dark:bg-red-900/30 px-2.5 py-1 rounded-lg">
+                                class="flex items-center text-xs font-bold text-red-600 bg-red-100 dark:bg-red-900/30 px-2.5 py-1 rounded-lg animate-fade-in-up delay-400 opacity-0">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -280,24 +350,25 @@
                                 +2.5%
                             </span>
                         </div>
-                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider"
+                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider animate-fade-in-up delay-400 opacity-0"
                             data-i18n="stat_pending_jobs">Pending Jobs</h3>
-                        <div class="text-4xl font-bold text-slate-800 dark:text-white">12</div>
+                        <div class="text-4xl font-bold text-slate-800 dark:text-white counter animate-fade-in-up delay-500 opacity-0"
+                            data-target="12">0</div>
                     </div>
 
                     <!-- In Progress -->
                     <div
-                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-blue-500">
+                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-blue-500 animate-slide-up-card delay-300 opacity-0">
                         <div class="flex items-center justify-between mb-4">
                             <div
-                                class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400">
+                                class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400 animate-pop-in delay-400 opacity-0">
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                 </svg>
                             </div>
                             <span
-                                class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg">
+                                class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg animate-fade-in-up delay-500 opacity-0">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
@@ -305,24 +376,25 @@
                                 -1.2%
                             </span>
                         </div>
-                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider"
+                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider animate-fade-in-up delay-500 opacity-0"
                             data-i18n="stat_in_progress">In Progress</h3>
-                        <div class="text-4xl font-bold text-slate-800 dark:text-white">8</div>
+                        <div class="text-4xl font-bold text-slate-800 dark:text-white counter animate-fade-in-up delay-600 opacity-0"
+                            data-target="8">0</div>
                     </div>
 
                     <!-- Completed -->
                     <div
-                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-emerald-500">
+                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-emerald-500 animate-slide-up-card delay-400 opacity-0">
                         <div class="flex items-center justify-between mb-4">
                             <div
-                                class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-emerald-600 dark:text-emerald-400">
+                                class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-emerald-600 dark:text-emerald-400 animate-pop-in delay-500 opacity-0">
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <span
-                                class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg">
+                                class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg animate-fade-in-up delay-600 opacity-0">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
@@ -330,29 +402,32 @@
                                 +12%
                             </span>
                         </div>
-                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider"
+                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider animate-fade-in-up delay-600 opacity-0"
                             data-i18n="stat_completed">Completed</h3>
-                        <div class="text-4xl font-bold text-slate-800 dark:text-white">45</div>
+                        <div class="text-4xl font-bold text-slate-800 dark:text-white counter animate-fade-in-up delay-700 opacity-0"
+                            data-target="45">0</div>
                     </div>
 
                     <!-- SLA Warning -->
                     <div
-                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-red-500">
+                        class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 stat-card-hover border-t-4 border-t-red-500 animate-slide-up-card delay-500 opacity-0">
                         <div class="flex items-center justify-between mb-4">
-                            <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl text-red-600 dark:text-red-400">
+                            <div
+                                class="p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl text-red-600 dark:text-red-400 animate-pop-in delay-600 opacity-0">
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
                             <span
-                                class="flex items-center text-xs font-bold text-slate-600 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg">
+                                class="flex items-center text-xs font-bold text-slate-600 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg animate-fade-in-up delay-700 opacity-0">
                                 Stable
                             </span>
                         </div>
-                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider"
+                        <h3 class="text-slate-500 dark:text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider animate-fade-in-up delay-700 opacity-0"
                             data-i18n="stat_sla_warning">SLA Warning</h3>
-                        <div class="text-4xl font-bold text-slate-800 dark:text-white">3</div>
+                        <div class="text-4xl font-bold text-slate-800 dark:text-white counter animate-fade-in-up delay-800 opacity-0"
+                            data-target="3">0</div>
                     </div>
                 </div>
 
@@ -360,53 +435,41 @@
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
                     <!-- Chart Section -->
                     <div
-                        class="xl:col-span-2 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-8">
+                        class="xl:col-span-2 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-8 animate-fade-in-up delay-600 opacity-0">
                         <div class="flex items-center justify-between mb-8">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-800 dark:text-white" data-i18n="chart_title">
-                                    Maintenance Trends</h3>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Overview of service requests
-                                    over time</p>
+                                <h3 class="text-xl font-bold text-slate-800 dark:text-white animate-fade-in-up delay-700 opacity-0"
+                                    data-i18n="chart_title">Maintenance Trends</h3>
+                                <p
+                                    class="text-sm text-slate-500 dark:text-slate-400 mt-1 animate-fade-in-up delay-800 opacity-0">
+                                    Overview of service requests over time</p>
                             </div>
                             <select
-                                class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm px-4 py-2 text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                                class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm px-4 py-2 text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer animate-fade-in-up delay-800 opacity-0">
                                 <option data-i18n="opt_last_7_days">Last 7 Days</option>
                                 <option data-i18n="opt_last_30_days">Last 30 Days</option>
                                 <option data-i18n="opt_this_year">This Year</option>
                             </select>
                         </div>
-                        <div
-                            class="h-96 flex items-center justify-center bg-gradient-to-br from-slate-50 to-white dark:from-slate-700/30 dark:to-slate-800 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-600 group hover:border-blue-400 dark:hover:border-blue-500 transition-colors relative overflow-hidden">
-                            <div
-                                class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjAzLDIxMywyMjUsMC40KSIvPjwvc3ZnPg==')] opacity-50">
-                            </div>
-                            <div class="text-center relative z-10">
-                                <div
-                                    class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-8 h-8 text-blue-500 dark:text-blue-400" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                            d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                                    </svg>
-                                </div>
-                                <span class="text-slate-400 dark:text-slate-500 font-medium text-lg"
-                                    data-i18n="chart_placeholder">Maintenance Trends Chart</span>
-                            </div>
+                        <div class="h-96 w-full animate-fade-in-up delay-900 opacity-0">
+                            <div id="maintenanceChart" class="w-full h-full"></div>
                         </div>
                     </div>
 
                     <!-- Recent Activity -->
                     <div
-                        class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-8 flex flex-col">
+                        class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-8 flex flex-col animate-fade-in-up delay-700 opacity-0">
                         <div class="mb-6">
-                            <h3 class="text-xl font-bold text-slate-800 dark:text-white"
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-white animate-fade-in-up delay-800 opacity-0"
                                 data-i18n="recent_activity_title">Latest Requests</h3>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Recent updates from hospitals</p>
+                            <p
+                                class="text-sm text-slate-500 dark:text-slate-400 mt-1 animate-fade-in-up delay-900 opacity-0">
+                                Recent updates from hospitals</p>
                         </div>
                         <div class="space-y-4 flex-1">
                             <!-- Item 1 -->
                             <div
-                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all cursor-pointer group border border-transparent hover:border-red-100 dark:hover:border-red-900/30">
+                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all cursor-pointer group border border-transparent hover:border-red-100 dark:hover:border-red-900/30 hover:-translate-x-1 duration-200 animate-fade-in-up delay-800 opacity-0">
                                 <div
                                     class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 text-red-500 dark:text-red-400 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -427,7 +490,7 @@
                             </div>
                             <!-- Item 2 -->
                             <div
-                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all cursor-pointer group border border-transparent hover:border-orange-100 dark:hover:border-orange-900/30">
+                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all cursor-pointer group border border-transparent hover:border-orange-100 dark:hover:border-orange-900/30 hover:-translate-x-1 duration-200 animate-fade-in-up delay-900 opacity-0">
                                 <div
                                     class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -448,7 +511,7 @@
                             </div>
                             <!-- Item 3 -->
                             <div
-                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all cursor-pointer group border border-transparent hover:border-green-100 dark:hover:border-green-900/30">
+                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all cursor-pointer group border border-transparent hover:border-green-100 dark:hover:border-green-900/30 hover:-translate-x-1 duration-200 animate-fade-in-up delay-900 opacity-0">
                                 <div
                                     class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 text-green-500 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,7 +532,7 @@
                             </div>
                         </div>
                         <button
-                            class="w-full mt-6 py-3.5 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all flex items-center justify-center gap-2 group border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30">
+                            class="w-full mt-6 py-3.5 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all flex items-center justify-center gap-2 group border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 animate-fade-in-up delay-900 opacity-0">
                             <span data-i18n="btn_view_all_requests">View All Requests</span>
                             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -543,6 +606,7 @@
             localStorage.setItem('language', lang);
             updateUIText();
             updateLanguageButtons(lang);
+            updateChartLocale(lang);
         }
 
         function updateUIText() {
@@ -609,6 +673,14 @@
                     localStorage.setItem('darkMode', 'enabled');
                 }
             }
+            // Update Chart Theme
+            if (chart) {
+                chart.updateOptions({
+                    theme: {
+                        mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                    }
+                });
+            }
         });
 
         // --- Logout Logic ---
@@ -639,8 +711,136 @@
             }
         })();
 
+        // --- Counter Animation ---
+        function animateCounters() {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const duration = 1500; // ms
+                const increment = target / (duration / 16); // 60fps
+
+                let current = 0;
+                const updateCounter = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.innerText = Math.ceil(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                updateCounter();
+            });
+        }
+
+        // --- ApexCharts ---
+        let chart;
+        function initChart() {
+            const options = {
+                series: [{
+                    name: 'Requests',
+                    data: [31, 40, 28, 51, 42, 109, 100]
+                }, {
+                    name: 'Completed',
+                    data: [11, 32, 45, 32, 34, 52, 41]
+                }],
+                chart: {
+                    height: 350,
+                    type: 'area',
+                    fontFamily: 'Outfit, sans-serif',
+                    toolbar: {
+                        show: false
+                    },
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 350
+                        }
+                    },
+                    background: 'transparent'
+                },
+                colors: ['#3b82f6', '#10b981'],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.2,
+                        stops: [0, 90, 100]
+                    }
+                },
+                xaxis: {
+                    categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: {
+                        style: {
+                            colors: '#64748b'
+                        }
+                    },
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#64748b'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#e2e8f0',
+                    strokeDashArray: 4,
+                    yaxis: {
+                        lines: {
+                            show: true
+                        }
+                    },
+                    padding: {
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 10
+                    }
+                },
+                theme: {
+                    mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                },
+                tooltip: {
+                    theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                }
+            };
+
+            chart = new ApexCharts(document.querySelector("#maintenanceChart"), options);
+            chart.render();
+        }
+
+        function updateChartLocale(lang) {
+            // In a real app, you'd update categories based on language here
+        }
+
         // --- Init ---
-        switchLanguage(currentLang);
+        document.addEventListener('DOMContentLoaded', () => {
+            switchLanguage(currentLang);
+            animateCounters();
+            initChart();
+        });
     </script>
 </body>
 
