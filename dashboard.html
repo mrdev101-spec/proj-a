@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -686,9 +687,28 @@
         // --- Logout Logic ---
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', function () {
-                localStorage.removeItem('user');
-                window.location.href = 'login.html';
+            logoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const isThai = currentLang === 'th';
+
+                Swal.fire({
+                    title: isThai ? 'ยืนยันการออกจากระบบ?' : 'Logout Confirmation',
+                    text: isThai ? 'คุณต้องการออกจากระบบใช่หรือไม่?' : 'Are you sure you want to logout?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3b82f6',
+                    cancelButtonColor: '#ef4444',
+                    confirmButtonText: isThai ? 'ใช่, ออกจากระบบ' : 'Yes, Logout',
+                    cancelButtonText: isThai ? 'ยกเลิก' : 'Cancel',
+                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#1e293b'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        localStorage.removeItem('user');
+                        window.location.href = 'login.html';
+                    }
+                });
             });
         }
 
