@@ -72,18 +72,11 @@
         <!-- Content -->
         <main class="flex-1 w-full max-w-3xl mx-auto px-6 py-8 space-y-6">
 
-            <!-- Appearance Section -->
+            <!-- Settings List -->
             <div
                 class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                    </svg>
-                    <span data-i18n="settings_appearance">Appearance</span>
-                </h2>
-
                 <div class="space-y-4">
+                    <!-- Theme Toggle -->
                     <div class="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50">
                         <div>
                             <h3 class="font-medium text-slate-800 dark:text-white" data-i18n="settings_theme">Theme</h3>
@@ -103,6 +96,7 @@
                         </button>
                     </div>
 
+                    <!-- Language Toggle -->
                     <div class="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50">
                         <div>
                             <h3 class="font-medium text-slate-800 dark:text-white" data-i18n="settings_language">
@@ -121,34 +115,6 @@
                 </div>
             </div>
 
-            <!-- Account Section -->
-            <div
-                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span data-i18n="settings_account">Account</span>
-                </h2>
-
-                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">
-                            <span id="user-initials">A</span>
-                        </div>
-                        <div>
-                            <h3 class="font-medium text-slate-800 dark:text-white" id="user-name">Admin User</h3>
-                            <p class="text-sm text-slate-500 dark:text-slate-400" id="user-role">Administrator</p>
-                        </div>
-                    </div>
-                    <button onclick="logout()" class="text-red-600 hover:text-red-700 font-medium text-sm">
-                        <span data-i18n="nav_logout">Logout</span>
-                    </button>
-                </div>
-            </div>
-
         </main>
     </div>
 
@@ -157,63 +123,24 @@
         const translations = {
             en: {
                 nav_settings: 'Settings',
-                settings_appearance: 'Appearance',
                 settings_theme: 'Theme',
                 settings_theme_desc: 'Toggle between Light and Dark mode',
                 settings_language: 'Language',
                 settings_language_desc: 'Select your preferred language',
-                settings_account: 'Account',
-                nav_logout: 'Logout'
             },
             th: {
                 nav_settings: 'การตั้งค่า',
-                settings_appearance: 'รูปลักษณ์',
                 settings_theme: 'ธีม',
                 settings_theme_desc: 'สลับระหว่างโหมดสว่างและมืด',
                 settings_language: 'ภาษา',
                 settings_language_desc: 'เลือกภาษาที่คุณต้องการ',
-                settings_account: 'บัญชีผู้ใช้',
-                nav_logout: 'ออกจากระบบ'
             }
         };
-
-        function logout() {
-            setupLogout(); // Re-use common logout logic if possible, or trigger the button click
-            // Since setupLogout attaches listener to #logout-btn, we can just call the logic directly or simulate click if button existed.
-            // But common.js setupLogout expects #logout-btn. Let's just manually trigger Swal here or use a helper if extracted.
-            // Actually common.js has setupLogout but not a direct logout function exposed globally easily without button.
-            // Let's just manually do the logout logic here for simplicity, reusing showThemeAlert.
-
-            showThemeAlert({
-                title: currentLang === 'th' ? 'ยืนยันการออกจากระบบ' : 'Confirm Logout',
-                text: currentLang === 'th' ? 'คุณต้องการออกจากระบบใช่หรือไม่?' : 'Are you sure you want to logout?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: currentLang === 'th' ? 'ออกจากระบบ' : 'Logout',
-                cancelButtonText: currentLang === 'th' ? 'ยกเลิก' : 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    localStorage.removeItem('user');
-                    window.location.href = 'login.html';
-                }
-            });
-        }
 
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             initTheme();
             initLanguage();
-
-            // Load User Info
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = user.username || 'User';
-                document.getElementById('user-role').textContent = user.role || 'User';
-                document.getElementById('user-initials').textContent = (user.username || 'U').charAt(0).toUpperCase();
-            }
         });
     </script>
 </body>
