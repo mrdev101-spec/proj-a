@@ -82,91 +82,7 @@
     <div class="flex h-screen overflow-hidden">
 
         <!-- Sidebar -->
-        <aside
-            class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 z-20">
-            <!-- Logo -->
-            <div class="flex items-center justify-center h-16 border-b border-slate-100 dark:border-slate-700">
-                <div class="flex items-center gap-2 font-bold text-xl text-slate-800 dark:text-white">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    POH System
-                </div>
-            </div>
-
-            <!-- Navigation -->
-            <nav class="flex-1 flex flex-col overflow-y-auto py-4">
-                <ul class="space-y-1 px-3">
-                    <li>
-                        <a href="dashboard.html"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                            </svg>
-                            <span data-i18n="nav_dashboard">Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.html"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <span data-i18n="nav_hospitals">Hospitals</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                            </svg>
-                            <span data-i18n="nav_service_requests">Service Requests</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            <span data-i18n="nav_analytics">Analytics</span>
-                        </a>
-                    </li>
-                    <!-- User Management Link (Admin Only) -->
-                    <li id="nav-users">
-                        <a href="#"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <span data-i18n="nav_users">User Management</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Sidebar Footer -->
-                <div class="mt-auto p-4 border-t border-slate-200 dark:border-slate-700">
-                    <button id="logout-btn"
-                        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        <span data-i18n="nav_logout">Logout</span>
-                    </button>
-                </div>
-            </nav>
-        </aside>
+        <div id="sidebar-container"></div>
 
         <!-- Main Content -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900">
@@ -368,13 +284,18 @@
         </div>
     </div>
 
+    <script src="components.js"></script>
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbxA2EvvSsoQSh5XSLGW4CpHcc-Ez3Dq4epQhXBqS9wXBkga67pMbeEieyEQDBH44HilFw/exec';
+        const CACHE_KEY = 'users_data_cache';
+        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
         let users = [];
         let filteredUsers = [];
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
+            renderSidebar('users');
             checkAccess();
             initTheme();
             initLanguage();
@@ -384,7 +305,7 @@
 
         function setupEventListeners() {
             // Search & Filter
-            document.getElementById('search-input').addEventListener('input', filterUsers);
+            document.getElementById('search-input').addEventListener('input', debounce(filterUsers, 300));
             document.getElementById('role-filter').addEventListener('change', filterUsers);
 
             // Logout
@@ -419,11 +340,69 @@
             }
         }
 
+        // --- Caching Helpers ---
+        function saveToCache(data) {
+            try {
+                const cachePayload = {
+                    timestamp: Date.now(),
+                    data: data
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cachePayload));
+            } catch (e) {
+                console.error('Error saving to cache:', e);
+            }
+        }
+
+        function loadFromCache() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (!cached) return null;
+
+                const payload = JSON.parse(cached);
+                const now = Date.now();
+
+                // Check expiration
+                if (now - payload.timestamp > CACHE_DURATION) {
+                    localStorage.removeItem(CACHE_KEY);
+                    return null;
+                }
+
+                return payload.data;
+            } catch (e) {
+                console.error('Error loading from cache:', e);
+                return null;
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         // --- Data Loading & Rendering ---
         async function loadUsers() {
             const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-slate-500 animate-pulse">Loading users...</td></tr>';
 
+            // 1. Try to load from cache first
+            const cachedData = loadFromCache();
+            if (cachedData) {
+                console.log('Loaded users from cache:', cachedData.length);
+                users = cachedData;
+                filteredUsers = users;
+                renderTable(); // Render immediately
+            } else {
+                // Only show loading if no cache
+                tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-slate-500 animate-pulse">Loading users...</td></tr>';
+            }
+
+            // 2. Fetch fresh data in background
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -434,20 +413,21 @@
                 if (data.status === 'success' && Array.isArray(data.users)) {
                     users = data.users;
                     filteredUsers = users;
-                    saveUsersToStorage();
-                    filterUsers(); // Renders the table
+                    saveToCache(users); // Update cache
+                    filterUsers(); // Re-render with fresh data
+                    console.log('Users updated from server');
                 } else {
                     console.error('Invalid data format:', data);
-                    Swal.fire('Error', data.message || 'Invalid data format received from server', 'error');
-                    tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Failed to load data.</td></tr>';
+                    if (!cachedData) {
+                        Swal.fire('Error', data.message || 'Invalid data format received from server', 'error');
+                        tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Failed to load data.</td></tr>';
+                    }
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
-                const storedUsers = localStorage.getItem('users');
-                if (storedUsers) {
-                    users = JSON.parse(storedUsers);
-                    filteredUsers = users;
-                    filterUsers();
+                if (!cachedData) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Error loading users: ${error.message}</td></tr>`;
+                } else {
                     const Toast = Swal.mixin({
                         toast: true,
                         position: 'top-end',
@@ -457,28 +437,22 @@
                     });
                     Toast.fire({
                         icon: 'warning',
-                        title: 'Loaded cached data (Offline mode)'
+                        title: 'Using cached data (Offline)'
                     });
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Error loading users: ${error.message}</td></tr>`;
                 }
             }
         }
 
         function renderTable() {
             const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = '';
 
             if (filteredUsers.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-slate-500 italic">No users found.</td></tr>';
                 return;
             }
 
-            filteredUsers.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-150 group';
-
-                tr.innerHTML = `
+            tbody.innerHTML = filteredUsers.map(user => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-150 group">
                     <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-900 dark:text-slate-100">${user.username || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-slate-500">••••••</td>
                     <td class="px-6 py-4 whitespace-nowrap text-slate-700 dark:text-slate-300">${user.name || ''}</td>
@@ -505,9 +479,8 @@
                             </button>
                         </div>
                     </td>
-                `;
-                tbody.appendChild(tr);
-            });
+                </tr>
+            `).join('');
         }
 
         function filterUsers() {
@@ -729,7 +702,7 @@
         const translations = {
             en: {
                 nav_dashboard: 'Dashboard',
-                nav_hospitals: 'Hospitals',
+                nav_hospitals: 'Health Station',
                 nav_service_requests: 'Service Requests',
                 nav_analytics: 'Analytics',
                 nav_users: 'User Management',
@@ -747,7 +720,7 @@
             },
             th: {
                 nav_dashboard: 'แดชบอร์ด',
-                nav_hospitals: 'โรงพยาบาล',
+                nav_hospitals: 'Health Station',
                 nav_service_requests: 'แจ้งซ่อม',
                 nav_analytics: 'การวิเคราะห์',
                 nav_users: 'จัดการผู้ใช้งาน',

@@ -1,4 +1,4 @@
-# POH Service Center Dashboard
+# Health Station Dashboard
 
 Dashboard สำหรับแสดงข้อมูลศูนย์บริการสุขภาพ (Hospital Directory) โดยดึงข้อมูลจาก Google Sheets CSV
 

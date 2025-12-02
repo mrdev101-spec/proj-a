@@ -11,6 +11,8 @@ let hospitals = []; // Store fetched data
 let filteredHospitals = []; // Store filtered data
 let currentPage = 1;
 let currentLang = 'th'; // Default language
+const CACHE_KEY = 'health_station_data';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 const refreshBtn = document.querySelector('.refresh-btn');
 // const globalOverlay = document.getElementById('global-loading-overlay'); // Removed
@@ -26,7 +28,8 @@ const cancelBtn = document.querySelector('.btn-cancel');
 // Translations
 const translations = {
     th: {
-        title: 'POH Dashboard',
+        title: 'Health Station',
+        nav_hospitals: 'Health Station',
         stat_centers: 'จำนวนศูนย์บริการ',
         stat_districts: 'จำนวนอำเภอทั้งหมด',
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
@@ -53,7 +56,8 @@ const translations = {
         delete_error: 'เกิดข้อผิดพลาดในการลบ'
     },
     en: {
-        title: 'POH Dashboard',
+        title: 'Health Station',
+        nav_hospitals: 'Health Station',
         stat_centers: 'Service Centers',
         stat_districts: 'Total Districts',
         search_placeholder: 'Search HCode / Name / District...',
@@ -129,15 +133,32 @@ async function init() {
         }
 
         console.log('Fetching data...');
+
+        // 1. Try to load from cache first
+        const cachedData = loadFromCache();
+        if (cachedData) {
+            console.log('Loaded from cache:', cachedData.length);
+            hospitals = cachedData;
+            try {
+                populateDistricts();
+            } catch (e) {
+                console.error('Error in populateDistricts (cache):', e);
+            }
+            filterData();
+            updateStats();
+        }
+
+        // 2. Fetch fresh data in background
         await fetchData();
         console.log('Data fetched:', hospitals.length);
+
         try {
             populateDistricts();
         } catch (e) {
             console.error('Error in populateDistricts:', e);
         }
 
-        // Initial render
+        // Initial render (or re-render with fresh data)
         filterData();
         updateStats();
         updateUIText();
@@ -145,7 +166,7 @@ async function init() {
 
         // Add event listeners
         if (districtFilter) districtFilter.addEventListener('change', filterData);
-        if (searchInput) searchInput.addEventListener('input', filterData);
+        if (searchInput) searchInput.addEventListener('input', debounce(filterData, 300));
         if (rowsFilter) {
             rowsFilter.addEventListener('change', () => {
                 currentPage = 1;
@@ -374,6 +395,7 @@ async function fetchData() {
         }
         const data = await response.json();
         hospitals = data;
+        saveToCache(hospitals); // Save to cache
         console.log(`Loaded ${hospitals.length} hospitals`);
     } catch (error) {
         console.error('Fetch error:', error);
@@ -803,15 +825,12 @@ window.deleteItem = async function (hcode) {
                 })
             });
 
-            const data = await response.json();
+            const result = await response.json();
 
-            if (data.status === 'success') {
-                // Remove from local array
+            if (result.status === 'success') {
                 hospitals = hospitals.filter(h => String(h.hcode) !== String(hcode));
+                saveToCache(hospitals); // Update cache
                 filterData();
-                updateStats();
-                closeEditModal();
-
                 Swal.fire({
                     icon: 'success',
                     title: t.deleted_success,
@@ -822,14 +841,16 @@ window.deleteItem = async function (hcode) {
                     }
                 });
             } else {
-                throw new Error(data.message || 'Unknown error');
+                throw new Error(result.message || 'Unknown error');
             }
+
         } catch (error) {
             console.error('Delete error:', error);
             Swal.fire({
                 icon: 'error',
                 title: t.delete_error,
                 text: error.message,
+                confirmButtonText: 'OK',
                 customClass: {
                     popup: 'dark:bg-slate-800 dark:text-white'
                 }
@@ -837,5 +858,53 @@ window.deleteItem = async function (hcode) {
         }
     }
 };
+
+// --- Helper Functions ---
+
+function saveToCache(data) {
+    try {
+        const cachePayload = {
+            timestamp: Date.now(),
+            data: data
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cachePayload));
+    } catch (e) {
+        console.error('Error saving to cache:', e);
+    }
+}
+
+function loadFromCache() {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const payload = JSON.parse(cached);
+        const now = Date.now();
+
+        // Check expiration
+        if (now - payload.timestamp > CACHE_DURATION) {
+            localStorage.removeItem(CACHE_KEY);
+            return null;
+        }
+
+        return payload.data;
+    } catch (e) {
+        console.error('Error loading from cache:', e);
+        return null;
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 
 init();
