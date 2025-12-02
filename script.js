@@ -13,7 +13,7 @@ let currentPage = 1;
 let currentLang = 'th'; // Default language
 
 const refreshBtn = document.querySelector('.refresh-btn');
-const globalOverlay = document.getElementById('global-loading-overlay');
+// const globalOverlay = document.getElementById('global-loading-overlay'); // Removed
 const tableOverlay = document.getElementById('table-loading-overlay');
 const tableCard = document.querySelector('.table-card');
 
@@ -84,7 +84,7 @@ const translations = {
 async function init() {
     try {
         // Initial load: Global overlay is visible by default in HTML
-        toggleGlobalLoading(true);
+        // toggleGlobalLoading(true); // Removed
 
         // Language Switcher Logic
         const langBtns = document.querySelectorAll('.lang-switch button');
@@ -98,7 +98,7 @@ async function init() {
         };
 
         // Dark Mode Logic
-        const modeToggleBtn = document.getElementById('mode-toggle-btn');
+        const modeToggleBtn = document.getElementById('mode-toggle-btn') || document.getElementById('theme-toggle');
         const modeToggle = document.getElementById('mode-toggle'); // Hidden checkbox
 
         // Check localStorage
@@ -173,7 +173,7 @@ async function init() {
         console.error('Error:', error);
         tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-500">Failed to load data. Check console for details.</td></tr>';
     } finally {
-        toggleGlobalLoading(false);
+        // toggleGlobalLoading(false); // Removed
     }
 }
 
@@ -296,21 +296,21 @@ function updateUIText() {
     if (saveAddBtn) saveAddBtn.textContent = t.save_btn;
 }
 
-function toggleGlobalLoading(isLoading) {
-    if (!globalOverlay) return;
-    if (isLoading) {
-        globalOverlay.classList.remove('hidden'); // Ensure it's in DOM
-        // Small delay to allow display:block to apply before opacity transition
-        requestAnimationFrame(() => {
-            globalOverlay.classList.remove('opacity-0', 'pointer-events-none');
-        });
-    } else {
-        globalOverlay.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => {
-            globalOverlay.classList.add('hidden');
-        }, 300); // Match duration-300
-    }
-}
+// function toggleGlobalLoading(isLoading) {
+//     if (!globalOverlay) return;
+//     if (isLoading) {
+//         globalOverlay.classList.remove('hidden'); // Ensure it's in DOM
+//         // Small delay to allow display:block to apply before opacity transition
+//         requestAnimationFrame(() => {
+//             globalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+//         });
+//     } else {
+//         globalOverlay.classList.add('opacity-0', 'pointer-events-none');
+//         setTimeout(() => {
+//             globalOverlay.classList.add('hidden');
+//         }, 300); // Match duration-300
+//     }
+// }
 
 function toggleTableLoading(isLoading) {
     if (!tableOverlay) return;
