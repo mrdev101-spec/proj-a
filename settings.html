@@ -115,6 +115,17 @@
                 </div>
             </div>
 
+            <!-- Save Button -->
+            <div class="flex justify-end mt-6">
+                <button id="save-btn" onclick="saveSettings()" disabled
+                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-slate-700 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-xl shadow-lg flex items-center gap-2 transition-all hover:scale-105 disabled:hover:scale-100 disabled:shadow-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span data-i18n="btn_save">Save Changes</span>
+                </button>
+            </div>
+
         </main>
     </div>
 
@@ -127,6 +138,7 @@
                 settings_theme_desc: 'Toggle between Light and Dark mode',
                 settings_language: 'Language',
                 settings_language_desc: 'Select your preferred language',
+                btn_save: 'Save Changes'
             },
             th: {
                 nav_settings: 'การตั้งค่า',
@@ -134,13 +146,104 @@
                 settings_theme_desc: 'สลับระหว่างโหมดสว่างและมืด',
                 settings_language: 'ภาษา',
                 settings_language_desc: 'เลือกภาษาที่คุณต้องการ',
+                btn_save: 'บันทึกการเปลี่ยนแปลง'
             }
+        };
+
+        // Local state for preview
+        let originalLang = localStorage.getItem('language') || 'th';
+        let originalTheme = localStorage.getItem('darkMode') === 'enabled' ? 'dark' : 'light';
+
+        let pendingLang = originalLang;
+        let pendingTheme = originalTheme;
+
+        function checkChanges() {
+            const hasChanges = (pendingLang !== originalLang) || (pendingTheme !== originalTheme);
+            const btn = document.getElementById('save-btn');
+            if (hasChanges) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        // Override setLanguage for Preview
+        window.previewLanguage = function (lang) {
+            if (lang !== pendingLang) {
+                pendingLang = lang;
+
+                // Update UI Preview
+                updateLanguageButtons(lang);
+
+                // Update Text Preview (We need to temporarily switch global currentLang for updateUIText to work)
+                const tempLang = currentLang;
+                currentLang = lang;
+                updateUIText();
+                currentLang = tempLang;
+
+                checkChanges();
+            }
+        };
+
+        // Override toggleTheme for Preview
+        window.previewTheme = function () {
+            const newTheme = pendingTheme === 'dark' ? 'light' : 'dark';
+            pendingTheme = newTheme;
+
+            // Update UI Preview
+            if (pendingTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeToggleUI();
+
+            checkChanges();
+        };
+
+        window.saveSettings = function () {
+            // Commit changes
+            localStorage.setItem('language', pendingLang);
+            localStorage.setItem('darkMode', pendingTheme === 'dark' ? 'enabled' : 'disabled');
+
+            // Update globals
+            currentLang = pendingLang;
+            originalLang = pendingLang;
+            originalTheme = pendingTheme;
+
+            // Update UI
+            checkChanges();
+
+            // Show Success
+            showThemeAlert({
+                icon: 'success',
+                title: pendingLang === 'th' ? 'บันทึกสำเร็จ' : 'Saved Successfully',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                // Reload to apply changes system-wide
+                window.location.reload();
+            });
         };
 
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             initTheme();
             initLanguage();
+
+            // Attach Preview Listeners
+            document.getElementById('lang-th').onclick = () => previewLanguage('th');
+            document.getElementById('lang-en').onclick = () => previewLanguage('en');
+            document.getElementById('theme-toggle').onclick = previewTheme;
+
+            // Initialize state
+            originalLang = currentLang;
+            originalTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            pendingLang = originalLang;
+            pendingTheme = originalTheme;
+
+            // Initial check
+            checkChanges();
         });
     </script>
 </body>

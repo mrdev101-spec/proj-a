@@ -10,7 +10,7 @@ let toastTimeout;
 let hospitals = []; // Store fetched data
 let filteredHospitals = []; // Store filtered data
 let currentPage = 1;
-let currentLang = 'th'; // Default language
+// currentLang is managed by common.js
 const CACHE_KEY = 'health_station_data';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -28,15 +28,29 @@ const cancelBtn = document.querySelector('.btn-cancel');
 // Translations
 const translations = {
     th: {
-        title: 'Health Station',
-        nav_hospitals: 'Health Station',
+        title: 'สถานีสุขภาพ',
+        nav_dashboard: 'แดชบอร์ด',
+        nav_hospitals: 'สถานีสุขภาพ',
+        nav_service_requests: 'แจ้งซ่อม',
+        nav_analytics: 'การวิเคราะห์',
+        nav_users: 'จัดการผู้ใช้งาน',
         nav_settings: 'การตั้งค่า',
+        nav_logout: 'ออกจากระบบ',
         stat_centers: 'จำนวนศูนย์บริการ',
         stat_districts: 'จำนวนอำเภอทั้งหมด',
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
         filter_district_default: 'เลือกอำเภอทั้งหมด',
         refresh_btn: 'รีเฟรช',
-        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่', 'แก้ไข', 'ลบ'],
+        // Table Headers
+        th_no: 'ลำดับ',
+        th_hospital: 'สถานบริการ',
+        th_hcode: 'HCode',
+        th_district: 'อำเภอ',
+        th_pcid: 'PC-ID',
+        th_anydesk: 'AnyDesk ID',
+        th_map: 'แผนที่',
+        th_actions: 'จัดการ',
+
         map_btn: 'แผนที่',
         loading: 'กำลังโหลดข้อมูล...',
         no_data: 'ไม่พบข้อมูล',
@@ -58,14 +72,28 @@ const translations = {
     },
     en: {
         title: 'Health Station',
+        nav_dashboard: 'Dashboard',
         nav_hospitals: 'Health Station',
+        nav_service_requests: 'Service Requests',
+        nav_analytics: 'Analytics',
+        nav_users: 'User Management',
         nav_settings: 'Settings',
+        nav_logout: 'Logout',
         stat_centers: 'Service Centers',
         stat_districts: 'Total Districts',
         search_placeholder: 'Search HCode / Name / District...',
         filter_district_default: 'All Districts',
         refresh_btn: 'Refresh',
-        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map', 'Edit', 'Delete'],
+        // Table Headers
+        th_no: 'No',
+        th_hospital: 'Hospital',
+        th_hcode: 'HCode',
+        th_district: 'District',
+        th_pcid: 'PC-ID',
+        th_anydesk: 'AnyDesk ID',
+        th_map: 'Map',
+        th_actions: 'Actions',
+
         map_btn: 'Map',
         loading: 'Loading data...',
         no_data: 'No data found',
@@ -87,40 +115,13 @@ const translations = {
     }
 };
 
+// Make translations globally available
+window.translations = translations;
+
 async function init() {
     try {
         // Initial load: Global overlay is visible by default in HTML
         // toggleGlobalLoading(true); // Removed
-
-        // Language Switcher Logic
-        const langBtns = document.querySelectorAll('.lang-switch button');
-
-        // Expose setLanguage globally
-        window.setLanguage = function (lang) {
-            if (lang !== currentLang) {
-                switchLanguage(lang);
-                updateLanguageButtons(lang);
-            }
-        };
-
-        // Dark Mode Logic
-        const modeToggleBtn = document.getElementById('mode-toggle-btn') || document.getElementById('theme-toggle');
-        const modeToggle = document.getElementById('mode-toggle'); // Hidden checkbox
-
-        // Check localStorage
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.documentElement.classList.add('dark');
-            if (modeToggle) modeToggle.checked = true;
-        }
-
-        if (modeToggleBtn) {
-            modeToggleBtn.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                const isDark = document.documentElement.classList.contains('dark');
-                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-                if (modeToggle) modeToggle.checked = isDark;
-            });
-        }
 
         // Modal Event Listeners
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeEditModal);
@@ -163,8 +164,8 @@ async function init() {
         // Initial render (or re-render with fresh data)
         filterData();
         updateStats();
-        updateUIText();
-        updateLanguageButtons(currentLang);
+        if (window.updateUIText) window.updateUIText();
+        // updateLanguageButtons(currentLang); // Handled by common.js/updateUIText
 
         // Add event listeners
         if (districtFilter) districtFilter.addEventListener('change', filterData);
@@ -220,60 +221,12 @@ function filterData() {
 }
 
 
-function updateLanguageButtons(lang) {
-    const langBtns = document.querySelectorAll('.lang-switch button');
-    langBtns.forEach(btn => {
-        const btnLang = btn.textContent.toLowerCase();
-        if (btnLang === lang) {
-            // Active State
-            btn.className = 'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 shadow-sm bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400';
-        } else {
-            // Inactive State
-            btn.className = 'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400';
-        }
-    });
-}
+// function updateLanguageButtons(lang) - Removed, using common.js
+// function switchLanguage(lang) - Removed, using common.js
 
-function switchLanguage(lang) {
-    currentLang = lang;
-    updateUIText();
-    populateDistricts();
-    updateTableDisplay();
-    updateStats();
-}
-
-function updateUIText() {
+function updateLocalUIText() {
     const t = translations[currentLang];
-
-    // Update static elements
-    document.querySelector('h1').textContent = t.title;
-
-    // Update placeholders
-    if (searchInput) searchInput.placeholder = t.search_placeholder;
-
-    // Update Refresh Button Text
-    if (refreshBtn) {
-        const icon = refreshBtn.querySelector('svg');
-        refreshBtn.innerHTML = '';
-        if (icon) refreshBtn.appendChild(icon);
-        const span = document.createElement('span');
-        span.textContent = t.refresh_btn;
-        refreshBtn.appendChild(span);
-    }
-
-    // Update Add Button Text
-    const addBtnText = document.getElementById('add-btn-text');
-    if (addBtnText) addBtnText.textContent = t.add_btn;
-
-    // Update Table Headers
-    const ths = document.querySelectorAll('thead th');
-    t.table_headers.forEach((header, index) => {
-        if (ths[index]) ths[index].textContent = header;
-    });
-
-    // Update Loading Text
-    const loadingSpans = document.querySelectorAll('.loading-overlay span');
-    loadingSpans.forEach(span => span.textContent = t.loading);
+    if (!t) return;
 
     // Update Rows Filter Options
     if (rowsFilter) {
@@ -283,13 +236,6 @@ function updateUIText() {
             options[i].textContent = `${val} ${t.rows_option}`;
         }
     }
-
-    // Update Modal Titles
-    const editModalTitle = document.getElementById('modal-title');
-    if (editModalTitle) editModalTitle.textContent = t.edit_modal_title;
-
-    const addModalTitle = document.getElementById('add-modal-title');
-    if (addModalTitle) addModalTitle.textContent = t.add_modal_title;
 
     // Update Modal Labels
     const updateLabels = (formId) => {
@@ -307,17 +253,14 @@ function updateUIText() {
 
     updateLabels('edit-form');
     updateLabels('add-form');
-
-    // Update Modal Buttons
-    const cancelBtns = document.querySelectorAll('.btn-cancel');
-    cancelBtns.forEach(btn => btn.textContent = t.cancel_btn);
-
-    const saveBtn = document.querySelector('.btn-save');
-    if (saveBtn) saveBtn.textContent = t.save_btn;
-
-    const saveAddBtn = document.querySelector('.btn-save-add');
-    if (saveAddBtn) saveAddBtn.textContent = t.save_btn;
 }
+
+// Hook into global updateUIText to run local updates as well
+const globalUpdateUIText = window.updateUIText;
+window.updateUIText = function () {
+    if (globalUpdateUIText) globalUpdateUIText();
+    updateLocalUIText();
+};
 
 // function toggleGlobalLoading(isLoading) {
 //     if (!globalOverlay) return;

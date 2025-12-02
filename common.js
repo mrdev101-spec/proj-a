@@ -128,9 +128,11 @@ function updateLanguageButtons(lang) {
 }
 
 function updateUIText() {
-    if (typeof translations === 'undefined') return;
+    // Try to get translations from global scope or window
+    const tData = (typeof translations !== 'undefined') ? translations : window.translations;
+    if (!tData) return;
 
-    const t = translations[currentLang];
+    const t = tData[currentLang];
     if (!t) return;
 
     // Update data-i18n elements
@@ -232,6 +234,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Setup Logout - Called manually in page scripts after sidebar render
     // setupLogout();
+
+    // --- System-wide Sync ---
+
+    // Listen for storage changes (other tabs)
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'darkMode') {
+            initTheme();
+        }
+        if (e.key === 'language') {
+            currentLang = e.newValue;
+            initLanguage();
+        }
+    });
+
+    // Listen for page show (back/forward navigation) to ensure fresh state
+    window.addEventListener('pageshow', (e) => {
+        checkAndReload();
+    });
+
+    // Also check on visibility change (tab switching/app switching)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            checkAndReload();
+        }
+    });
+
+    function checkAndReload() {
+        // Check if we need to reload due to stale settings
+        const storedLang = localStorage.getItem('language') || 'th';
+        const storedTheme = localStorage.getItem('darkMode') === 'enabled' ? 'dark' : 'light';
+
+        // Check Theme mismatch
+        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        const themeMismatch = currentTheme !== storedTheme;
+
+        // Check Language mismatch
+        const langMismatch = currentLang !== storedLang;
+
+        if (themeMismatch || langMismatch) {
+            // Force reload to apply changes cleanly
+            window.location.reload();
+        }
+    }
 });
 
 // --- UI Helpers ---
