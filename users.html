@@ -37,7 +37,21 @@
             }
         }
     </script>
+    <script>
+        // Prevent white flash on load
+        if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <style>
+        /* Immediate Dark Mode Support */
+        html.dark body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
