@@ -30,6 +30,7 @@ const translations = {
     th: {
         title: 'Health Station',
         nav_hospitals: 'Health Station',
+        nav_settings: 'การตั้งค่า',
         stat_centers: 'จำนวนศูนย์บริการ',
         stat_districts: 'จำนวนอำเภอทั้งหมด',
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
@@ -58,6 +59,7 @@ const translations = {
     en: {
         title: 'Health Station',
         nav_hospitals: 'Health Station',
+        nav_settings: 'Settings',
         stat_centers: 'Service Centers',
         stat_districts: 'Total Districts',
         search_placeholder: 'Search HCode / Name / District...',

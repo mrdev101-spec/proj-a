@@ -165,51 +165,8 @@
         <main
             class="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
             <!-- Header -->
-            <header
-                class="glass-effect shadow-sm border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-10 transition-all duration-300 animate-slide-in-down">
-                <div class="w-full px-6 sm:px-8 lg:px-10 h-16 flex items-center justify-between">
-                    <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 animate-fade-in-up delay-200 opacity-0"
-                        data-i18n="header_title">MA Dashboard</h1>
-
-                    <div class="flex items-center gap-4 animate-fade-in-up delay-300 opacity-0">
-                        <!-- Search -->
-                        <div class="relative hidden md:block group">
-                            <input type="text" data-i18n-placeholder="search_placeholder"
-                                placeholder="Search requests..."
-                                class="pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-700/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 transition-all w-64 focus:w-96 shadow-sm">
-                            <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3 group-focus-within:text-blue-500 transition-colors"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-
-                        <!-- Language Switcher -->
-                        <div
-                            class="flex bg-slate-100 dark:bg-slate-700/50 rounded-xl p-1 border border-slate-200 dark:border-slate-600">
-                            <button id="lang-th" onclick="switchLanguage('th')"
-                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200">TH</button>
-                            <button id="lang-en" onclick="switchLanguage('en')"
-                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200">EN</button>
-                        </div>
-
-                        <!-- Dark Mode Toggle -->
-                        <button id="theme-toggle"
-                            class="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:shadow-md focus:outline-none transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600">
-                            <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor"
-                                viewBox="0 0 20 20">
-                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                            </svg>
-                            <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor"
-                                viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <!-- Header -->
+            <div id="header-container"></div>
 
             <!-- Dashboard Content -->
             <div class="w-full px-6 sm:px-8 lg:px-10 py-8 space-y-8">
@@ -467,6 +424,8 @@
         </main>
     </div>
 
+    <script src="common.js"></script>
+    <script src="components.js?v=2"></script>
     <script>
         const translations = {
             en: {
@@ -474,6 +433,7 @@
                 nav_hospitals: 'Health Station',
                 nav_service_requests: 'Service Requests',
                 nav_analytics: 'Analytics',
+                nav_settings: 'Settings',
                 nav_users: 'User Management',
                 nav_logout: 'Logout',
                 header_title: 'MA Dashboard',
@@ -498,6 +458,7 @@
                 nav_hospitals: 'Health Station',
                 nav_service_requests: 'แจ้งซ่อม',
                 nav_analytics: 'การวิเคราะห์',
+                nav_settings: 'การตั้งค่า',
                 nav_users: 'จัดการผู้ใช้งาน',
                 nav_logout: 'ออกจากระบบ',
                 header_title: 'แดชบอร์ดงานซ่อมบำรุง',
@@ -518,138 +479,6 @@
                 btn_view_all_requests: 'ดูรายการแจ้งซ่อมทั้งหมด'
             }
         };
-
-        // --- Language Logic ---
-        let currentLang = localStorage.getItem('language') || 'th';
-
-        function switchLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('language', lang);
-            updateUIText();
-            updateLanguageButtons(lang);
-            updateChartLocale(lang);
-        }
-
-        function updateUIText() {
-            const t = translations[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.textContent = t[key];
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (t[key]) el.placeholder = t[key];
-            });
-        }
-
-        function updateLanguageButtons(lang) {
-            const thBtn = document.getElementById('lang-th');
-            const enBtn = document.getElementById('lang-en');
-            const activeClass = 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600';
-            const inactiveClass = 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600';
-
-            thBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200';
-            enBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200';
-
-            if (lang === 'th') {
-                thBtn.classList.add(...activeClass.split(' '));
-                enBtn.classList.add(...inactiveClass.split(' '));
-            } else {
-                enBtn.classList.add(...activeClass.split(' '));
-                thBtn.classList.add(...inactiveClass.split(' '));
-            }
-        }
-
-        // --- Dark Mode Logic ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const darkIcon = document.getElementById('theme-toggle-dark-icon');
-        const lightIcon = document.getElementById('theme-toggle-light-icon');
-
-        if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-            lightIcon.classList.remove('hidden');
-        } else {
-            document.documentElement.classList.remove('dark');
-            darkIcon.classList.remove('hidden');
-        }
-
-        themeToggleBtn.addEventListener('click', function () {
-            darkIcon.classList.toggle('hidden');
-            lightIcon.classList.toggle('hidden');
-
-            if (localStorage.getItem('darkMode')) {
-                if (localStorage.getItem('darkMode') === 'enabled') {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('darkMode', 'disabled');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('darkMode', 'enabled');
-                }
-            } else {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('darkMode', 'disabled');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('darkMode', 'enabled');
-                }
-            }
-            // Update Chart Theme
-            if (chart) {
-                chart.updateOptions({
-                    theme: {
-                        mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-                    }
-                });
-            }
-        });
-
-        // --- Logout Logic ---
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-
-                const isThai = currentLang === 'th';
-
-                Swal.fire({
-                    title: isThai ? 'ยืนยันการออกจากระบบ?' : 'Logout Confirmation',
-                    text: isThai ? 'คุณต้องการออกจากระบบใช่หรือไม่?' : 'Are you sure you want to logout?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3b82f6',
-                    cancelButtonColor: '#ef4444',
-                    confirmButtonText: isThai ? 'ใช่, ออกจากระบบ' : 'Yes, Logout',
-                    cancelButtonText: isThai ? 'ยกเลิก' : 'Cancel',
-                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
-                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#1e293b'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        localStorage.removeItem('user');
-                        window.location.href = 'login.html';
-                    }
-                });
-            });
-        }
-
-        // --- Check Admin Role ---
-        (function checkAdminRole() {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    if (user.name) {
-                        document.getElementById('user-name-display').textContent = user.name;
-                    }
-                    if (user.role && (user.role.toLowerCase() === 'admin' || user.role.toLowerCase() === 'super admin')) {
-                        const navUsers = document.getElementById('nav-users');
-                        if (navUsers) navUsers.classList.remove('hidden');
-                    }
-                } catch (e) {
-                    console.error('Error parsing user data', e);
-                }
-            }
-        })();
 
         // --- Counter Animation ---
         function animateCounters() {
@@ -771,18 +600,19 @@
             chart.render();
         }
 
-        function updateChartLocale(lang) {
-            // In a real app, you'd update categories based on language here
+        function loadDashboardData() {
+            initChart();
+            animateCounters();
         }
-    </script>
-    <script src="components.js"></script>
-    <script>
+
         document.addEventListener('DOMContentLoaded', () => {
+            renderHeader('header_title');
             renderSidebar('dashboard');
-            checkAccess();
+            checkAdminAccess();
+            setupLogout();
+            loadDashboardData();
             initTheme();
             initLanguage();
-            loadDashboardData();
         });
     </script>
 </body>
