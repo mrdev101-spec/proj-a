@@ -10,29 +10,49 @@ let toastTimeout;
 let hospitals = []; // Store fetched data
 let filteredHospitals = []; // Store filtered data
 let currentPage = 1;
-let currentLang = 'th'; // Default language
+// currentLang is managed by common.js
+const CACHE_KEY = 'health_station_data';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 const refreshBtn = document.querySelector('.refresh-btn');
-const globalOverlay = document.getElementById('global-loading-overlay');
+// const globalOverlay = document.getElementById('global-loading-overlay'); // Removed
 const tableOverlay = document.getElementById('table-loading-overlay');
 const tableCard = document.querySelector('.table-card');
 
 // Modal Elements
 const editModal = document.getElementById('edit-modal');
 const editForm = document.getElementById('edit-form');
+const addModal = document.getElementById('add-modal');
+const addForm = document.getElementById('add-form');
 const closeModalBtn = document.querySelector('.close-modal');
 const cancelBtn = document.querySelector('.btn-cancel');
 
 // Translations
 const translations = {
     th: {
-        title: 'POH Dashboard',
+        title: 'สถานีสุขภาพ',
+        nav_dashboard: 'แดชบอร์ด',
+        nav_hospitals: 'สถานีสุขภาพ',
+        nav_service_requests: 'แจ้งซ่อม',
+        nav_analytics: 'การวิเคราะห์',
+        nav_users: 'จัดการผู้ใช้งาน',
+        nav_settings: 'การตั้งค่า',
+        nav_logout: 'ออกจากระบบ',
         stat_centers: 'จำนวนศูนย์บริการ',
         stat_districts: 'จำนวนอำเภอทั้งหมด',
         search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
         filter_district_default: 'เลือกอำเภอทั้งหมด',
         refresh_btn: 'รีเฟรช',
-        table_headers: ['ลำดับ', 'สถานบริการ', 'HCode', 'อำเภอ', 'PC-ID', 'AnyDesk', 'แผนที่', 'แก้ไข', 'ลบ'],
+        // Table Headers
+        th_no: 'ลำดับ',
+        th_hospital: 'สถานบริการ',
+        th_hcode: 'HCode',
+        th_district: 'อำเภอ',
+        th_pcid: 'PC-ID',
+        th_anydesk: 'AnyDesk ID',
+        th_map: 'แผนที่',
+        th_actions: 'จัดการ',
+
         map_btn: 'แผนที่',
         loading: 'กำลังโหลดข้อมูล...',
         no_data: 'ไม่พบข้อมูล',
@@ -53,13 +73,29 @@ const translations = {
         delete_error: 'เกิดข้อผิดพลาดในการลบ'
     },
     en: {
-        title: 'POH Dashboard',
+        title: 'Health Station',
+        nav_dashboard: 'Dashboard',
+        nav_hospitals: 'Health Station',
+        nav_service_requests: 'Service Requests',
+        nav_analytics: 'Analytics',
+        nav_users: 'User Management',
+        nav_settings: 'Settings',
+        nav_logout: 'Logout',
         stat_centers: 'Service Centers',
         stat_districts: 'Total Districts',
         search_placeholder: 'Search HCode / Name / District...',
         filter_district_default: 'All Districts',
         refresh_btn: 'Refresh',
-        table_headers: ['No', 'Hospital', 'HCode', 'District', 'PC-ID', 'AnyDesk ID', 'Map', 'Edit', 'Delete'],
+        // Table Headers
+        th_no: 'No',
+        th_hospital: 'Hospital',
+        th_hcode: 'HCode',
+        th_district: 'District',
+        th_pcid: 'PC-ID',
+        th_anydesk: 'AnyDesk ID',
+        th_map: 'Map',
+        th_actions: 'Actions',
+
         map_btn: 'Map',
         loading: 'Loading data...',
         no_data: 'No data found',
@@ -81,40 +117,13 @@ const translations = {
     }
 };
 
+// Make translations globally available
+window.translations = translations;
+
 async function init() {
     try {
         // Initial load: Global overlay is visible by default in HTML
-        toggleGlobalLoading(true);
-
-        // Language Switcher Logic
-        const langBtns = document.querySelectorAll('.lang-switch button');
-
-        // Expose setLanguage globally
-        window.setLanguage = function (lang) {
-            if (lang !== currentLang) {
-                switchLanguage(lang);
-                updateLanguageButtons(lang);
-            }
-        };
-
-        // Dark Mode Logic
-        const modeToggleBtn = document.getElementById('mode-toggle-btn');
-        const modeToggle = document.getElementById('mode-toggle'); // Hidden checkbox
-
-        // Check localStorage
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.documentElement.classList.add('dark');
-            if (modeToggle) modeToggle.checked = true;
-        }
-
-        if (modeToggleBtn) {
-            modeToggleBtn.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                const isDark = document.documentElement.classList.contains('dark');
-                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-                if (modeToggle) modeToggle.checked = isDark;
-            });
-        }
+        // toggleGlobalLoading(true); // Removed
 
         // Modal Event Listeners
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeEditModal);
@@ -127,25 +136,59 @@ async function init() {
         if (editForm) {
             editForm.addEventListener('submit', handleEditSubmit);
         }
+        if (addForm) {
+            addForm.addEventListener('submit', handleAddSubmit);
+        }
 
         console.log('Fetching data...');
+
+        // Show loading in table
+        const t = translations[currentLang] || translations['th'];
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 dark:text-slate-400">
+                <div class="flex justify-center items-center gap-2">
+                    <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>${t.loading}</span>
+                </div>
+            </td></tr>`;
+        }
+
+        // 1. Try to load from cache first
+        const cachedData = loadFromCache();
+        if (cachedData) {
+            console.log('Loaded from cache:', cachedData.length);
+            hospitals = cachedData;
+            try {
+                populateDistricts();
+            } catch (e) {
+                console.error('Error in populateDistricts (cache):', e);
+            }
+            filterData();
+            updateStats();
+        }
+
+        // 2. Fetch fresh data in background
         await fetchData();
         console.log('Data fetched:', hospitals.length);
+
         try {
             populateDistricts();
         } catch (e) {
             console.error('Error in populateDistricts:', e);
         }
 
-        // Initial render
+        // Initial render (or re-render with fresh data)
         filterData();
         updateStats();
-        updateUIText();
-        updateLanguageButtons(currentLang);
+        if (window.updateUIText) window.updateUIText();
+        // updateLanguageButtons(currentLang); // Handled by common.js/updateUIText
 
         // Add event listeners
         if (districtFilter) districtFilter.addEventListener('change', filterData);
-        if (searchInput) searchInput.addEventListener('input', filterData);
+        if (searchInput) searchInput.addEventListener('input', debounce(filterData, 300));
         if (rowsFilter) {
             rowsFilter.addEventListener('change', () => {
                 currentPage = 1;
@@ -173,7 +216,7 @@ async function init() {
         console.error('Error:', error);
         tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-500">Failed to load data. Check console for details.</td></tr>';
     } finally {
-        toggleGlobalLoading(false);
+        // toggleGlobalLoading(false); // Removed
     }
 }
 
@@ -197,60 +240,12 @@ function filterData() {
 }
 
 
-function updateLanguageButtons(lang) {
-    const langBtns = document.querySelectorAll('.lang-switch button');
-    langBtns.forEach(btn => {
-        const btnLang = btn.textContent.toLowerCase();
-        if (btnLang === lang) {
-            // Active State
-            btn.className = 'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 shadow-sm bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400';
-        } else {
-            // Inactive State
-            btn.className = 'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400';
-        }
-    });
-}
+// function updateLanguageButtons(lang) - Removed, using common.js
+// function switchLanguage(lang) - Removed, using common.js
 
-function switchLanguage(lang) {
-    currentLang = lang;
-    updateUIText();
-    populateDistricts();
-    updateTableDisplay();
-    updateStats();
-}
-
-function updateUIText() {
+function updateLocalUIText() {
     const t = translations[currentLang];
-
-    // Update static elements
-    document.querySelector('h1').textContent = t.title;
-
-    // Update placeholders
-    if (searchInput) searchInput.placeholder = t.search_placeholder;
-
-    // Update Refresh Button Text
-    if (refreshBtn) {
-        const icon = refreshBtn.querySelector('svg');
-        refreshBtn.innerHTML = '';
-        if (icon) refreshBtn.appendChild(icon);
-        const span = document.createElement('span');
-        span.textContent = t.refresh_btn;
-        refreshBtn.appendChild(span);
-    }
-
-    // Update Add Button Text
-    const addBtnText = document.getElementById('add-btn-text');
-    if (addBtnText) addBtnText.textContent = t.add_btn;
-
-    // Update Table Headers
-    const ths = document.querySelectorAll('thead th');
-    t.table_headers.forEach((header, index) => {
-        if (ths[index]) ths[index].textContent = header;
-    });
-
-    // Update Loading Text
-    const loadingSpans = document.querySelectorAll('.loading-overlay span');
-    loadingSpans.forEach(span => span.textContent = t.loading);
+    if (!t) return;
 
     // Update Rows Filter Options
     if (rowsFilter) {
@@ -260,13 +255,6 @@ function updateUIText() {
             options[i].textContent = `${val} ${t.rows_option}`;
         }
     }
-
-    // Update Modal Titles
-    const editModalTitle = document.getElementById('modal-title');
-    if (editModalTitle) editModalTitle.textContent = t.edit_modal_title;
-
-    const addModalTitle = document.getElementById('add-modal-title');
-    if (addModalTitle) addModalTitle.textContent = t.add_modal_title;
 
     // Update Modal Labels
     const updateLabels = (formId) => {
@@ -284,33 +272,31 @@ function updateUIText() {
 
     updateLabels('edit-form');
     updateLabels('add-form');
-
-    // Update Modal Buttons
-    const cancelBtns = document.querySelectorAll('.btn-cancel');
-    cancelBtns.forEach(btn => btn.textContent = t.cancel_btn);
-
-    const saveBtn = document.querySelector('.btn-save');
-    if (saveBtn) saveBtn.textContent = t.save_btn;
-
-    const saveAddBtn = document.querySelector('.btn-save-add');
-    if (saveAddBtn) saveAddBtn.textContent = t.save_btn;
 }
 
-function toggleGlobalLoading(isLoading) {
-    if (!globalOverlay) return;
-    if (isLoading) {
-        globalOverlay.classList.remove('hidden'); // Ensure it's in DOM
-        // Small delay to allow display:block to apply before opacity transition
-        requestAnimationFrame(() => {
-            globalOverlay.classList.remove('opacity-0', 'pointer-events-none');
-        });
-    } else {
-        globalOverlay.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => {
-            globalOverlay.classList.add('hidden');
-        }, 300); // Match duration-300
-    }
-}
+// Hook into global updateUIText to run local updates as well
+const globalUpdateUIText = window.updateUIText;
+window.updateUIText = function () {
+    if (globalUpdateUIText) globalUpdateUIText();
+    updateLocalUIText();
+    updateStats();
+};
+
+// function toggleGlobalLoading(isLoading) {
+//     if (!globalOverlay) return;
+//     if (isLoading) {
+//         globalOverlay.classList.remove('hidden'); // Ensure it's in DOM
+//         // Small delay to allow display:block to apply before opacity transition
+//         requestAnimationFrame(() => {
+//             globalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+//         });
+//     } else {
+//         globalOverlay.classList.add('opacity-0', 'pointer-events-none');
+//         setTimeout(() => {
+//             globalOverlay.classList.add('hidden');
+//         }, 300); // Match duration-300
+//     }
+// }
 
 function toggleTableLoading(isLoading) {
     if (!tableOverlay) return;
@@ -368,12 +354,13 @@ async function fetchData() {
             console.warn('API_URL not set.');
         }
 
-        const response = await fetch(API_URL);
+        const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         hospitals = data;
+        saveToCache(hospitals); // Save to cache
         console.log(`Loaded ${hospitals.length} hospitals`);
     } catch (error) {
         console.error('Fetch error:', error);
@@ -471,15 +458,16 @@ function renderTable(data, startIndex = 0) {
 
 function updateStats() {
     const t = translations[currentLang];
-    const statCards = document.querySelectorAll('.stat-card h3');
+    const statCenters = document.getElementById('stat-centers-value');
+    const statDistricts = document.getElementById('stat-districts-value');
 
-    if (statCards.length >= 2) {
+    if (statCenters && statDistricts) {
         const totalCenters = hospitals.length;
         const totalDistricts = new Set(hospitals.map(h => h.district)).size;
 
         // Use span for the number to keep color
-        statCards[0].innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
-        statCards[1].innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${totalDistricts}</span>`;
+        statCenters.innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
+        statDistricts.innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${totalDistricts}</span>`;
     }
 }
 
@@ -588,15 +576,20 @@ window.openEditModal = function (hcode) {
     }
 };
 
-function closeEditModal() {
+window.closeEditModal = function () {
+    const editModal = document.getElementById('edit-modal');
+    if (!editModal) return;
+
     editModal.classList.add('opacity-0');
     const content = editModal.querySelector('.modal-content');
     if (content) content.classList.add('scale-95');
 
     setTimeout(() => {
         editModal.classList.add('hidden');
+        editModal.style.display = 'none'; // Force hide
+        if (editForm) editForm.reset(); // Clear form data
     }, 300);
-}
+};
 
 async function handleEditSubmit(e) {
     e.preventDefault();
@@ -670,19 +663,22 @@ async function handleEditSubmit(e) {
 
 // --- Add Functions ---
 
-const addModal = document.getElementById('add-modal');
+// addModal and addForm are defined at the top
 
 window.openAddModal = function () {
-    document.getElementById('add-form').reset();
-    addModal.classList.remove('hidden');
-    requestAnimationFrame(() => {
-        addModal.classList.remove('opacity-0');
-        const content = addModal.querySelector('.modal-content');
-        if (content) content.classList.remove('scale-95');
-    });
+    if (addForm) addForm.reset();
+    if (addModal) {
+        addModal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            addModal.classList.remove('opacity-0');
+            const content = addModal.querySelector('.modal-content');
+            if (content) content.classList.remove('scale-95');
+        });
+    }
 };
 
 window.closeAddModal = function () {
+    if (!addModal) return;
     addModal.classList.add('opacity-0');
     const content = addModal.querySelector('.modal-content');
     if (content) content.classList.add('scale-95');
@@ -692,7 +688,7 @@ window.closeAddModal = function () {
     }, 300);
 };
 
-document.getElementById('add-form').addEventListener('submit', handleAddSubmit);
+// Event listener moved to init()
 
 async function handleAddSubmit(e) {
     e.preventDefault();
@@ -726,17 +722,24 @@ async function handleAddSubmit(e) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            await fetchData(); // Reload data
-            filterData();
             closeAddModal();
             Swal.fire({
                 icon: 'success',
                 title: t.saved,
-                showConfirmButton: false,
-                timer: 1500,
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
                 customClass: {
-                    popup: 'dark:bg-slate-800 dark:text-white'
+                    popup: 'dark:bg-slate-800 dark:text-white',
+                    confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
                 }
+            }).then(async () => {
+                // Refresh data after alert closes
+                toggleTableLoading(true);
+                await fetchData();
+                filterData();
+                updateStats();
+                populateDistricts(); // Update district filter
+                toggleTableLoading(false);
             });
         } else {
             throw new Error(result.message || 'Unknown error');
@@ -760,8 +763,7 @@ async function handleAddSubmit(e) {
     }
 }
 
-// --- Delete Function ---
-
+// Redefining deleteItem to be safe
 window.deleteItem = async function (hcode) {
     const t = translations[currentLang];
 
@@ -780,7 +782,6 @@ window.deleteItem = async function (hcode) {
     });
 
     if (result.isConfirmed) {
-        // Show loading state
         Swal.fire({
             title: t.saving,
             allowOutsideClick: false,
@@ -803,33 +804,51 @@ window.deleteItem = async function (hcode) {
                 })
             });
 
-            const data = await response.json();
+            const result = await response.json();
 
-            if (data.status === 'success') {
-                // Remove from local array
-                hospitals = hospitals.filter(h => String(h.hcode) !== String(hcode));
-                filterData();
-                updateStats();
-                closeEditModal();
+            if (result.status === 'success') {
+                console.log('Delete success, forcing modal close');
+                // Close immediately with extreme prejudice
+                const editModal = document.getElementById('edit-modal');
+                if (editModal) {
+                    editModal.classList.add('hidden');
+                    editModal.style.setProperty('display', 'none', 'important');
+                    editModal.classList.remove('opacity-0');
+                }
 
                 Swal.fire({
                     icon: 'success',
                     title: t.deleted_success,
-                    showConfirmButton: false,
-                    timer: 1500,
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
                     customClass: {
-                        popup: 'dark:bg-slate-800 dark:text-white'
+                        popup: 'dark:bg-slate-800 dark:text-white',
+                        confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
                     }
+                }).then(async () => {
+                    console.log('Alert closed, refreshing data');
+                    // Ensure closed again
+                    if (editModal) editModal.style.setProperty('display', 'none', 'important');
+
+                    // Refresh data
+                    toggleTableLoading(true);
+                    await fetchData();
+                    filterData();
+                    updateStats();
+                    populateDistricts();
+                    toggleTableLoading(false);
                 });
             } else {
-                throw new Error(data.message || 'Unknown error');
+                throw new Error(result.message || 'Unknown error');
             }
+
         } catch (error) {
             console.error('Delete error:', error);
             Swal.fire({
                 icon: 'error',
                 title: t.delete_error,
                 text: error.message,
+                confirmButtonText: 'OK',
                 customClass: {
                     popup: 'dark:bg-slate-800 dark:text-white'
                 }
@@ -837,5 +856,53 @@ window.deleteItem = async function (hcode) {
         }
     }
 };
+
+// --- Helper Functions ---
+
+function saveToCache(data) {
+    try {
+        const cachePayload = {
+            timestamp: Date.now(),
+            data: data
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cachePayload));
+    } catch (e) {
+        console.error('Error saving to cache:', e);
+    }
+}
+
+function loadFromCache() {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const payload = JSON.parse(cached);
+        const now = Date.now();
+
+        // Check expiration
+        if (now - payload.timestamp > CACHE_DURATION) {
+            localStorage.removeItem(CACHE_KEY);
+            return null;
+        }
+
+        return payload.data;
+    } catch (e) {
+        console.error('Error loading from cache:', e);
+        return null;
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 
 init();
