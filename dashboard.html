@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -9,9 +9,43 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="output.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Prevent white flash on load - MUST BE FIRST SCRIPT
+        if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Auth Guard
+        (function () {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.replace('login.html');
+            } else {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (!user || !user.username) {
+                        throw new Error('Invalid user');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    window.location.replace('login.html');
+                }
+            }
+        })();
+    </script>
+    <style>
+        /* Immediate Dark Mode Support */
+        html.dark body {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+        }
+    </style>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -75,6 +109,24 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // Auth Guard
+        (function () {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.replace('login.html');
+            } else {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (!user || !user.username) {
+                        throw new Error('Invalid user');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    window.location.replace('login.html');
+                }
+            }
+        })();
     </script>
     <style>
         /* Immediate Dark Mode Support */
@@ -166,6 +218,7 @@
             animation-delay: 900ms;
         }
     </style>
+
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">

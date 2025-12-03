@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="output.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -44,12 +45,30 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // Auth Guard
+        (function () {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.replace('login.html');
+            } else {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (!user || !user.username) {
+                        throw new Error('Invalid user');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    window.location.replace('login.html');
+                }
+            }
+        })();
     </script>
     <style>
         /* Immediate Dark Mode Support */
         html.dark body {
-            background-color: #0f172a;
-            color: #e2e8f0;
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
         }
 
         /* Custom Scrollbar */
@@ -780,146 +799,65 @@
             }
         }
 
-        function deleteUser(id) {
-            showThemeAlert({
-                title: getTrans('msg_confirm_delete'),
-                text: getTrans('msg_no_revert'),
+        // --- Delete User ---
+        async function deleteUser(id) {
+            const result = await Swal.fire({
+                title: getTrans('confirm_delete_title'),
+                text: getTrans('confirm_delete_text'),
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: getTrans('btn_yes_delete'),
-                cancelButtonText: getTrans('btn_cancel')
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    showThemeAlert({
-                        title: getTrans('msg_deleting'),
-                        text: getTrans('msg_please_wait'),
-                        allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading()
-                    });
-
-                    try {
-                        const response = await fetch(API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'deleteUser', id: id })
-                        });
-                        const data = await response.json();
-
-                        if (data.status === 'success') {
-                            showThemeAlert(getTrans('msg_deleted'), getTrans('msg_user_deleted'), 'success');
-                            loadUsers();
-                        } else {
-                            showThemeAlert(getTrans('alert_error'), data.message || getTrans('msg_delete_fail'), 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error deleting user:', error);
-                        showThemeAlert(getTrans('alert_error'), getTrans('msg_delete_fail') + ': ' + error.message, 'error');
-                    }
-                }
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: getTrans('delete_btn'),
+                cancelButtonText: getTrans('cancel_btn')
             });
-        }
 
-        const translations = {
-            en: {
-                nav_dashboard: 'Dashboard',
-                nav_hospitals: 'Health Station',
-                nav_service_requests: 'Service Requests',
-                nav_analytics: 'Analytics',
-                nav_settings: 'Settings',
-                nav_users: 'User Management',
-                nav_logout: 'Logout',
-                header_title: 'User Management',
-                btn_add_user: 'Add User',
-                search_placeholder: 'Search users...',
-                col_username: 'Username',
-                col_password: 'Password',
-                col_name: 'Name - Lastname',
-                col_emp_id: 'Employee ID',
-                col_dept: 'Department',
-                col_role: 'Role',
-                col_status: 'Status',
-                col_permissions: 'Permissions',
-                col_actions: 'Actions',
-                alert_error: 'Error',
-                alert_success: 'Success',
-                alert_warning: 'Warning',
-                msg_fill_required: 'Please fill in all required fields',
-                msg_saving: 'Saving...',
-                msg_please_wait: 'Please wait',
-                msg_save_fail: 'Failed to save user',
-                msg_confirm_delete: 'Are you sure?',
-                msg_no_revert: "You won't be able to revert this!",
-                btn_yes_delete: 'Yes, delete it!',
-                btn_cancel: 'Cancel',
-                msg_deleting: 'Deleting...',
-                msg_deleted: 'Deleted!',
-                msg_user_deleted: 'User has been deleted.',
-                msg_delete_fail: 'Failed to delete user'
-            },
-            th: {
-                nav_dashboard: 'แดชบอร์ด',
-                nav_hospitals: 'สถานีสุขภาพ',
-                nav_service_requests: 'แจ้งซ่อม',
-                nav_analytics: 'การวิเคราะห์',
-                nav_settings: 'การตั้งค่า',
-                nav_users: 'จัดการผู้ใช้งาน',
-                nav_logout: 'ออกจากระบบ',
-                header_title: 'จัดการผู้ใช้งาน',
-                btn_add_user: 'เพิ่มผู้ใช้งาน',
-                search_placeholder: 'ค้นหาผู้ใช้งาน...',
-                col_username: 'ชื่อผู้ใช้',
-                col_password: 'รหัสผ่าน',
-                col_name: 'ชื่อ - นามสกุล',
-                col_emp_id: 'รหัสพนักงาน',
-                col_dept: 'แผนก',
-                col_role: 'บทบาท',
-                col_status: 'สถานะ',
-                col_permissions: 'สิทธิ์การใช้งาน',
-                col_actions: 'การกระทำ',
-                alert_error: 'ข้อผิดพลาด',
-                alert_success: 'สำเร็จ',
-                alert_warning: 'คำเตือน',
-                msg_fill_required: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-                msg_saving: 'กำลังบันทึก...',
-                msg_please_wait: 'กรุณารอสักครู่',
-                msg_save_fail: 'บันทึกข้อมูลผู้ใช้ไม่สำเร็จ',
-                msg_confirm_delete: 'คุณแน่ใจหรือไม่?',
-                msg_no_revert: "คุณจะไม่สามารถย้อนกลับได้!",
-                btn_yes_delete: 'ใช่, ลบเลย!',
-                btn_cancel: 'ยกเลิก',
-                msg_deleting: 'กำลังลบ...',
-                msg_deleted: 'ลบแล้ว!',
-                msg_user_deleted: 'ผู้ใช้งานถูกลบแล้ว',
-                msg_delete_fail: 'ลบผู้ใช้ไม่สำเร็จ'
+            if (result.isConfirmed) {
+                showThemeAlert({
+                    title: getTrans('msg_saving'),
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'deleteUser', id: id })
+                    });
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        showThemeAlert(getTrans('alert_success'), data.message, 'success');
+                        loadUsers();
+                    } else {
+                        showThemeAlert(getTrans('alert_error'), data.message || getTrans('msg_delete_fail'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    showThemeAlert(getTrans('alert_error'), getTrans('msg_delete_fail') + ': ' + error.message, 'error');
+                }
             }
-        };
-
-        function getTrans(key) {
-            return translations[currentLang][key] || key;
         }
 
+        // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
-            renderHeader('header_title');
-            renderSidebar('users');
-            checkPermission('users');
-            setupLogout();
+            // common.js handles initTheme and initLanguage
+            // We just need to load data
             loadUsers();
-            initTheme();
-            initLanguage();
 
-            // Real-time Search & Filter
-            const searchInput = document.getElementById('search-input');
-            const roleFilter = document.getElementById('role-filter');
-
-            if (searchInput) {
-                searchInput.addEventListener('input', debounce(() => filterUsers(), 300));
-            }
-
-            if (roleFilter) {
-                roleFilter.addEventListener('change', () => filterUsers());
-            }
+            // Setup Search
+            document.getElementById('search-input').addEventListener('input', debounce(filterUsers, 300));
+            document.getElementById('role-filter').addEventListener('change', filterUsers);
         });
+
+        // Hook into updateUIText from common.js
+        const globalUpdateUIText = window.updateUIText;
+        window.updateUIText = function () {
+            if (globalUpdateUIText) globalUpdateUIText();
+            // Re-render table to apply translations if needed (though table mostly uses data)
+            // But headers are static HTML with data-i18n, handled by common.js
+            // Modal labels are also handled by common.js
+        };
     </script>
 </body>
 

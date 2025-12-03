@@ -294,6 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function checkAndReload() {
+        if (window.skipThemeCheck) return;
+
         // Check if we need to reload due to stale settings
         const storedLang = localStorage.getItem('language') || 'th';
         const storedTheme = localStorage.getItem('darkMode') === 'enabled' ? 'dark' : 'light';

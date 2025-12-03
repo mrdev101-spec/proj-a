@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
+
+
 
 <head>
     <meta charset="UTF-8">
@@ -9,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="output.css" rel="stylesheet">
 
     <script>
         // Prevent white flash on load - MUST BE FIRST SCRIPT
@@ -17,6 +20,24 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // Auth Guard
+        (function () {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.replace('login.html');
+            } else {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (!user || !user.username) {
+                        throw new Error('Invalid user');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    window.location.replace('login.html');
+                }
+            }
+        })();
     </script>
     <style>
         /* Immediate Dark Mode Support */
@@ -106,6 +127,8 @@
         }
     </script>
 </head>
+
+
 
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
 
