@@ -438,8 +438,8 @@
         </main>
     </div>
 
-    <script src="common.js?v=3"></script>
-    <script src="components.js?v=4"></script>
+    <script src="common.js?v=4"></script>
+    <script src="components.js?v=5"></script>
     <script>
         const translations = {
             en: {
@@ -622,7 +622,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderHeader('header_title');
             renderSidebar('dashboard');
-            checkAuth();
+            checkPermission('dashboard');
             setupLogout();
             loadDashboardData();
             initTheme();

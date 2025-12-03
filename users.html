@@ -93,13 +93,19 @@
 
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#0f172a] relative">
+        <!-- Background Gradients -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+            <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[100px]"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/10 blur-[100px]">
+            </div>
+        </div>
 
         <!-- Sidebar -->
-        <div id="sidebar-container"></div>
+        <div id="sidebar-container" class="relative z-20"></div>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900">
+        <main class="flex-1 overflow-x-hidden overflow-y-auto relative z-10">
             <!-- Header -->
             <!-- Header -->
             <div id="header-container"></div>
@@ -155,20 +161,20 @@
 
                 <!-- Table Card -->
                 <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-white/20 dark:border-slate-700 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/5">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-600 dark:text-slate-400">
                             <thead
-                                class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                class="bg-slate-50/50 dark:bg-slate-700/30 text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                                 <tr>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_username">Username</th>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_password">Password</th>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_name">Name - Lastname</th>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_emp_id">Employee ID</th>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_dept">Department</th>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_role">Role</th>
-                                    <th class="px-6 py-4 whitespace-nowrap" data-i18n="col_status">Status</th>
-                                    <th class="px-6 py-4 text-right whitespace-nowrap" data-i18n="col_actions">Actions
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_username">Username</th>
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_password">Password</th>
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_name">Name - Lastname</th>
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_emp_id">Employee ID</th>
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_dept">Department</th>
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_role">Role</th>
+                                    <th class="px-6 py-5 whitespace-nowrap" data-i18n="col_status">Status</th>
+                                    <th class="px-6 py-5 text-right whitespace-nowrap" data-i18n="col_actions">Actions
                                     </th>
                                 </tr>
                             </thead>
@@ -185,91 +191,209 @@
     <!-- User Modal -->
     <div id="user-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
         aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"
+            <div class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" aria-hidden="true"
                 onclick="closeModal()"></div>
 
             <!-- Modal panel -->
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div
-                class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-slate-200 dark:border-slate-700">
-                <div class="bg-white dark:bg-slate-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="sm:flex sm:items-start">
-                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6" id="modal-title">User
-                                Details</h3>
-                            <input type="hidden" id="user-id">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="col-span-1">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_username">Username</label>
-                                    <input type="text" id="user-username"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full border border-white/20 dark:border-slate-700">
+
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2" id="modal-title">
+                        <svg class="w-6 h-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        User Details
+                    </h3>
+                </div>
+
+                <div class="px-6 py-6 sm:p-8">
+                    <input type="hidden" id="user-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="col-span-1 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_username">Username</label>
+                            <input type="text" id="user-username"
+                                class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800">
+                        </div>
+                        <div class="col-span-1 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_password">Password</label>
+                            <input type="text" id="user-password"
+                                class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800">
+                        </div>
+                        <div class="col-span-1 sm:col-span-2 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_name">Name - Lastname</label>
+                            <input type="text" id="user-name"
+                                class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800">
+                        </div>
+                        <div class="col-span-1 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_emp_id">Employee ID</label>
+                            <input type="text" id="user-emp-id"
+                                class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800">
+                        </div>
+                        <div class="col-span-1 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_dept">Department</label>
+                            <input type="text" id="user-dept"
+                                class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800">
+                        </div>
+                        <div class="col-span-1 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_role">Role</label>
+                            <div class="relative">
+                                <select id="user-role"
+                                    class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer hover:bg-white dark:hover:bg-slate-800">
+                                    <option value="Super Admin">Super Admin</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="User">User</option>
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </div>
-                                <div class="col-span-1">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_password">Password</label>
-                                    <input type="text" id="user-password"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                </div>
-                                <div class="col-span-1 sm:col-span-2">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_name">Name - Lastname</label>
-                                    <input type="text" id="user-name"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                </div>
-                                <div class="col-span-1">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_emp_id">Employee ID</label>
-                                    <input type="text" id="user-emp-id"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                </div>
-                                <div class="col-span-1">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_dept">Department</label>
-                                    <input type="text" id="user-dept"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                </div>
-                                <div class="col-span-1">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_role">Role</label>
-                                    <select id="user-role"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-                                        <option value="Super Admin">Super Admin</option>
-                                        <option value="Admin">Admin</option>
-                                        <option value="User">User</option>
-                                    </select>
-                                </div>
-                                <div class="col-span-1">
-                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                                        data-i18n="col_status">Status</label>
-                                    <select id="user-status"
-                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
+                            </div>
+                        </div>
+                        <div class="col-span-1 group">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                                data-i18n="col_status">Status</label>
+                            <div class="relative">
+                                <select id="user-status"
+                                    class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer hover:bg-white dark:hover:bg-slate-800">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                    <button type="button" onclick="saveUser()"
-                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm transition-all active:scale-95">
-                        Save
-                    </button>
-                    <button type="button" onclick="closeModal()"
-                        class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm transition-all">
-                        Cancel
-                    </button>
+
+                    <!-- Permissions Section -->
+                    <div class="mt-8">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"
+                            data-i18n="col_permissions">Permissions</label>
+                        <div
+                            class="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="perm-dashboard" value="dashboard"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
+                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+                                    data-i18n="nav_dashboard">Dashboard</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="perm-health-station" value="health-station"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
+                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+                                    data-i18n="nav_hospitals">Health Station</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="perm-service-requests" value="service-requests"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
+                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+                                    data-i18n="nav_service_requests">Service Requests</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="perm-analytics" value="analytics"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
+                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+                                    data-i18n="nav_analytics">Analytics</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="perm-settings" value="settings"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
+                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+                                    data-i18n="nav_settings">Settings</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="perm-users" value="users"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
+                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+                                    data-i18n="nav_users">User Management</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                        <button type="button" onclick="closeModal()"
+                            class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all active:scale-95">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="saveUser()"
+                            class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-lg shadow-blue-500/30 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95 hover:shadow-xl hover:-translate-y-0.5">
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="common.js?v=3"></script>
-    <script src="components.js?v=4"></script>
+    <script src="common.js?v=4"></script>
+    <script src="components.js?v=5"></script>
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbzLCQrq0Vr_1mRzWBHJyr5le1z7n3_KIsd718szles4ce6wmgz-StoU58zSYcXtmjyZ_Q/exec';
         const CACHE_KEY = 'users_cache';
@@ -411,38 +535,44 @@
             }
 
             tbody.innerHTML = filteredUsers.map(user => `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+                <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-200 group border-b border-slate-50 dark:border-slate-700/50 last:border-0">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/30 ring-2 ring-white dark:ring-slate-700 transform group-hover:scale-110 transition-transform duration-200">
                                 ${user.username ? user.username.charAt(0).toUpperCase() : '?'}
                             </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-slate-900 dark:text-white">${user.username || ''}</div>
+                            <div class="ml-4">
+                                <div class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${user.username || ''}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-500">••••••</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-700 dark:text-slate-300">${user.name || ''}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-500 dark:text-slate-400 font-mono text-xs">
-                        ${user.empId || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-slate-400 text-xs tracking-widest">••••••</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-medium">${user.name || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-slate-500 dark:text-slate-400 font-mono text-xs bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md">
+                            ${user.empId || ''}
+                        </span>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400">${user.dept || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium border ${getRoleBadgeClass(user.role)}">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold border shadow-sm ${getRoleBadgeClass(user.role)}">
                             ${user.role || 'User'}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(user.status)}">
-                            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm ${getStatusBadgeClass(user.status)}">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
+                            </span>
                             ${user.status || 'Active'}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0">
                             <button onclick="openModal('edit', ${user.id})"
-                                class="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                class="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-xl transition-all hover:shadow-md active:scale-95"
                                 title="Edit">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -450,7 +580,7 @@
                                 </svg>
                             </button>
                             <button onclick="deleteUser(${user.id})"
-                                class="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                class="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-xl transition-all hover:shadow-md active:scale-95"
                                 title="Delete">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -481,16 +611,16 @@
         // --- Helpers ---
         function getRoleBadgeClass(role) {
             switch (role) {
-                case 'Super Admin': return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800';
-                case 'Admin': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800';
-                default: return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+                case 'Super Admin': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700/50';
+                case 'Admin': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700/50';
+                default: return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
             }
         }
 
         function getStatusBadgeClass(status) {
             return status === 'Active'
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
-                : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400';
+                ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-700/50'
+                : 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-700/50';
         }
 
         // --- Modal Logic ---
@@ -520,9 +650,25 @@
                     document.getElementById('user-dept').value = user.dept;
                     document.getElementById('user-role').value = user.role;
                     document.getElementById('user-status').value = user.status;
+
+                    // Set permissions
+                    const permissions = user.permissions || [];
+                    document.getElementById('perm-dashboard').checked = permissions.includes('dashboard');
+                    document.getElementById('perm-health-station').checked = permissions.includes('health-station');
+                    document.getElementById('perm-service-requests').checked = permissions.includes('service-requests');
+                    document.getElementById('perm-analytics').checked = permissions.includes('analytics');
+                    document.getElementById('perm-settings').checked = permissions.includes('settings');
+                    document.getElementById('perm-users').checked = permissions.includes('users');
                 }
             } else {
                 title.textContent = 'Add User';
+                // Default permissions for new user (User role defaults)
+                document.getElementById('perm-dashboard').checked = false;
+                document.getElementById('perm-health-station').checked = true; // Default for User
+                document.getElementById('perm-service-requests').checked = false;
+                document.getElementById('perm-analytics').checked = false;
+                document.getElementById('perm-settings').checked = true; // Everyone needs settings
+                document.getElementById('perm-users').checked = false;
             }
 
             modal.classList.remove('hidden');
@@ -555,12 +701,21 @@
             const role = document.getElementById('user-role').value;
             const status = document.getElementById('user-status').value;
 
+            // Collect permissions
+            const permissions = [];
+            if (document.getElementById('perm-dashboard').checked) permissions.push('dashboard');
+            if (document.getElementById('perm-health-station').checked) permissions.push('health-station');
+            if (document.getElementById('perm-service-requests').checked) permissions.push('service-requests');
+            if (document.getElementById('perm-analytics').checked) permissions.push('analytics');
+            if (document.getElementById('perm-settings').checked) permissions.push('settings');
+            if (document.getElementById('perm-users').checked) permissions.push('users');
+
             if (!name || !username || !password) {
                 showThemeAlert(getTrans('alert_error'), getTrans('msg_fill_required'), 'error');
                 return;
             }
 
-            const userPayload = { username, password, name, empId, dept, role, status };
+            const userPayload = { username, password, name, empId, dept, role, status, permissions };
             let action = 'addUser';
             if (id) {
                 action = 'updateUser';
@@ -653,6 +808,7 @@
                 col_dept: 'Department',
                 col_role: 'Role',
                 col_status: 'Status',
+                col_permissions: 'Permissions',
                 col_actions: 'Actions',
                 alert_error: 'Error',
                 alert_success: 'Success',
@@ -688,6 +844,7 @@
                 col_dept: 'แผนก',
                 col_role: 'บทบาท',
                 col_status: 'สถานะ',
+                col_permissions: 'สิทธิ์การใช้งาน',
                 col_actions: 'การกระทำ',
                 alert_error: 'ข้อผิดพลาด',
                 alert_success: 'สำเร็จ',
@@ -714,7 +871,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderHeader('header_title');
             renderSidebar('users');
-            checkAdminAccess();
+            checkPermission('users');
             setupLogout();
             loadUsers();
             initTheme();

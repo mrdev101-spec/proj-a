@@ -437,15 +437,15 @@
         </div>
     </div>
 
-    <script src="common.js?v=3"></script>
-    <script src="components.js?v=4"></script>
+    <script src="common.js?v=4"></script>
+    <script src="components.js?v=5"></script>
     <script src="script.js?v=35"></script>
     <script>
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             renderHeader('title');
             renderSidebar('health-station');
-            checkAuth();
+            checkPermission('health-station');
             setupLogout();
             init();
             initTheme();

@@ -173,26 +173,53 @@ function checkAuth() {
     }
 }
 
-function checkAdminAccess() {
+function checkPermission(requiredPermission) {
     const user = checkAuth();
     if (!user) return;
 
     // Safety check: Allow index.html and dashboard.html even if this function is called
-    const path = window.location.pathname;
-    if (path.endsWith('index.html') || path.endsWith('dashboard.html') || path.endsWith('/') || path.endsWith('proj-a/')) {
-        return;
+    // BUT only if we are not strictly checking permissions for those specific pages
+    // For now, we will rely on the page calling checkPermission('dashboard') etc.
+
+    let permissions = [];
+    const userRole = user.role || '';
+
+    if (user.permissions && Array.isArray(user.permissions)) {
+        permissions = user.permissions;
+    } else {
+        // Fallback for existing users
+        if (userRole === 'Super Admin' || userRole === 'Admin') {
+            permissions = ['dashboard', 'health-station', 'service-requests', 'analytics', 'settings', 'users'];
+        } else {
+            permissions = ['health-station', 'settings'];
+        }
     }
 
-    if (!user.role || (user.role.toLowerCase() !== 'admin' && user.role.toLowerCase() !== 'super admin')) {
+    // Map page/permission names if needed (e.g. 'health-station' vs 'hospitals')
+    // Here we use consistent names: dashboard, health-station, users, settings, etc.
+
+    if (requiredPermission && !permissions.includes(requiredPermission)) {
         Swal.fire({
             icon: 'error',
             title: 'Access Denied',
             text: 'You do not have permission to access this page.',
-            confirmButtonText: 'Go to Dashboard'
+            confirmButtonText: 'Go Back'
         }).then(() => {
-            window.location.href = 'dashboard.html';
+            // Try to find a safe page to redirect to
+            if (permissions.includes('dashboard')) {
+                window.location.href = 'dashboard.html';
+            } else if (permissions.includes('health-station')) {
+                window.location.href = 'index.html';
+            } else {
+                window.history.back();
+            }
         });
     }
+}
+
+// Deprecated: Use checkPermission('users') instead, but kept for backward compatibility if needed
+function checkAdminAccess() {
+    checkPermission('users');
 }
 
 function setupLogout() {
