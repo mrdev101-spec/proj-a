@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -7,8 +7,10 @@
     <title>Login - Health Station</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <link href="output.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
@@ -23,28 +25,9 @@
         }
     </script>
     <script>
-        // Prevent white flash on load
-        if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-
-        // Auth Check: If already logged in, redirect to dashboard
-        (function () {
-            try {
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    if (user && user.username) {
-                        window.location.replace('dashboard.html');
-                    }
-                }
-            } catch (e) {
-                // Invalid user data, stay on login page
-                localStorage.removeItem('user');
-            }
-        })();
+        // Force Light Mode for Login Page
+        window.skipThemeCheck = true;
+        document.documentElement.classList.remove('dark');
     </script>
     <style>
         /* Immediate Dark Mode Support */
@@ -108,7 +91,7 @@
 </head>
 
 <body
-    class="bg-gradient-to-br from-blue-600 to-blue-800 dark:from-slate-900 dark:to-slate-950 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative overflow-hidden">
+    class="font-sarabun bg-gradient-to-br from-blue-600 to-blue-800 dark:from-slate-900 dark:to-slate-950 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative overflow-hidden">
 
     <!-- Animated Background Gears -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -191,19 +174,6 @@
                     <button onclick="switchLanguage('en')" id="lang-en"
                         class="px-2 py-1 rounded text-xs font-medium transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400">EN</button>
                 </div>
-
-                <!-- Dark Mode Toggle -->
-                <button id="theme-toggle"
-                    class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                    <svg id="theme-toggle-dark-icon" class="hidden w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                    </svg>
-                    <svg id="theme-toggle-light-icon" class="hidden w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                            fill-rule="evenodd" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
             </div>
 
             <div class="mb-8 text-center lg:text-left">
@@ -285,6 +255,13 @@
 
     <script src="common.js"></script>
     <script>
+        // Override initTheme to ensure Login page stays in Light Mode
+        // This prevents common.js from applying the system-wide dark mode setting
+        window.initTheme = function () {
+            document.documentElement.classList.remove('dark');
+        };
+    </script>
+    <script>
         // --- Translations ---
         const translations = {
             en: {
@@ -347,6 +324,15 @@
         // --- Forgot Password Logic ---
         const forgotPasswordLink = document.getElementById('forgot-password-link');
 
+        // Helper for SweetAlert2 Theme - Always Light for Login
+        function getSwalTheme() {
+            return {
+                background: '#ffffff',
+                color: '#1e293b',
+                confirmButtonColor: '#3b82f6'
+            };
+        }
+
         if (forgotPasswordLink) {
             forgotPasswordLink.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -356,6 +342,7 @@
                 const text = isThai ? 'กรุณาติดต่อผู้ดูแลระบบ' : 'Please contact the administrator';
 
                 Swal.fire({
+                    ...getSwalTheme(),
                     icon: 'info',
                     title: title,
                     text: text,
@@ -455,6 +442,7 @@
 
                     // Show success
                     Swal.fire({
+                        ...getSwalTheme(),
                         icon: 'success',
                         title: 'Login Successful',
                         text: 'Welcome back, ' + result.user.name,
@@ -477,6 +465,7 @@
                 }
 
                 Swal.fire({
+                    ...getSwalTheme(),
                     icon: 'error',
                     title: 'Login Failed',
                     text: errorMsg
