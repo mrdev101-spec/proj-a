@@ -480,7 +480,24 @@
                 const data = await response.json();
 
                 if (data.status === 'success' && Array.isArray(data.users)) {
-                    users = data.users;
+                    users = data.users.map(u => {
+                        // Map boolean fields to permissions array if permissions array is missing or empty
+                        if (!u.permissions || u.permissions.length === 0) {
+                            const perms = [];
+                            // Check for various possible column names from Google Sheet
+                            if (u.dashboard === true || u.Dashboard === true) perms.push('dashboard');
+                            if (u.health_station === true || u.healthStation === true || u['Health Station'] === true) perms.push('health-station');
+                            if (u.service_requests === true || u.serviceRequests === true || u['Service Requests'] === true) perms.push('service-requests');
+                            if (u.analytics === true || u.Analytics === true) perms.push('analytics');
+                            if (u.settings === true || u.Settings === true) perms.push('settings');
+                            if (u.users === true || u.user_management === true || u['User Management'] === true) perms.push('users');
+
+                            if (perms.length > 0) {
+                                u.permissions = perms;
+                            }
+                        }
+                        return u;
+                    });
 
                     // Sort by Role Priority: Super Admin > Admin > User
                     const rolePriority = { 'Super Admin': 1, 'Admin': 2, 'User': 3 };
@@ -714,14 +731,28 @@
                 showThemeAlert(getTrans('alert_error'), getTrans('msg_fill_required'), 'error');
                 return;
             }
-
-            const userPayload = { username, password, name, empId, dept, role, status, permissions };
+            const userPayload = {
+                username,
+                password,
+                name,
+                empId,
+                dept,
+                role,
+                status,
+                permissions,
+                // Flatten permissions for Google Sheet columns
+                dashboard: permissions.includes('dashboard'),
+                health_station: permissions.includes('health-station'),
+                service_requests: permissions.includes('service-requests'),
+                analytics: permissions.includes('analytics'),
+                settings: permissions.includes('settings'),
+                users: permissions.includes('users')
+            };
             let action = 'addUser';
             if (id) {
                 action = 'updateUser';
                 userPayload.id = id;
             }
-
             showThemeAlert({
                 title: getTrans('msg_saving'),
                 text: getTrans('msg_please_wait'),
