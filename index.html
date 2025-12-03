@@ -437,7 +437,7 @@
         </div>
     </div>
 
-    <script src="common.js?v=2"></script>
+    <script src="common.js?v=3"></script>
     <script src="components.js?v=4"></script>
     <script src="script.js?v=35"></script>
     <script>
@@ -445,7 +445,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderHeader('title');
             renderSidebar('health-station');
-            checkAdminAccess();
+            checkAuth();
             setupLogout();
             init();
             initTheme();

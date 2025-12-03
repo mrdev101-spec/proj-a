@@ -177,6 +177,12 @@ function checkAdminAccess() {
     const user = checkAuth();
     if (!user) return;
 
+    // Safety check: Allow index.html and dashboard.html even if this function is called
+    const path = window.location.pathname;
+    if (path.endsWith('index.html') || path.endsWith('dashboard.html') || path.endsWith('/') || path.endsWith('proj-a/')) {
+        return;
+    }
+
     if (!user.role || (user.role.toLowerCase() !== 'admin' && user.role.toLowerCase() !== 'super admin')) {
         Swal.fire({
             icon: 'error',

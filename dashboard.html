@@ -438,7 +438,7 @@
         </main>
     </div>
 
-    <script src="common.js"></script>
+    <script src="common.js?v=3"></script>
     <script src="components.js?v=4"></script>
     <script>
         const translations = {
@@ -622,7 +622,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderHeader('header_title');
             renderSidebar('dashboard');
-            checkAdminAccess();
+            checkAuth();
             setupLogout();
             loadDashboardData();
             initTheme();
