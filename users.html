@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="output.css" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -169,13 +169,26 @@
                         </div>
                     </div>
 
-                    <button onclick="openModal('add')"
-                        class="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span data-i18n="btn_add_user">Add User</span>
-                    </button>
+                    <div class="flex gap-2">
+                        <!-- Debug Button -->
+                        <button onclick="showDebugInfo()"
+                            class="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-600 hover:bg-slate-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            <span>Debug</span>
+                        </button>
+
+                        <button onclick="openModal('add')"
+                            class="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span data-i18n="btn_add_user">Add User</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Table Card -->
@@ -411,11 +424,11 @@
         </div>
     </div>
 
-    <script src="common.js?v=4"></script>
+    <script src="common.js?v=5"></script>
     <script src="components.js?v=5"></script>
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzLCQrq0Vr_1mRzWBHJyr5le1z7n3_KIsd718szles4ce6wmgz-StoU58zSYcXtmjyZ_Q/exec';
-        const CACHE_KEY = 'users_cache';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx5ziXeQFYhaVJnoVTmmZ9Z2cQb6NWIi5jjchUOlmFLtcQUyenn5mFHW7oGQ9D03w5L/exec';
+        const CACHE_KEY = 'users_cache_v3'; // Invalidate old cache
         const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
         let users = [];
@@ -499,22 +512,36 @@
                 const data = await response.json();
 
                 if (data.status === 'success' && Array.isArray(data.users)) {
-                    users = data.users.map(u => {
-                        // Map boolean fields to permissions array if permissions array is missing or empty
-                        if (!u.permissions || u.permissions.length === 0) {
-                            const perms = [];
-                            // Check for various possible column names from Google Sheet
-                            if (u.dashboard === true || u.Dashboard === true) perms.push('dashboard');
-                            if (u.health_station === true || u.healthStation === true || u['Health Station'] === true) perms.push('health-station');
-                            if (u.service_requests === true || u.serviceRequests === true || u['Service Requests'] === true) perms.push('service-requests');
-                            if (u.analytics === true || u.Analytics === true) perms.push('analytics');
-                            if (u.settings === true || u.Settings === true) perms.push('settings');
-                            if (u.users === true || u.user_management === true || u['User Management'] === true) perms.push('users');
+                    console.log('Raw user data from API (first user):', data.users[0]); // Debug log
 
-                            if (perms.length > 0) {
-                                u.permissions = perms;
+                    users = data.users.map(u => {
+                        // Normalize all keys to lowercase and remove special characters for robust matching
+                        // e.g. "Health Station" -> "healthstation", "health_station" -> "healthstation"
+                        const normalizedUser = {};
+                        Object.keys(u).forEach(key => {
+                            const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            normalizedUser[cleanKey] = u[key];
+                        });
+
+                        const perms = [];
+
+                        // Helper to check for true-like values
+                        const isTrue = (val) => {
+                            if (typeof val === 'string') {
+                                return val.toLowerCase() === 'true';
                             }
-                        }
+                            return val === true || val === 1;
+                        };
+
+                        // Check against normalized keys
+                        if (isTrue(normalizedUser['dashboard'])) perms.push('dashboard');
+                        if (isTrue(normalizedUser['healthstation'])) perms.push('health-station');
+                        if (isTrue(normalizedUser['servicerequests'])) perms.push('service-requests');
+                        if (isTrue(normalizedUser['analytics'])) perms.push('analytics');
+                        if (isTrue(normalizedUser['settings'])) perms.push('settings');
+                        if (isTrue(normalizedUser['users']) || isTrue(normalizedUser['usermanagement'])) perms.push('users');
+
+                        u.permissions = perms;
                         return u;
                     });
 
@@ -759,13 +786,27 @@
                 role,
                 status,
                 permissions,
-                // Flatten permissions for Google Sheet columns
+                // Send multiple variations to ensure matching with Google Sheet columns
+                // 1. Snake_case
                 dashboard: permissions.includes('dashboard'),
                 health_station: permissions.includes('health-station'),
                 service_requests: permissions.includes('service-requests'),
                 analytics: permissions.includes('analytics'),
                 settings: permissions.includes('settings'),
-                users: permissions.includes('users')
+                users: permissions.includes('users'),
+
+                // 2. CamelCase
+                healthStation: permissions.includes('health-station'),
+                serviceRequests: permissions.includes('service-requests'),
+                userManagement: permissions.includes('users'),
+
+                // 3. Title Case (Matches common Sheet headers)
+                'Dashboard': permissions.includes('dashboard'),
+                'Health Station': permissions.includes('health-station'),
+                'Service Requests': permissions.includes('service-requests'),
+                'Analytics': permissions.includes('analytics'),
+                'Settings': permissions.includes('settings'),
+                'User Management': permissions.includes('users')
             };
             let action = 'addUser';
             if (id) {
@@ -839,11 +880,110 @@
             }
         }
 
+        // --- Debug Info ---
+        function showDebugInfo() {
+            if (users.length === 0) {
+                Swal.fire('No Data', 'No users loaded yet.', 'info');
+                return;
+            }
+            const firstUser = users[0];
+            const debugHtml = `
+                <div class="text-left text-xs font-mono bg-slate-100 dark:bg-slate-900 p-4 rounded-lg overflow-auto max-h-96">
+                    <pre>${JSON.stringify(firstUser, null, 2)}</pre>
+                </div>
+                <div class="mt-4 text-sm text-slate-600 dark:text-slate-400">
+                    <p><strong>Normalized Keys:</strong></p>
+                    <ul class="list-disc pl-5 mt-2">
+                        ${Object.keys(firstUser).map(k => `<li>${k} -> ${k.toLowerCase().replace(/[^a-z0-9]/g, '')}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'Debug: First User Data',
+                html: debugHtml,
+                width: '600px',
+                confirmButtonText: 'Close'
+            });
+        }
+
+        const translations = {
+            en: {
+                nav_dashboard: 'Dashboard',
+                nav_hospitals: 'Health Station',
+                nav_service_requests: 'Service Requests',
+                nav_analytics: 'Analytics',
+                nav_settings: 'Settings',
+                nav_users: 'User Management',
+                nav_logout: 'Logout',
+                btn_add_user: 'Add User',
+                search_placeholder: 'Search users...',
+                col_username: 'Username',
+                col_password: 'Password',
+                col_name: 'Name - Lastname',
+                col_emp_id: 'Employee ID',
+                col_dept: 'Department',
+                col_role: 'Role',
+                col_status: 'Status',
+                col_actions: 'Actions',
+                col_permissions: 'Permissions',
+                alert_success: 'Success',
+                alert_error: 'Error',
+                msg_saving: 'Saving...',
+                msg_please_wait: 'Please wait...',
+                msg_save_fail: 'Failed to save user',
+                msg_fill_required: 'Please fill in all required fields',
+                confirm_delete_title: 'Are you sure?',
+                confirm_delete_text: 'You won\'t be able to revert this!',
+                delete_btn: 'Yes, delete it!',
+                cancel_btn: 'Cancel',
+                msg_delete_fail: 'Failed to delete user'
+            },
+            th: {
+                nav_dashboard: 'แดชบอร์ด',
+                nav_hospitals: 'สถานีสุขภาพ',
+                nav_service_requests: 'แจ้งซ่อม',
+                nav_analytics: 'การวิเคราะห์',
+                nav_settings: 'การตั้งค่า',
+                nav_users: 'จัดการผู้ใช้งาน',
+                nav_logout: 'ออกจากระบบ',
+                btn_add_user: 'เพิ่มผู้ใช้งาน',
+                search_placeholder: 'ค้นหาผู้ใช้งาน...',
+                col_username: 'ชื่อผู้ใช้งาน',
+                col_password: 'รหัสผ่าน',
+                col_name: 'ชื่อ - นามสกุล',
+                col_emp_id: 'รหัสพนักงาน',
+                col_dept: 'แผนก',
+                col_role: 'สิทธิ์การใช้งาน',
+                col_status: 'สถานะ',
+                col_actions: 'จัดการ',
+                col_permissions: 'สิทธิ์การเข้าถึง',
+                alert_success: 'สำเร็จ',
+                alert_error: 'ข้อผิดพลาด',
+                msg_saving: 'กำลังบันทึก...',
+                msg_please_wait: 'กรุณารอสักครู่...',
+                msg_save_fail: 'บันทึกข้อมูลไม่สำเร็จ',
+                msg_fill_required: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                confirm_delete_title: 'ยืนยันการลบ?',
+                confirm_delete_text: 'คุณจะไม่สามารถกู้คืนข้อมูลได้!',
+                delete_btn: 'ใช่, ลบเลย!',
+                cancel_btn: 'ยกเลิก',
+                msg_delete_fail: 'ลบข้อมูลไม่สำเร็จ'
+            }
+        };
+
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
+            renderHeader('nav_users');
+            renderSidebar('users');
+            checkPermission('users');
+            setupLogout();
+
             // common.js handles initTheme and initLanguage
             // We just need to load data
             loadUsers();
+            initTheme();
+            initLanguage();
 
             // Setup Search
             document.getElementById('search-input').addEventListener('input', debounce(filterUsers, 300));

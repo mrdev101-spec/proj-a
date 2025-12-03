@@ -62,7 +62,7 @@ function updateThemeToggleUI() {
 }
 
 // --- Language Management ---
-let currentLang = localStorage.getItem('language') || 'th';
+var currentLang = localStorage.getItem('language') || 'th';
 
 function initLanguage() {
     // Set initial state for buttons
@@ -154,6 +154,13 @@ function updateUIText() {
 
     // Special handling for index.html specific elements if needed
     // (Most are covered by data-i18n now, but some dynamic ones might need specific handling in the page script)
+}
+
+function getTrans(key) {
+    const tData = (typeof translations !== 'undefined') ? translations : window.translations;
+    if (!tData) return key;
+    const t = tData[currentLang];
+    return t && t[key] ? t[key] : key;
 }
 
 // --- Authentication ---
@@ -256,7 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Wait a tick for translations to be defined in the main script
     setTimeout(() => {
-        initLanguage();
+        if (!window.skipThemeCheck) {
+            initLanguage();
+        }
     }, 0);
 
     // Setup Theme Toggle Listener
@@ -271,11 +280,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- System-wide Sync ---
 
     // Listen for storage changes (other tabs)
+    // Listen for storage changes (other tabs)
     window.addEventListener('storage', (e) => {
         if (e.key === 'darkMode') {
             initTheme();
         }
         if (e.key === 'language') {
+            // Ignore language sync if on a page that manages its own language (like Login)
+            if (window.skipThemeCheck) return;
+
             currentLang = e.newValue;
             initLanguage();
         }

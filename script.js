@@ -1,5 +1,5 @@
 // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-const API_URL = 'https://script.google.com/macros/s/AKfycbzLCQrq0Vr_1mRzWBHJyr5le1z7n3_KIsd718szles4ce6wmgz-StoU58zSYcXtmjyZ_Q/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx5ziXeQFYhaVJnoVTmmZ9Z2cQb6NWIi5jjchUOlmFLtcQUyenn5mFHW7oGQ9D03w5L/exec';
 
 const tableBody = document.getElementById('Hospital');
 const toast = document.getElementById('toast');

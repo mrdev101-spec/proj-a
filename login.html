@@ -10,7 +10,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
-    <link href="output.css" rel="stylesheet">
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
@@ -169,9 +169,9 @@
             <div class="absolute top-6 right-6 flex items-center gap-2 z-50">
                 <!-- Language Switcher -->
                 <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-1 flex">
-                    <button onclick="switchLanguage('th')" id="lang-th"
+                    <button onclick="setLoginLanguage('th')" id="lang-th"
                         class="px-2 py-1 rounded text-xs font-medium transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400">TH</button>
-                    <button onclick="switchLanguage('en')" id="lang-en"
+                    <button onclick="setLoginLanguage('en')" id="lang-en"
                         class="px-2 py-1 rounded text-xs font-medium transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400">EN</button>
                 </div>
             </div>
@@ -253,12 +253,18 @@
         </div>
     </div>
 
-    <script src="common.js"></script>
+    <script src="common.js?v=4"></script>
     <script>
         // Override initTheme to ensure Login page stays in Light Mode
         // This prevents common.js from applying the system-wide dark mode setting
         window.initTheme = function () {
             document.documentElement.classList.remove('dark');
+        };
+
+        // Override initLanguage to ensure Login page uses its own independent language
+        window.initLanguage = function () {
+            const loginLang = localStorage.getItem('login_language') || 'th';
+            setLoginLanguage(loginLang);
         };
     </script>
     <script>
@@ -303,7 +309,22 @@
         };
 
         // --- Language Logic ---
-        // let currentLang = ...
+        // Independent language state for Login page
+        function setLoginLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('login_language', lang); // Separate key from system 'language'
+
+            updateLanguageButtons(lang);
+            updateUIText();
+        }
+
+        // Initialize Login Language
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load from login_language OR default to 'th'
+            // Do NOT use the global 'language' setting
+            const loginLang = localStorage.getItem('login_language') || 'th';
+            setLoginLanguage(loginLang);
+        });
 
         // --- Password Toggle Logic ---
         const togglePasswordBtn = document.getElementById('toggle-password');
@@ -381,7 +402,7 @@
         });
 
         // REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxA2EvvSsoQSh5XSLGW4CpHcc-Ez3Dq4epQhXBqS9wXBkga67pMbeEieyEQDBH44HilFw/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx5ziXeQFYhaVJnoVTmmZ9Z2cQb6NWIi5jjchUOlmFLtcQUyenn5mFHW7oGQ9D03w5L/exec';
 
         loginForm.addEventListener('submit', async function (e) {
             e.preventDefault();
