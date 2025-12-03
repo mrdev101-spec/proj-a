@@ -29,6 +29,22 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // Auth Check: If already logged in, redirect to dashboard
+        (function () {
+            try {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (user && user.username) {
+                        window.location.replace('dashboard.html');
+                    }
+                }
+            } catch (e) {
+                // Invalid user data, stay on login page
+                localStorage.removeItem('user');
+            }
+        })();
     </script>
     <style>
         /* Immediate Dark Mode Support */

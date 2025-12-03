@@ -75,6 +75,24 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // Auth Guard
+        (function () {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.replace('login.html');
+            } else {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (!user || !user.username) {
+                        throw new Error('Invalid user');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    window.location.replace('login.html');
+                }
+            }
+        })();
     </script>
     <style>
         /* Immediate Dark Mode Support */
