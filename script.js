@@ -22,6 +22,8 @@ const tableCard = document.querySelector('.table-card');
 // Modal Elements
 const editModal = document.getElementById('edit-modal');
 const editForm = document.getElementById('edit-form');
+const addModal = document.getElementById('add-modal');
+const addForm = document.getElementById('add-form');
 const closeModalBtn = document.querySelector('.close-modal');
 const cancelBtn = document.querySelector('.btn-cancel');
 
@@ -134,8 +136,25 @@ async function init() {
         if (editForm) {
             editForm.addEventListener('submit', handleEditSubmit);
         }
+        if (addForm) {
+            addForm.addEventListener('submit', handleAddSubmit);
+        }
 
         console.log('Fetching data...');
+
+        // Show loading in table
+        const t = translations[currentLang] || translations['th'];
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 dark:text-slate-400">
+                <div class="flex justify-center items-center gap-2">
+                    <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>${t.loading}</span>
+                </div>
+            </td></tr>`;
+        }
 
         // 1. Try to load from cache first
         const cachedData = loadFromCache();
@@ -260,6 +279,7 @@ const globalUpdateUIText = window.updateUIText;
 window.updateUIText = function () {
     if (globalUpdateUIText) globalUpdateUIText();
     updateLocalUIText();
+    updateStats();
 };
 
 // function toggleGlobalLoading(isLoading) {
@@ -334,7 +354,7 @@ async function fetchData() {
             console.warn('API_URL not set.');
         }
 
-        const response = await fetch(API_URL);
+        const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -438,15 +458,16 @@ function renderTable(data, startIndex = 0) {
 
 function updateStats() {
     const t = translations[currentLang];
-    const statCards = document.querySelectorAll('.stat-card h3');
+    const statCenters = document.getElementById('stat-centers-value');
+    const statDistricts = document.getElementById('stat-districts-value');
 
-    if (statCards.length >= 2) {
+    if (statCenters && statDistricts) {
         const totalCenters = hospitals.length;
         const totalDistricts = new Set(hospitals.map(h => h.district)).size;
 
         // Use span for the number to keep color
-        statCards[0].innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
-        statCards[1].innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${totalDistricts}</span>`;
+        statCenters.innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
+        statDistricts.innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${totalDistricts}</span>`;
     }
 }
 
@@ -555,15 +576,20 @@ window.openEditModal = function (hcode) {
     }
 };
 
-function closeEditModal() {
+window.closeEditModal = function () {
+    const editModal = document.getElementById('edit-modal');
+    if (!editModal) return;
+
     editModal.classList.add('opacity-0');
     const content = editModal.querySelector('.modal-content');
     if (content) content.classList.add('scale-95');
 
     setTimeout(() => {
         editModal.classList.add('hidden');
+        editModal.style.display = 'none'; // Force hide
+        if (editForm) editForm.reset(); // Clear form data
     }, 300);
-}
+};
 
 async function handleEditSubmit(e) {
     e.preventDefault();
@@ -637,19 +663,22 @@ async function handleEditSubmit(e) {
 
 // --- Add Functions ---
 
-const addModal = document.getElementById('add-modal');
+// addModal and addForm are defined at the top
 
 window.openAddModal = function () {
-    document.getElementById('add-form').reset();
-    addModal.classList.remove('hidden');
-    requestAnimationFrame(() => {
-        addModal.classList.remove('opacity-0');
-        const content = addModal.querySelector('.modal-content');
-        if (content) content.classList.remove('scale-95');
-    });
+    if (addForm) addForm.reset();
+    if (addModal) {
+        addModal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            addModal.classList.remove('opacity-0');
+            const content = addModal.querySelector('.modal-content');
+            if (content) content.classList.remove('scale-95');
+        });
+    }
 };
 
 window.closeAddModal = function () {
+    if (!addModal) return;
     addModal.classList.add('opacity-0');
     const content = addModal.querySelector('.modal-content');
     if (content) content.classList.add('scale-95');
@@ -659,7 +688,7 @@ window.closeAddModal = function () {
     }, 300);
 };
 
-document.getElementById('add-form').addEventListener('submit', handleAddSubmit);
+// Event listener moved to init()
 
 async function handleAddSubmit(e) {
     e.preventDefault();
@@ -693,17 +722,24 @@ async function handleAddSubmit(e) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            await fetchData(); // Reload data
-            filterData();
             closeAddModal();
             Swal.fire({
                 icon: 'success',
                 title: t.saved,
-                showConfirmButton: false,
-                timer: 1500,
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
                 customClass: {
-                    popup: 'dark:bg-slate-800 dark:text-white'
+                    popup: 'dark:bg-slate-800 dark:text-white',
+                    confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
                 }
+            }).then(async () => {
+                // Refresh data after alert closes
+                toggleTableLoading(true);
+                await fetchData();
+                filterData();
+                updateStats();
+                populateDistricts(); // Update district filter
+                toggleTableLoading(false);
             });
         } else {
             throw new Error(result.message || 'Unknown error');
@@ -727,8 +763,7 @@ async function handleAddSubmit(e) {
     }
 }
 
-// --- Delete Function ---
-
+// Redefining deleteItem to be safe
 window.deleteItem = async function (hcode) {
     const t = translations[currentLang];
 
@@ -747,7 +782,6 @@ window.deleteItem = async function (hcode) {
     });
 
     if (result.isConfirmed) {
-        // Show loading state
         Swal.fire({
             title: t.saving,
             allowOutsideClick: false,
@@ -773,17 +807,36 @@ window.deleteItem = async function (hcode) {
             const result = await response.json();
 
             if (result.status === 'success') {
-                hospitals = hospitals.filter(h => String(h.hcode) !== String(hcode));
-                saveToCache(hospitals); // Update cache
-                filterData();
+                console.log('Delete success, forcing modal close');
+                // Close immediately with extreme prejudice
+                const editModal = document.getElementById('edit-modal');
+                if (editModal) {
+                    editModal.classList.add('hidden');
+                    editModal.style.setProperty('display', 'none', 'important');
+                    editModal.classList.remove('opacity-0');
+                }
+
                 Swal.fire({
                     icon: 'success',
                     title: t.deleted_success,
-                    showConfirmButton: false,
-                    timer: 1500,
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
                     customClass: {
-                        popup: 'dark:bg-slate-800 dark:text-white'
+                        popup: 'dark:bg-slate-800 dark:text-white',
+                        confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
                     }
+                }).then(async () => {
+                    console.log('Alert closed, refreshing data');
+                    // Ensure closed again
+                    if (editModal) editModal.style.setProperty('display', 'none', 'important');
+
+                    // Refresh data
+                    toggleTableLoading(true);
+                    await fetchData();
+                    filterData();
+                    updateStats();
+                    populateDistricts();
+                    toggleTableLoading(false);
                 });
             } else {
                 throw new Error(result.message || 'Unknown error');

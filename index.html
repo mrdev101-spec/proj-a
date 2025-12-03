@@ -9,6 +9,60 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        // Prevent white flash on load - MUST BE FIRST SCRIPT
+        if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <style>
+        /* Immediate Dark Mode Support */
+        html.dark body {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .dark .glass-effect {
+            background: rgba(30, 41, 59, 0.9);
+        }
+    </style>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -51,58 +105,6 @@
             }
         }
     </script>
-    <script>
-        // Prevent white flash on load
-        if (localStorage.getItem('darkMode') === 'enabled' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
-    <style>
-        /* Immediate Dark Mode Support */
-        html.dark body {
-            background-color: #0f172a;
-            color: #e2e8f0;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        .dark .glass-effect {
-            background: rgba(30, 41, 59, 0.9);
-        }
-    </style>
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
@@ -135,7 +137,7 @@
                             <p
                                 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                                 Service Centers</p>
-                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" data-i18n="stat_centers">
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="stat-centers-value">
                                 จำนวนศูนย์บริการ: <span class="text-blue-600 dark:text-blue-400">...</span></h3>
                         </div>
                     </div>
@@ -151,7 +153,7 @@
                             <p
                                 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                                 Total Districts</p>
-                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" data-i18n="stat_districts">
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="stat-districts-value">
                                 จำนวนอำเภอทั้งหมด: <span class="text-indigo-600 dark:text-indigo-400">...</span></h3>
                         </div>
                     </div>
@@ -437,7 +439,7 @@
 
     <script src="common.js?v=2"></script>
     <script src="components.js?v=4"></script>
-    <script src="script.js?v=33"></script>
+    <script src="script.js?v=35"></script>
     <script>
         // Init
         document.addEventListener('DOMContentLoaded', () => {
