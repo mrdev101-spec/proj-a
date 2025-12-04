@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="output.css" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -126,7 +126,6 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto relative z-10">
             <!-- Header -->
-            <!-- Header -->
             <div id="header-container"></div>
 
             <!-- Content -->
@@ -169,13 +168,26 @@
                         </div>
                     </div>
 
-                    <button onclick="openModal('add')"
-                        class="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span data-i18n="btn_add_user">Add User</span>
-                    </button>
+                    <div class="flex gap-2">
+                        <!-- Debug Button -->
+                        <button onclick="showDebugInfo()"
+                            class="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-600 hover:bg-slate-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            <span>Debug</span>
+                        </button>
+
+                        <button onclick="openModal('add')"
+                            class="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span data-i18n="btn_add_user">Add User</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Table Card -->
@@ -309,85 +321,67 @@
                             data-i18n="col_permissions">Permissions</label>
                         <div
                             class="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                            <!-- Dashboard -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <div class="relative flex items-center">
                                     <input type="checkbox" id="perm-dashboard" value="dashboard"
-                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
-                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
+                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-cyan-400 checked:bg-cyan-400 hover:border-cyan-300 checked:shadow-[0_0_15px_rgba(34,211,238,0.6)]">
                                 </div>
                                 <span
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
                                     data-i18n="nav_dashboard">Dashboard</span>
                             </label>
+                            <!-- Health Station -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <div class="relative flex items-center">
                                     <input type="checkbox" id="perm-health-station" value="health-station"
-                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
-                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
+                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-cyan-400 checked:bg-cyan-400 hover:border-cyan-300 checked:shadow-[0_0_15px_rgba(34,211,238,0.6)]">
                                 </div>
                                 <span
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
                                     data-i18n="nav_hospitals">Health Station</span>
                             </label>
+                            <!-- Service Requests -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <div class="relative flex items-center">
                                     <input type="checkbox" id="perm-service-requests" value="service-requests"
-                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
-                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
+                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-cyan-400 checked:bg-cyan-400 hover:border-cyan-300 checked:shadow-[0_0_15px_rgba(34,211,238,0.6)]">
                                 </div>
                                 <span
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
                                     data-i18n="nav_service_requests">Service Requests</span>
                             </label>
+                            <!-- Analytics -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <div class="relative flex items-center">
                                     <input type="checkbox" id="perm-analytics" value="analytics"
-                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
-                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
+                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-cyan-400 checked:bg-cyan-400 hover:border-cyan-300 checked:shadow-[0_0_15px_rgba(34,211,238,0.6)]">
                                 </div>
                                 <span
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
                                     data-i18n="nav_analytics">Analytics</span>
                             </label>
+                            <!-- Settings -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <div class="relative flex items-center">
                                     <input type="checkbox" id="perm-settings" value="settings"
-                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
-                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
+                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-cyan-400 checked:bg-cyan-400 hover:border-cyan-300 checked:shadow-[0_0_15px_rgba(34,211,238,0.6)]">
                                 </div>
                                 <span
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
                                     data-i18n="nav_settings">Settings</span>
                             </label>
+                            <!-- User Management -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <div class="relative flex items-center">
                                     <input type="checkbox" id="perm-users" value="users"
-                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400">
-                                    <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
+                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-cyan-400 checked:bg-cyan-400 hover:border-cyan-300 checked:shadow-[0_0_15px_rgba(34,211,238,0.6)]">
                                 </div>
                                 <span
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
@@ -411,12 +405,15 @@
         </div>
     </div>
 
-    <script src="common.js?v=4"></script>
+    <script src="common.js?v=5"></script>
     <script src="components.js?v=5"></script>
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzLCQrq0Vr_1mRzWBHJyr5le1z7n3_KIsd718szles4ce6wmgz-StoU58zSYcXtmjyZ_Q/exec';
-        const CACHE_KEY = 'users_cache';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx5ziXeQFYhaVJnoVTmmZ9Z2cQb6NWIi5jjchUOlmFLtcQUyenn5mFHW7oGQ9D03w5L/exec';
+        const CACHE_KEY = 'users_cache_v3'; // Invalidate old cache
         const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+        // Debug log
+        console.log('Users script loaded');
 
         let users = [];
         let filteredUsers = [];
@@ -466,167 +463,162 @@
         }
 
         async function loadUsers() {
+            console.log('loadUsers called');
             const tbody = document.getElementById('user-table-body');
 
-            // 1. Try to load from cache first
+            // Show loading state
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                        <div class="flex flex-col items-center justify-center gap-3">
+                            <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span data-i18n="msg_please_wait">Loading users...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            // Try cache first
             const cachedData = loadFromCache();
             if (cachedData) {
-                console.log('Loaded users from cache:', cachedData.length);
+                console.log('Loaded users from cache');
                 users = cachedData;
-
-                // Sort by Role Priority: Super Admin > Admin > User
-                const rolePriority = { 'Super Admin': 1, 'Admin': 2, 'User': 3 };
-                users.sort((a, b) => {
-                    const pA = rolePriority[a.role] || 99;
-                    const pB = rolePriority[b.role] || 99;
-                    return pA - pB;
-                });
-
-                filteredUsers = users;
+                filteredUsers = [...users];
                 renderTable();
+                // Background update
+                fetchUsers(false);
             } else {
-                tbody.innerHTML = `<tr>
-                    <td colspan="8" class="px-6 py-12 text-center text-slate-500 animate-pulse">Loading users...</td>
-                </tr>`;
+                await fetchUsers(true);
             }
+        }
 
-            // 2. Fetch fresh data in background
+        async function fetchUsers(showLoading = true) {
+            console.log('Fetching users from API...');
             try {
+                // Use POST request for getUsers action
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'getUsers' })
                 });
+                console.log('API Response status:', response.status);
                 const data = await response.json();
+                console.log('API Data received:', data);
 
-                if (data.status === 'success' && Array.isArray(data.users)) {
-                    users = data.users.map(u => {
-                        // Map boolean fields to permissions array if permissions array is missing or empty
-                        if (!u.permissions || u.permissions.length === 0) {
-                            const perms = [];
-                            // Check for various possible column names from Google Sheet
-                            if (u.dashboard === true || u.Dashboard === true) perms.push('dashboard');
-                            if (u.health_station === true || u.healthStation === true || u['Health Station'] === true) perms.push('health-station');
-                            if (u.service_requests === true || u.serviceRequests === true || u['Service Requests'] === true) perms.push('service-requests');
-                            if (u.analytics === true || u.Analytics === true) perms.push('analytics');
-                            if (u.settings === true || u.Settings === true) perms.push('settings');
-                            if (u.users === true || u.user_management === true || u['User Management'] === true) perms.push('users');
+                let validUsers = [];
 
-                            if (perms.length > 0) {
-                                u.permissions = perms;
-                            }
-                        }
-                        return u;
-                    });
-
-                    // Sort by Role Priority: Super Admin > Admin > User
-                    const rolePriority = { 'Super Admin': 1, 'Admin': 2, 'User': 3 };
-                    users.sort((a, b) => {
-                        const pA = rolePriority[a.role] || 99;
-                        const pB = rolePriority[b.role] || 99;
-                        return pA - pB;
-                    });
-
-                    filteredUsers = users;
-                    saveToCache(users);
-                    filterUsers();
-                    console.log('Users updated from server');
-                } else {
-                    console.error('Invalid data format:', data);
-                    if (!cachedData) {
-                        showThemeAlert(getTrans('alert_error'), data.message || 'Invalid data format received from server', 'error');
-                        tbody.innerHTML = `<tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-red-500">Failed to load data.</td>
-                        </tr>`;
+                // Handle both array (direct list) and object (wrapped) responses
+                if (Array.isArray(data)) {
+                    // Validate if it's actually users (must have username)
+                    if (data.length > 0 && !data[0].username) {
+                        console.error('Received array but missing username field. Likely Hospital data.');
+                        throw new Error('Backend returned incorrect data (Hospitals instead of Users). Please redeploy Code.gs.');
                     }
+                    validUsers = data;
+                    console.log('Users updated from server (Array format)');
+                } else if (data.status === 'success') {
+                    validUsers = data.users;
+                    console.log('Users updated from server (Object format)');
+                } else {
+                    console.error('API returned error:', data.message);
+                    throw new Error(data.message || 'Failed to load data');
                 }
+
+                users = validUsers;
+                filteredUsers = [...users];
+                saveToCache(users);
+                renderTable();
+
             } catch (error) {
                 console.error('Error loading users:', error);
-                if (!cachedData) {
-                    tbody.innerHTML = `<tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-red-500">Error loading users: ${error.message}</td>
-                    </tr>`;
-                } else {
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Using cached data (Offline)'
-                    });
+                if (showLoading) {
+                    const tbody = document.getElementById('user-table-body');
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-red-500">
+                                <div class="flex flex-col items-center gap-2">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    <span class="font-bold">Error loading data</span>
+                                    <span class="text-sm text-slate-600 dark:text-slate-400">${error.message}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                 }
             }
         }
 
         function renderTable() {
             const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+
             if (filteredUsers.length === 0) {
-                tbody.innerHTML = `<tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-slate-500">No users found.</td>
-                </tr>`;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            No users found.
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
-            tbody.innerHTML = filteredUsers.map(user => `
-                <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-200 group border-b border-slate-50 dark:border-slate-700/50 last:border-0">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/30 ring-2 ring-white dark:ring-slate-700 transform group-hover:scale-110 transition-transform duration-200">
-                                ${user.username ? user.username.charAt(0).toUpperCase() : '?'}
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${user.username || ''}</div>
-                            </div>
-                        </div>
+            filteredUsers.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group';
+
+                const roleBadgeClass = getRoleBadgeClass(user.role);
+                const statusBadgeClass = getStatusBadgeClass(user.status);
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">
+                        ${user.username}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-400 text-xs tracking-widest">••••••</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-medium">${user.name || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-mono">
+                        ••••••••
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
+                        ${user.name}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        ${user.empId || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        ${user.dept || '-'}
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-slate-500 dark:text-slate-400 font-mono text-xs bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md">
-                            ${user.empId || ''}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleBadgeClass}">
+                            ${user.role}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400">${user.dept || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold border shadow-sm ${getRoleBadgeClass(user.role)}">
-                            ${user.role || 'User'}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass}">
+                            ${user.status}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm ${getStatusBadgeClass(user.status)}">
-                            <span class="relative flex h-2 w-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
-                            </span>
-                            ${user.status || 'Active'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0">
-                            <button onclick="openModal('edit', ${user.id})"
-                                class="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-xl transition-all hover:shadow-md active:scale-95"
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openModal('edit', '${user.id}')" 
+                                class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                                 title="Edit">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
-                            <button onclick="deleteUser(${user.id})"
-                                class="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-xl transition-all hover:shadow-md active:scale-95"
+                            <button onclick="deleteUser('${user.id}')" 
+                                class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                                 title="Delete">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
                     </td>
-                </tr>
-            `).join('');
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function filterUsers() {
@@ -634,9 +626,11 @@
             const roleFilter = document.getElementById('role-filter').value;
 
             filteredUsers = users.filter(user => {
-                const matchesSearch = (user.username && user.username.toLowerCase().includes(searchTerm)) ||
-                    (user.name && user.name.toLowerCase().includes(searchTerm)) ||
-                    (user.empId && String(user.empId).toLowerCase().includes(searchTerm));
+                const matchesSearch = (
+                    user.username.toLowerCase().includes(searchTerm) ||
+                    user.name.toLowerCase().includes(searchTerm) ||
+                    (user.empId && user.empId.toLowerCase().includes(searchTerm))
+                );
                 const matchesRole = roleFilter === '' || user.role === roleFilter;
                 return matchesSearch && matchesRole;
             });
@@ -644,19 +638,36 @@
             renderTable();
         }
 
-        // --- Helpers ---
         function getRoleBadgeClass(role) {
             switch (role) {
-                case 'Super Admin': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700/50';
-                case 'Admin': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700/50';
-                default: return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+                case 'Super Admin': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+                case 'Admin': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                default: return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
             }
         }
 
         function getStatusBadgeClass(status) {
             return status === 'Active'
-                ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-700/50'
-                : 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-700/50';
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+        }
+
+        function handleRoleChange() {
+            const role = document.getElementById('user-role').value;
+            const isSuperAdmin = role === 'Super Admin';
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="perm-"]');
+
+            checkboxes.forEach(cb => {
+                if (isSuperAdmin) {
+                    cb.checked = true;
+                    cb.disabled = true;
+                    // Visual cue for disabled state
+                    cb.parentElement.parentElement.classList.add('opacity-75', 'cursor-not-allowed');
+                } else {
+                    cb.disabled = false;
+                    cb.parentElement.parentElement.classList.remove('opacity-75', 'cursor-not-allowed');
+                }
+            });
         }
 
         // --- Modal Logic ---
@@ -689,10 +700,14 @@
 
                     // Set permissions
                     const permissions = user.permissions || [];
-                    document.getElementById('perm-dashboard').checked = permissions.includes('dashboard');
-                    document.getElementById('perm-health-station').checked = permissions.includes('health-station');
-                    document.getElementById('perm-service-requests').checked = permissions.includes('service-requests');
-                    document.getElementById('perm-analytics').checked = permissions.includes('analytics');
+                    document.getElementById('perm-dashboard').checked =
+                        permissions.includes('dashboard');
+                    document.getElementById('perm-health-station').checked =
+                        permissions.includes('health-station');
+                    document.getElementById('perm-service-requests').checked =
+                        permissions.includes('service-requests');
+                    document.getElementById('perm-analytics').checked =
+                        permissions.includes('analytics');
                     document.getElementById('perm-settings').checked = permissions.includes('settings');
                     document.getElementById('perm-users').checked = permissions.includes('users');
                 }
@@ -707,10 +722,14 @@
                 document.getElementById('perm-users').checked = false;
             }
 
+            // Apply Super Admin rules
+            handleRoleChange();
+
             modal.classList.remove('hidden');
             // Animate in
             const panel = modal.querySelector('.transform');
-            panel.classList.remove('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+            panel.classList.remove('opacity-0', 'translate-y-4', 'sm:translate-y-0',
+                'sm:scale-95');
             panel.classList.add('opacity-100', 'translate-y-0', 'sm:scale-100');
         }
 
@@ -720,7 +739,8 @@
 
             // Animate out
             panel.classList.remove('opacity-100', 'translate-y-0', 'sm:scale-100');
-            panel.classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+            panel.classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0',
+                'sm:scale-95');
 
             setTimeout(() => {
                 modal.classList.add('hidden');
@@ -739,10 +759,14 @@
 
             // Collect permissions
             const permissions = [];
-            if (document.getElementById('perm-dashboard').checked) permissions.push('dashboard');
-            if (document.getElementById('perm-health-station').checked) permissions.push('health-station');
-            if (document.getElementById('perm-service-requests').checked) permissions.push('service-requests');
-            if (document.getElementById('perm-analytics').checked) permissions.push('analytics');
+            if (document.getElementById('perm-dashboard').checked)
+                permissions.push('dashboard');
+            if (document.getElementById('perm-health-station').checked)
+                permissions.push('health-station');
+            if (document.getElementById('perm-service-requests').checked)
+                permissions.push('service-requests');
+            if (document.getElementById('perm-analytics').checked)
+                permissions.push('analytics');
             if (document.getElementById('perm-settings').checked) permissions.push('settings');
             if (document.getElementById('perm-users').checked) permissions.push('users');
 
@@ -759,13 +783,27 @@
                 role,
                 status,
                 permissions,
-                // Flatten permissions for Google Sheet columns
+                // Send multiple variations to ensure matching with Google Sheet columns
+                // 1. Snake_case
                 dashboard: permissions.includes('dashboard'),
                 health_station: permissions.includes('health-station'),
                 service_requests: permissions.includes('service-requests'),
                 analytics: permissions.includes('analytics'),
                 settings: permissions.includes('settings'),
-                users: permissions.includes('users')
+                users: permissions.includes('users'),
+
+                // 2. CamelCase
+                healthStation: permissions.includes('health-station'),
+                serviceRequests: permissions.includes('service-requests'),
+                userManagement: permissions.includes('users'),
+
+                // 3. Title Case (Matches common Sheet headers)
+                'Dashboard': permissions.includes('dashboard'),
+                'Health Station': permissions.includes('health-station'),
+                'Service Requests': permissions.includes('service-requests'),
+                'Analytics': permissions.includes('analytics'),
+                'Settings': permissions.includes('settings'),
+                'User Management': permissions.includes('users')
             };
             let action = 'addUser';
             if (id) {
@@ -791,11 +829,13 @@
                     closeModal();
                     loadUsers();
                 } else {
-                    showThemeAlert(getTrans('alert_error'), data.message || getTrans('msg_save_fail'), 'error');
+                    showThemeAlert(getTrans('alert_error'), data.message || getTrans('msg_save_fail'),
+                        'error');
                 }
             } catch (error) {
                 console.error('Error saving user:', error);
-                showThemeAlert(getTrans('alert_error'), getTrans('msg_save_fail') + ': ' + error.message, 'error');
+                showThemeAlert(getTrans('alert_error'), getTrans('msg_save_fail') + ': ' +
+                    error.message, 'error');
             }
         }
 
@@ -830,24 +870,133 @@
                         showThemeAlert(getTrans('alert_success'), data.message, 'success');
                         loadUsers();
                     } else {
-                        showThemeAlert(getTrans('alert_error'), data.message || getTrans('msg_delete_fail'), 'error');
+                        showThemeAlert(getTrans('alert_error'), data.message || getTrans('msg_delete_fail'),
+                            'error');
                     }
                 } catch (error) {
                     console.error('Error deleting user:', error);
-                    showThemeAlert(getTrans('alert_error'), getTrans('msg_delete_fail') + ': ' + error.message, 'error');
+                    showThemeAlert(getTrans('alert_error'), getTrans('msg_delete_fail') + ': ' +
+                        error.message, 'error');
                 }
             }
         }
 
+        // --- Debug Info ---
+        function showDebugInfo() {
+            if (users.length === 0) {
+                Swal.fire('No Data', 'No users loaded yet.', 'info');
+                return;
+            }
+            const firstUser = users[0];
+            const debugHtml = `
+                        <div
+                            class="text-left text-xs font-mono bg-slate-100 dark:bg-slate-900 p-4 rounded-lg overflow-auto max-h-96">
+                            <pre>${JSON.stringify(firstUser, null, 2)}</pre>
+                        </div>
+                        <div class="mt-4 text-sm text-slate-600 dark:text-slate-400">
+                            <p><strong>Normalized Keys:</strong></p>
+                            <ul class="list-disc pl-5 mt-2">
+                                ${Object.keys(firstUser).map(k => `<li>${k} ->
+                                    ${k.toLowerCase().replace(/[^a-z0-9]/g, '')}</li>`).join('')}
+                            </ul>
+                        </div>
+                        `;
+
+            Swal.fire({
+                title: 'Debug: First User Data',
+                html: debugHtml,
+                width: '600px',
+                confirmButtonText: 'Close'
+            });
+        }
+
+        const translations = {
+            en: {
+                nav_dashboard: 'Dashboard',
+                nav_hospitals: 'Health Station',
+                nav_service_requests: 'Service Requests',
+                nav_analytics: 'Analytics',
+                nav_settings: 'Settings',
+                nav_users: 'User Management',
+                nav_logout: 'Logout',
+                btn_add_user: 'Add User',
+                search_placeholder: 'Search users...',
+                col_username: 'Username',
+                col_password: 'Password',
+                col_name: 'Name - Lastname',
+                col_emp_id: 'Employee ID',
+                col_dept: 'Department',
+                col_role: 'Role',
+                col_status: 'Status',
+                col_actions: 'Actions',
+                col_permissions: 'Permissions',
+                alert_success: 'Success',
+                alert_error: 'Error',
+                msg_saving: 'Saving...',
+                msg_please_wait: 'Please wait...',
+                msg_save_fail: 'Failed to save user',
+                msg_fill_required: 'Please fill in all required fields',
+                confirm_delete_title: 'Are you sure?',
+                confirm_delete_text: 'You won\'t be able to revert this!',
+                delete_btn: 'Yes, delete it!',
+                cancel_btn: 'Cancel',
+                msg_delete_fail: 'Failed to delete user'
+            },
+            th: {
+                nav_dashboard: 'แดชบอร์ด',
+                nav_hospitals: 'สถานีสุขภาพ',
+                nav_service_requests: 'แจ้งซ่อม',
+                nav_analytics: 'การวิเคราะห์',
+                nav_settings: 'การตั้งค่า',
+                nav_users: 'จัดการผู้ใช้งาน',
+                nav_logout: 'ออกจากระบบ',
+                btn_add_user: 'เพิ่มผู้ใช้งาน',
+                search_placeholder: 'ค้นหาผู้ใช้งาน...',
+                col_username: 'ชื่อผู้ใช้งาน',
+                col_password: 'รหัสผ่าน',
+                col_name: 'ชื่อ - นามสกุล',
+                col_emp_id: 'รหัสพนักงาน',
+                col_dept: 'แผนก',
+                col_role: 'สิทธิ์การใช้งาน',
+                col_status: 'สถานะ',
+                col_actions: 'จัดการ',
+                col_permissions: 'สิทธิ์การเข้าถึง',
+                alert_success: 'สำเร็จ',
+                alert_error: 'ข้อผิดพลาด',
+                msg_saving: 'กำลังบันทึก...',
+                msg_please_wait: 'กรุณารอสักครู่...',
+                msg_save_fail: 'บันทึกข้อมูลไม่สำเร็จ',
+                msg_fill_required: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                confirm_delete_title: 'ยืนยันการลบ?',
+                confirm_delete_text: 'คุณจะไม่สามารถกู้คืนข้อมูลได้!',
+                delete_btn: 'ใช่, ลบเลย!',
+                cancel_btn: 'ยกเลิก',
+                msg_delete_fail: 'ลบข้อมูลไม่สำเร็จ'
+            }
+        };
+
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOMContentLoaded fired');
+            renderHeader('nav_users');
+            renderSidebar('users');
+            checkPermission('users');
+            setupLogout();
+
             // common.js handles initTheme and initLanguage
             // We just need to load data
             loadUsers();
+            initTheme();
+            initLanguage();
 
             // Setup Search
-            document.getElementById('search-input').addEventListener('input', debounce(filterUsers, 300));
+            document.getElementById('search-input').addEventListener('input',
+                debounce(filterUsers,
+                    300));
             document.getElementById('role-filter').addEventListener('change', filterUsers);
+
+            // Setup Role Change Handler for Modal
+            document.getElementById('user-role').addEventListener('change', handleRoleChange);
         });
 
         // Hook into updateUIText from common.js
