@@ -493,8 +493,9 @@
         </main>
     </div>
 
-    <script src="common.js?v=8"></script>
-    <script src="components.js?v=8"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script src="common.js?v=9"></script>
+    <script src="components.js?v=9"></script>
     <script>
         const translations = {
             en: {
@@ -669,7 +670,7 @@
             chart.render();
         }
 
-        function loadDashboardData() {
+        async function fetchDashboardData() {
             // Set User Name
             try {
                 const userStr = localStorage.getItem('user');
@@ -684,8 +685,61 @@
                 console.error('Error setting user name:', e);
             }
 
-            initChart();
-            animateCounters();
+            try {
+                // 1. Get Users Count
+                const usersSnapshot = await window.firebase.getDocs(window.firebase.collection(window.firebase.db, "users"));
+                const usersCount = usersSnapshot.size;
+
+                // Update Users Counter (assuming there is an element with id or class for it, if not I'll skip or add it later)
+                // The dashboard HTML might not have a specific ID for users count yet.
+                // Let's assume standard counters: Pending, In Progress, Completed, SLA.
+
+                // 2. Get Service Requests
+                const requestsSnapshot = await window.firebase.getDocs(window.firebase.collection(window.firebase.db, "service_requests"));
+                let pending = 0;
+                let inProgress = 0;
+                let completed = 0;
+                let slaWarning = 0;
+
+                requestsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const status = data.status || 'Pending';
+                    if (status === 'Pending') pending++;
+                    else if (status === 'In Progress') inProgress++;
+                    else if (status === 'Completed') completed++;
+
+                    // Mock SLA check
+                    if (data.isSlaWarning) slaWarning++;
+                });
+
+                // Update Counters
+                updateCounter('stat-pending', pending);
+                updateCounter('stat-progress', inProgress);
+                updateCounter('stat-completed', completed);
+                updateCounter('stat-sla', slaWarning);
+
+                animateCounters();
+
+                // Update Chart (Mock data for now based on counts, or real if we had timestamps)
+                // For now, just re-render chart with static data or simple distribution
+                if (chart) {
+                    chart.updateSeries([{
+                        name: 'Requests',
+                        data: [pending + inProgress + completed, 0, 0, 0, 0, 0, 0] // Mock trend
+                    }]);
+                }
+
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        function updateCounter(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.setAttribute('data-target', value);
+                el.innerText = '0'; // Reset for animation
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -701,7 +755,17 @@
             renderSidebar('dashboard');
             checkPermission('dashboard');
             setupLogout();
-            loadDashboardData();
+            initChart(); // Init first
+
+            // Wait for Firebase
+            if (window.firebase) {
+                fetchDashboardData();
+            } else {
+                window.addEventListener('firebase-initialized', () => {
+                    fetchDashboardData();
+                });
+            }
+
             initTheme();
             initLanguage();
         });

@@ -260,7 +260,17 @@ function setupLogout() {
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#1e293b'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Firebase SignOut
+                    if (window.firebase && window.firebase.signOut) {
+                        window.firebase.signOut(window.firebase.auth).then(() => {
+                            console.log('Signed out from Firebase');
+                        }).catch((error) => {
+                            console.error('Sign out error', error);
+                        });
+                    }
+
                     localStorage.removeItem('user');
+                    localStorage.removeItem('isLoggedIn');
                     window.location.href = 'login.html';
                 }
             });
