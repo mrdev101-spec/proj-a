@@ -219,9 +219,26 @@
         }
     </style>
 
+    <style>
+        /* Fix Flash & Flicker */
+        html.dark {
+            background-color: #0f172a;
+        }
+
+        body.preload {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        body {
+            transition: opacity 0.2s ease-in-out;
+            opacity: 1;
+        }
+    </style>
 </head>
 
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300 preload">
 
     <div class="flex h-screen overflow-hidden">
 
@@ -411,7 +428,7 @@
                                 data-i18n="recent_activity_title">Latest Requests</h3>
                             <p
                                 class="text-sm text-slate-500 dark:text-slate-400 mt-1 animate-fade-in-up delay-900 opacity-0">
-                                Recent updates from hospitals</p>
+                                Recent updates from health stations</p>
                         </div>
                         <div class="space-y-4 flex-1">
                             <!-- Item 1 -->
@@ -422,85 +439,32 @@
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"
-                                        data-i18n="issue_server_down">Server Down - Critical</h4>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span
-                                            class="text-xs font-medium px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">Hospital
-                                            A</span>
-                                        <span class="text-xs text-slate-400">10 mins ago</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Item 2 -->
-                            <div
-                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all cursor-pointer group border border-transparent hover:border-orange-100 dark:hover:border-orange-900/30 hover:-translate-x-1 duration-200 animate-fade-in-up delay-900 opacity-0">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors"
-                                        data-i18n="issue_printer_error">Printer Connection Error</h4>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span
-                                            class="text-xs font-medium px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">Hospital
-                                            B</span>
-                                        <span class="text-xs text-slate-400">2 hours ago</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Item 3 -->
-                            <div
-                                class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all cursor-pointer group border border-transparent hover:border-green-100 dark:hover:border-green-900/30 hover:-translate-x-1 duration-200 animate-fade-in-up delay-900 opacity-0">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 text-green-500 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors"
-                                        data-i18n="issue_software_update">Software Update Completed</h4>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span
-                                            class="text-xs font-medium px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">Hospital
-                                            C</span>
-                                        <span class="text-xs text-slate-400">5 hours ago</span>
-                                    </div>
+                                        class="w-full mt-6 py-3.5 text-sm font-bold text-blue-600 dark:text-blue-400
+                                        hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all flex
+                                        items-center justify-center gap-2 group border border-transparent
+                                        hover:border-blue-100 dark:hover:border-blue-900/30 animate-fade-in-up delay-900
+                                        opacity-0">
+                                        <span data-i18n="btn_view_all_requests">View All Requests</span>
+                                        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                        </button>
                                 </div>
                             </div>
                         </div>
-                        <button
-                            class="w-full mt-6 py-3.5 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all flex items-center justify-center gap-2 group border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 animate-fade-in-up delay-900 opacity-0">
-                            <span data-i18n="btn_view_all_requests">View All Requests</span>
-                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 
     <script type="module" src="firebase-config.js"></script>
     <script src="common.js?v=9"></script>
-    <script src="components.js?v=9"></script>
+    <script src="components.js?v=12"></script>
     <script>
         const translations = {
             en: {
                 nav_dashboard: 'Dashboard',
-                nav_hospitals: 'Health Station',
+                nav_health_station: 'Health Station',
                 nav_service_requests: 'Service Requests',
                 nav_analytics: 'Analytics',
                 nav_settings: 'Settings',
@@ -525,7 +489,7 @@
             },
             th: {
                 nav_dashboard: 'แดชบอร์ด',
-                nav_hospitals: 'สถานีสุขภาพ',
+                nav_health_station: 'สถานีสุขภาพ',
                 nav_service_requests: 'แจ้งซ่อม',
                 nav_analytics: 'การวิเคราะห์',
                 nav_settings: 'การตั้งค่า',

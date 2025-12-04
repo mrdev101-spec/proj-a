@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Migrate Hospitals to Health Station</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSnjvJdUkka7g1IadUlbPOCeE-KT9O_iA",
+            authDomain: "ma-service-40f97.firebaseapp.com",
+            projectId: "ma-service-40f97",
+            storageBucket: "ma-service-40f97.firebasestorage.app",
+            messagingSenderId: "955015176286",
+            appId: "1:955015176286:web:cdd9a970e6e4aa6cb914cf",
+            measurementId: "G-LD64Q1N0GQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function migrateData() {
+            const statusDiv = document.getElementById('status');
+            const log = (msg) => {
+                console.log(msg);
+                statusDiv.innerHTML += `<div>${msg}</div>`;
+            };
+
+            try {
+                log(`Starting migration from 'hospitals' to 'health_station'...`);
+
+                // 1. Fetch all documents from 'hospitals'
+                const sourceCollectionRef = collection(db, "hospitals");
+                const sourceSnapshot = await getDocs(sourceCollectionRef);
+
+                if (sourceSnapshot.empty) {
+                    log("Source collection 'hospitals' is empty. Nothing to migrate.");
+                    return;
+                }
+
+                log(`Found ${sourceSnapshot.size} documents in 'hospitals'.`);
+
+                // 2. Write to 'health_station'
+                const targetCollectionName = "health_station";
+                let count = 0;
+                const batchSize = 500;
+                let batch = writeBatch(db);
+                let batchCount = 0;
+
+                for (const docSnapshot of sourceSnapshot.docs) {
+                    const data = docSnapshot.data();
+                    const docId = docSnapshot.id;
+                    const targetDocRef = doc(db, targetCollectionName, docId);
+
+                    batch.set(targetDocRef, data);
+                    count++;
+                    batchCount++;
+
+                    if (batchCount >= batchSize) {
+                        await batch.commit();
+                        log(`Committed batch of ${batchCount} documents.`);
+                        batch = writeBatch(db);
+                        batchCount = 0;
+                    }
+                }
+
+                if (batchCount > 0) {
+                    await batch.commit();
+                    log(`Committed final batch of ${batchCount} documents.`);
+                }
+
+                log(`Migration complete! Copied ${count} documents to '${targetCollectionName}'.`);
+                document.body.style.backgroundColor = 'lightgreen';
+
+            } catch (error) {
+                log(`Error during migration: ${error.message}`);
+                console.error(error);
+                document.body.style.backgroundColor = 'lightcoral';
+            }
+        }
+
+        window.onload = migrateData;
+    </script>
+</head>
+
+<body>
+    <h1>Migrating Data...</h1>
+    <div id="status"></div>
+</body>
+
+</html>

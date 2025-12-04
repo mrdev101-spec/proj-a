@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Data Migration (Final)</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSnjvJdUkka7g1IadUlbPOCeE-KT9O_iA",
+            authDomain: "ma-service-40f97.firebaseapp.com",
+            projectId: "ma-service-40f97",
+            storageBucket: "ma-service-40f97.firebasestorage.app",
+            messagingSenderId: "955015176286",
+            appId: "1:955015176286:web:cdd9a970e6e4aa6cb914cf",
+            measurementId: "G-LD64Q1N0GQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/15TWNJ1vCFzWeFrwBEieRBaY5mf3HcDo_HjX_eyInTfc/export?format=csv';
+
+        async function migrate() {
+            const statusDiv = document.getElementById('status');
+            const log = (msg) => {
+                console.log(msg);
+                statusDiv.innerHTML += `<div>${msg}</div>`;
+            };
+
+            try {
+                log('Attempting to sign in anonymously...');
+                try {
+                    await signInAnonymously(auth);
+                    log('Signed in anonymously.');
+                } catch (authError) {
+                    log(`Anonymous auth failed: ${authError.message}`);
+                }
+
+                log('Fetching CSV...');
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+
+                log('Parsing CSV...');
+                const lines = csvText.split(/\r?\n/);
+                const hospitals = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const columns = line.split(',');
+
+                    if (columns.length >= 6) {
+                        const hcode = columns[2].trim();
+                        if (hcode && hcode.length > 0) {
+                            hospitals.push({
+                                timestamp: columns[0].trim(),
+                                name: columns[1].trim(),
+                                hcode: hcode,
+                                district: columns[3].trim(),
+                                pcId: columns[4].trim(),
+                                anydesk: columns[5].trim()
+                            });
+                        }
+                    }
+                }
+
+                log(`Found ${hospitals.length} valid records. Starting sequential upload...`);
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const hospital of hospitals) {
+                    try {
+                        const docId = String(hospital.hcode);
+                        const docRef = doc(db, "hospitals", docId);
+                        await setDoc(docRef, hospital);
+                        successCount++;
+                        if (successCount % 10 === 0) {
+                            log(`Uploaded ${successCount}/${hospitals.length}...`);
+                        }
+                    } catch (e) {
+                        failCount++;
+                        log(`FAILED to upload ${hospital.name} (${hospital.hcode}): ${e.message}`);
+                    }
+                }
+
+                log(`MIGRATION COMPLETE. Success: ${successCount}, Failed: ${failCount}`);
+
+                if (failCount === 0) {
+                    document.body.style.backgroundColor = 'lightgreen';
+                } else {
+                    document.body.style.backgroundColor = 'orange';
+                }
+
+            } catch (error) {
+                log(`CRITICAL ERROR: ${error.message}`);
+                console.error(error);
+                document.body.style.backgroundColor = 'lightcoral';
+            }
+        }
+
+        window.onload = migrate;
+    </script>
+</head>
+
+<body>
+    <h1>Migrating Data (Sequential)...</h1>
+    <div id="status"></div>
+</body>
+
+</html>

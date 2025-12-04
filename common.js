@@ -228,7 +228,7 @@ function checkPermission(requiredPermission) {
             if (permissions.includes('dashboard')) {
                 window.location.href = 'dashboard.html';
             } else if (permissions.includes('health-station')) {
-                window.location.href = 'index.html';
+                window.location.href = 'health-station.html';
             } else {
                 window.history.back();
             }
@@ -288,7 +288,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!window.skipThemeCheck) {
             initLanguage();
         }
-    }, 0);
+        // Remove preload class to fade in content
+        document.body.classList.remove('preload');
+    }, 50);
 
     // Setup Theme Toggle Listener
     const themeToggleBtn = document.getElementById('theme-toggle');

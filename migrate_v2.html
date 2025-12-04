@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Migration V2 (Minimal)</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSnjvJdUkka7g1IadUlbPOCeE-KT9O_iA",
+            authDomain: "ma-service-40f97.firebaseapp.com",
+            projectId: "ma-service-40f97",
+            storageBucket: "ma-service-40f97.firebasestorage.app",
+            messagingSenderId: "955015176286",
+            appId: "1:955015176286:web:cdd9a970e6e4aa6cb914cf",
+            measurementId: "G-LD64Q1N0GQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        async function runTest() {
+            const statusDiv = document.getElementById('status');
+            const log = (msg) => {
+                console.log(msg);
+                statusDiv.innerHTML += `<div>${msg}</div>`;
+            };
+
+            try {
+                log('Starting V2 Test...');
+                log(`Firebase App: ${app.name}`);
+                log(`Firestore DB: ${db.type}`); // Should be 'firestore' or similar object check
+
+                // Auth
+                try {
+                    await signInAnonymously(auth);
+                    log('Auth: Signed in anonymously');
+                } catch (e) {
+                    log('Auth: Failed (proceeding anyway) - ' + e.message);
+                }
+
+                // Test 1: Create a reference
+                log('Test 1: Creating doc reference...');
+                const ref = doc(db, "hospitals", "test_v2");
+                log(`Test 1: Reference created. Path: ${ref.path}`);
+
+                // Test 2: Write document
+                log('Test 2: Writing document...');
+                await setDoc(ref, {
+                    name: "Test Hospital V2",
+                    timestamp: new Date().toISOString()
+                });
+                log('Test 2: Write successful!');
+
+                document.body.style.backgroundColor = 'lightgreen';
+
+            } catch (error) {
+                log(`CRITICAL ERROR: ${error.message}`);
+                console.error(error);
+                document.body.style.backgroundColor = 'lightcoral';
+            }
+        }
+
+        window.onload = runTest;
+    </script>
+</head>
+
+<body>
+    <h1>Migration V2 (Minimal)</h1>
+    <div id="status"></div>
+</body>
+
+</html>

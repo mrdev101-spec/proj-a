@@ -1,14 +1,14 @@
-// REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-const API_URL = 'https://script.google.com/macros/s/AKfycbx5ziXeQFYhaVJnoVTmmZ9Z2cQb6NWIi5jjchUOlmFLtcQUyenn5mFHW7oGQ9D03w5L/exec';
+// Firestore Collection Reference
+const COLLECTION_NAME = 'health_station';
 
-const tableBody = document.getElementById('Hospital');
+const tableBody = document.getElementById('health-station-list');
 const toast = document.getElementById('toast');
 const districtFilter = document.getElementById('district-filter');
 const searchInput = document.getElementById('search-input');
 const rowsFilter = document.getElementById('rows-filter');
 let toastTimeout;
-let hospitals = []; // Store fetched data
-let filteredHospitals = []; // Store filtered data
+let healthStations = []; // Store fetched data
+let filteredHealthStations = []; // Store filtered data
 let currentPage = 1;
 // currentLang is managed by common.js
 const CACHE_KEY = 'health_station_data';
@@ -32,7 +32,7 @@ const translations = {
     th: {
         title: 'สถานีสุขภาพ',
         nav_dashboard: 'แดชบอร์ด',
-        nav_hospitals: 'สถานีสุขภาพ',
+        nav_health_station: 'สถานีสุขภาพ',
         nav_service_requests: 'แจ้งซ่อม',
         nav_analytics: 'การวิเคราะห์',
         nav_users: 'จัดการผู้ใช้งาน',
@@ -45,7 +45,7 @@ const translations = {
         refresh_btn: 'รีเฟรช',
         // Table Headers
         th_no: 'ลำดับ',
-        th_hospital: 'สถานบริการ',
+        th_health_station: 'สถานีสุขภาพ',
         th_hcode: 'HCode',
         th_district: 'อำเภอ',
         th_pcid: 'PC-ID',
@@ -75,7 +75,7 @@ const translations = {
     en: {
         title: 'Health Station',
         nav_dashboard: 'Dashboard',
-        nav_hospitals: 'Health Station',
+        nav_health_station: 'Health Station',
         nav_service_requests: 'Service Requests',
         nav_analytics: 'Analytics',
         nav_users: 'User Management',
@@ -88,7 +88,7 @@ const translations = {
         refresh_btn: 'Refresh',
         // Table Headers
         th_no: 'No',
-        th_hospital: 'Hospital',
+        th_health_station: 'Health Station',
         th_hcode: 'HCode',
         th_district: 'District',
         th_pcid: 'PC-ID',
@@ -101,17 +101,17 @@ const translations = {
         no_data: 'No data found',
         rows_option: 'rows',
         copied: 'Copied to clipboard!',
-        add_btn: 'Add Item',
+        add_btn: 'Add New',
         save_btn: 'Save',
         cancel_btn: 'Cancel',
         edit_modal_title: 'Edit Information',
-        add_modal_title: 'Add New Item',
+        add_modal_title: 'Add New Health Station',
         saving: 'Saving...',
         saved: 'Saved successfully!',
         save_error: 'Error saving data',
         delete_btn: 'Delete',
-        confirm_delete_title: 'Are you sure?',
-        confirm_delete_text: 'You won\'t be able to revert this!',
+        confirm_delete_title: 'Confirm Delete?',
+        confirm_delete_text: 'Are you sure you want to delete this item? This action cannot be undone!',
         deleted_success: 'Deleted successfully',
         delete_error: 'Error deleting data'
     }
@@ -160,7 +160,7 @@ async function init() {
         const cachedData = loadFromCache();
         if (cachedData) {
             console.log('Loaded from cache:', cachedData.length);
-            hospitals = cachedData;
+            healthStations = cachedData;
             try {
                 populateDistricts();
             } catch (e) {
@@ -171,8 +171,24 @@ async function init() {
         }
 
         // 2. Fetch fresh data in background
-        await fetchData();
-        console.log('Data fetched:', hospitals.length);
+        if (!window.firebase) {
+            console.log('Waiting for Firebase initialization...');
+            await new Promise(resolve => {
+                window.addEventListener('firebase-initialized', resolve, { once: true });
+                // Fallback timeout in case event was missed or failed
+                setTimeout(() => {
+                    if (window.firebase) resolve();
+                    else console.error('Firebase initialization timeout');
+                }, 5000);
+            });
+        }
+
+        if (window.firebase) {
+            await fetchData();
+            console.log('Data fetched:', healthStations.length);
+        } else {
+            throw new Error('Firebase not initialized');
+        }
 
         try {
             populateDistricts();
@@ -214,7 +230,7 @@ async function init() {
 
     } catch (error) {
         console.error('Error:', error);
-        tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-500">Failed to load data. Check console for details.</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-red-500">Failed to load data: ${error.message}</td></tr>`;
     } finally {
         // toggleGlobalLoading(false); // Removed
     }
@@ -224,7 +240,7 @@ function filterData() {
     const selectedDistrict = districtFilter ? districtFilter.value : '';
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    filteredHospitals = hospitals.filter(h => {
+    filteredHealthStations = healthStations.filter(h => {
         const matchesDistrict = selectedDistrict ? h.district === selectedDistrict : true;
         const matchesSearch = query ? (
             (h.name && h.name.toLowerCase().includes(query)) ||
@@ -309,14 +325,14 @@ function toggleTableLoading(isLoading) {
 
 function updateTableDisplay() {
     const limit = rowsFilter ? parseInt(rowsFilter.value) : 5;
-    const totalPages = Math.ceil(filteredHospitals.length / limit);
+    const totalPages = Math.ceil(filteredHealthStations.length / limit);
 
     if (currentPage > totalPages) currentPage = totalPages;
     if (currentPage < 1) currentPage = 1;
 
     const startIndex = (currentPage - 1) * limit;
-    const endIndex = limit > 0 ? startIndex + limit : filteredHospitals.length;
-    const paginatedData = filteredHospitals.slice(startIndex, endIndex);
+    const endIndex = limit > 0 ? startIndex + limit : filteredHealthStations.length;
+    const paginatedData = filteredHealthStations.slice(startIndex, endIndex);
 
     renderTable(paginatedData, startIndex);
     renderPagination(totalPages);
@@ -348,59 +364,30 @@ function renderPagination(totalPages) {
 }
 
 async function fetchData() {
-    console.log('fetchData called');
+    console.log('fetchData called (Firestore)');
     try {
-        if (API_URL.includes('REPLACE')) {
-            console.warn('API_URL not set.');
-        }
+        const querySnapshot = await window.firebase.getDocs(window.firebase.collection(window.firebase.db, COLLECTION_NAME));
+        healthStations = [];
+        querySnapshot.forEach((doc) => {
+            healthStations.push(doc.data());
+        });
 
-        const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        hospitals = data;
-        saveToCache(hospitals); // Save to cache
-        console.log(`Loaded ${hospitals.length} hospitals`);
+        saveToCache(healthStations);
+        console.log(`Loaded ${healthStations.length} hospitals from Firestore`);
     } catch (error) {
         console.error('Fetch error:', error);
-        console.log('Falling back to CSV...');
-        try {
-            const csvResponse = await fetch('https://docs.google.com/spreadsheets/d/15TWNJ1vCFzWeFrwBEieRBaY5mf3HcDo_HjX_eyInTfc/export?format=csv');
-            const csvText = await csvResponse.text();
-            hospitals = parseCSV(csvText);
-        } catch (csvError) {
-            throw error;
-        }
+        throw error;
     }
 }
 
-function parseCSV(csvText) {
-    const lines = csvText.split(/\r?\n/);
-    const result = [];
-    for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        const columns = line.split(',');
-        if (columns.length >= 6) {
-            result.push({
-                name: columns[1].trim(),
-                hcode: columns[2].trim(),
-                district: columns[3].trim(),
-                pcId: columns[4].trim(),
-                anydesk: columns[5].trim()
-            });
-        }
-    }
-    return result;
-}
+// parseCSV removed as it is no longer needed
 
 function populateDistricts() {
     // Ensure no ReferenceError here
     if (!districtFilter) return;
     const t = translations[currentLang];
     const currentVal = districtFilter.value;
-    const districts = [...new Set(hospitals.map(h => h.district))].sort();
+    const districts = [...new Set(healthStations.map(h => h.district))].sort();
     districtFilter.innerHTML = `<option value="">${t.filter_district_default}</option>`;
     districts.forEach(district => {
         const option = document.createElement('option');
@@ -462,8 +449,8 @@ function updateStats() {
     const statDistricts = document.getElementById('stat-districts-value');
 
     if (statCenters && statDistricts) {
-        const totalCenters = hospitals.length;
-        const totalDistricts = new Set(hospitals.map(h => h.district)).size;
+        const totalCenters = healthStations.length;
+        const totalDistricts = new Set(healthStations.map(h => h.district)).size;
 
         // Use span for the number to keep color
         statCenters.innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
@@ -552,7 +539,7 @@ function showToast(message) {
 // --- Edit Functions ---
 
 window.openEditModal = function (hcode) {
-    const hospital = hospitals.find(h => String(h.hcode) === String(hcode));
+    const hospital = healthStations.find(h => String(h.hcode) === String(hcode));
     if (!hospital) return;
 
     document.getElementById('edit-hcode').value = hospital.hcode;
@@ -610,38 +597,24 @@ async function handleEditSubmit(e) {
     saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
     try {
-        if (API_URL.includes('REPLACE')) throw new Error('API_URL not configured');
+        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, hcode);
+        await window.firebase.updateDoc(docRef, newData);
 
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'update',
-                hcode: hcode,
-                data: newData
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.status === 'success') {
-            const index = hospitals.findIndex(h => String(h.hcode) === String(hcode));
-            if (index !== -1) {
-                hospitals[index] = { ...hospitals[index], ...newData };
-            }
-            filterData();
-            closeEditModal();
-            Swal.fire({
-                icon: 'success',
-                title: t.saved,
-                showConfirmButton: false,
-                timer: 1500,
-                customClass: {
-                    popup: 'dark:bg-slate-800 dark:text-white'
-                }
-            });
-        } else {
-            throw new Error(result.message || 'Unknown error');
+        const index = healthStations.findIndex(h => String(h.hcode) === String(hcode));
+        if (index !== -1) {
+            healthStations[index] = { ...healthStations[index], ...newData };
         }
+        filterData();
+        closeEditModal();
+        Swal.fire({
+            icon: 'success',
+            title: t.saved,
+            showConfirmButton: false,
+            timer: 1500,
+            customClass: {
+                popup: 'dark:bg-slate-800 dark:text-white'
+            }
+        });
 
     } catch (error) {
         console.error('Save error:', error);
@@ -709,41 +682,32 @@ async function handleAddSubmit(e) {
     saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
     try {
-        if (API_URL.includes('REPLACE')) throw new Error('API_URL not configured');
+        // Use hcode as document ID
+        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, newData.hcode);
 
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'add',
-                data: newData
-            })
+        // Check if exists first to prevent overwrite? Or just setDoc (upsert/overwrite)
+        // For safety, let's use setDoc which overwrites if exists, or creates new.
+        await window.firebase.setDoc(docRef, newData);
+
+        closeAddModal();
+        Swal.fire({
+            icon: 'success',
+            title: t.saved,
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'dark:bg-slate-800 dark:text-white',
+                confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
+            }
+        }).then(async () => {
+            // Refresh data after alert closes
+            toggleTableLoading(true);
+            await fetchData();
+            filterData();
+            updateStats();
+            populateDistricts(); // Update district filter
+            toggleTableLoading(false);
         });
-
-        const result = await response.json();
-
-        if (result.status === 'success') {
-            closeAddModal();
-            Swal.fire({
-                icon: 'success',
-                title: t.saved,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                customClass: {
-                    popup: 'dark:bg-slate-800 dark:text-white',
-                    confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
-                }
-            }).then(async () => {
-                // Refresh data after alert closes
-                toggleTableLoading(true);
-                await fetchData();
-                filterData();
-                updateStats();
-                populateDistricts(); // Update district filter
-                toggleTableLoading(false);
-            });
-        } else {
-            throw new Error(result.message || 'Unknown error');
-        }
 
     } catch (error) {
         console.error('Save error:', error);
@@ -794,61 +758,39 @@ window.deleteItem = async function (hcode) {
         });
 
         try {
-            if (API_URL.includes('REPLACE')) throw new Error('API_URL not configured');
+            const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, hcode);
+            await window.firebase.deleteDoc(docRef);
 
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'delete',
-                    hcode: hcode
-                })
+            Swal.fire({
+                title: t.deleted_success,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'dark:bg-slate-800 dark:text-white'
+                }
             });
 
-            const result = await response.json();
+            // Remove from local array
+            healthStations = healthStations.filter(h => String(h.hcode) !== String(hcode));
+            filterData();
+            updateStats();
+            populateDistricts();
 
-            if (result.status === 'success') {
-                console.log('Delete success, forcing modal close');
-                // Close immediately with extreme prejudice
-                const editModal = document.getElementById('edit-modal');
-                if (editModal) {
-                    editModal.classList.add('hidden');
-                    editModal.style.setProperty('display', 'none', 'important');
-                    editModal.classList.remove('opacity-0');
-                }
-
-                Swal.fire({
-                    icon: 'success',
-                    title: t.deleted_success,
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'dark:bg-slate-800 dark:text-white',
-                        confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
-                    }
-                }).then(async () => {
-                    console.log('Alert closed, refreshing data');
-                    // Ensure closed again
-                    if (editModal) editModal.style.setProperty('display', 'none', 'important');
-
-                    // Refresh data
-                    toggleTableLoading(true);
-                    await fetchData();
-                    filterData();
-                    updateStats();
-                    populateDistricts();
-                    toggleTableLoading(false);
-                });
-            } else {
-                throw new Error(result.message || 'Unknown error');
+            // Close modal if open
+            const editModal = document.getElementById('edit-modal');
+            if (editModal) {
+                editModal.classList.add('hidden');
+                editModal.style.setProperty('display', 'none', 'important');
+                editModal.classList.remove('opacity-0');
             }
 
         } catch (error) {
             console.error('Delete error:', error);
             Swal.fire({
-                icon: 'error',
                 title: t.delete_error,
                 text: error.message,
-                confirmButtonText: 'OK',
+                icon: 'error',
                 customClass: {
                     popup: 'dark:bg-slate-800 dark:text-white'
                 }
@@ -905,4 +847,4 @@ function debounce(func, wait) {
 }
 
 
-init();
+// init(); // Removed to prevent race condition with module loading

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Check Firestore</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSnjvJdUkka7g1IadUlbPOCeE-KT9O_iA",
+            authDomain: "ma-service-40f97.firebaseapp.com",
+            projectId: "ma-service-40f97",
+            storageBucket: "ma-service-40f97.firebasestorage.app",
+            messagingSenderId: "955015176286",
+            appId: "1:955015176286:web:cdd9a970e6e4aa6cb914cf",
+            measurementId: "G-LD64Q1N0GQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function checkData() {
+            const statusDiv = document.getElementById('status');
+            const log = (msg) => statusDiv.innerHTML += `<div>${msg}</div>`;
+
+            try {
+                log(`Checking project: ${firebaseConfig.projectId}`);
+                log(`Collection: hospitals`);
+
+                const q = query(collection(db, "hospitals"), limit(5));
+                const querySnapshot = await getDocs(q);
+
+                log(`Found ${querySnapshot.size} documents (limited to 5 check).`);
+
+                if (querySnapshot.empty) {
+                    log("Collection appears empty.");
+                    document.body.style.backgroundColor = 'lightcoral';
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        log(`Doc ID: ${doc.id} => ${JSON.stringify(doc.data())}`);
+                    });
+                    document.body.style.backgroundColor = 'lightgreen';
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`);
+                console.error(error);
+                document.body.style.backgroundColor = 'lightcoral';
+            }
+        }
+
+        window.onload = checkData;
+    </script>
+</head>
+
+<body>
+    <h1>Checking Firestore...</h1>
+    <div id="status"></div>
+</body>
+
+</html>
