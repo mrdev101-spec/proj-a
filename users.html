@@ -258,8 +258,25 @@
                         <div class="col-span-1 group">
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
                                 data-i18n="col_password">Password</label>
-                            <input type="text" id="user-password"
-                                class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800">
+                            <div class="relative">
+                                <input type="password" id="user-password"
+                                    class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-0 ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400 hover:bg-white dark:hover:bg-slate-800 pr-10">
+                                <button type="button" onclick="togglePasswordVisibility()"
+                                    class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus:outline-none">
+                                    <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <svg id="eye-off-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <div class="col-span-1 sm:col-span-2 group">
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
@@ -372,22 +389,7 @@
                                     class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
                                     data-i18n="nav_service_requests">Service Requests</span>
                             </label>
-                            <!-- Analytics -->
-                            <label
-                                class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                                <div class="relative flex items-center justify-center">
-                                    <input type="checkbox" id="perm-analytics" value="analytics"
-                                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 transition-all checked:border-blue-500 checked:bg-blue-500 hover:border-blue-400 checked:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                                    <svg class="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                            d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </div>
-                                <span
-                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
-                                    data-i18n="nav_analytics">Analytics</span>
-                            </label>
+
                             <!-- Settings -->
                             <label
                                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
@@ -438,8 +440,8 @@
         </div>
     </div>
 
-    <script src="common.js?v=7"></script>
-    <script src="components.js?v=7"></script>
+    <script src="common.js?v=8"></script>
+    <script src="components.js?v=8"></script>
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbx5ziXeQFYhaVJnoVTmmZ9Z2cQb6NWIi5jjchUOlmFLtcQUyenn5mFHW7oGQ9D03w5L/exec';
         const CACHE_KEY = 'users_cache_v3'; // Invalidate old cache
@@ -728,6 +730,22 @@
                 : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
         }
 
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('user-password');
+            const eyeIcon = document.getElementById('eye-icon');
+            const eyeOffIcon = document.getElementById('eye-off-icon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.add('hidden');
+                eyeOffIcon.classList.remove('hidden');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('hidden');
+                eyeOffIcon.classList.add('hidden');
+            }
+        }
+
         function handleRoleChange() {
             const role = document.getElementById('user-role').value;
             const isSuperAdmin = role === 'Super Admin';
@@ -760,6 +778,15 @@
             document.getElementById('user-dept').value = '';
             document.getElementById('user-role').value = 'User';
             document.getElementById('user-status').value = 'Active';
+
+            // Reset password visibility
+            const passwordInput = document.getElementById('user-password');
+            const eyeIcon = document.getElementById('eye-icon');
+            const eyeOffIcon = document.getElementById('eye-off-icon');
+
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('hidden');
+            eyeOffIcon.classList.add('hidden');
 
             if (mode === 'edit' && userId) {
                 title.textContent = 'Edit User';
@@ -799,8 +826,7 @@
                         permissions.includes('health-station');
                     document.getElementById('perm-service-requests').checked =
                         permissions.includes('service-requests');
-                    document.getElementById('perm-analytics').checked =
-                        permissions.includes('analytics');
+
                     document.getElementById('perm-settings').checked = permissions.includes('settings');
                     document.getElementById('perm-users').checked = permissions.includes('users');
                 } else {
@@ -826,7 +852,7 @@
                 document.getElementById('perm-dashboard').checked = false;
                 document.getElementById('perm-health-station').checked = true; // Default for User
                 document.getElementById('perm-service-requests').checked = false;
-                document.getElementById('perm-analytics').checked = false;
+
                 document.getElementById('perm-settings').checked = true; // Everyone needs settings
                 document.getElementById('perm-users').checked = false;
             }
@@ -874,8 +900,7 @@
                 permissions.push('health-station');
             if (document.getElementById('perm-service-requests').checked)
                 permissions.push('service-requests');
-            if (document.getElementById('perm-analytics').checked)
-                permissions.push('analytics');
+
             if (document.getElementById('perm-settings').checked) permissions.push('settings');
             if (document.getElementById('perm-users').checked) permissions.push('users');
 
