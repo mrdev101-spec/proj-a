@@ -19,14 +19,26 @@ function renderSidebar(activePageId) {
         if (userStr) {
             const user = JSON.parse(userStr);
             userRole = user.role || '';
-            if (user.permissions && Array.isArray(user.permissions)) {
+            // Primary check: permissions array
+            if (user.permissions && Array.isArray(user.permissions) && user.permissions.length > 0) {
                 permissions = user.permissions;
             } else {
-                // Fallback for existing users without permissions field
-                if (userRole === 'Super Admin' || userRole === 'Admin') {
-                    permissions = ['dashboard', 'health-station', 'service-requests', 'analytics', 'settings', 'users'];
-                } else {
-                    permissions = ['health-station', 'settings']; // Basic user defaults
+                // Fallback 1: Reconstruct from boolean flags (Robust check)
+                // Check all possible key variations (snake_case, camelCase, Title Case)
+                if (user.dashboard || user.Dashboard) permissions.push('dashboard');
+                if (user.health_station || user.healthStation || user['Health Station']) permissions.push('health-station');
+                if (user.service_requests || user.serviceRequests || user['Service Requests']) permissions.push('service-requests');
+                if (user.analytics || user.Analytics) permissions.push('analytics');
+                if (user.settings || user.Settings) permissions.push('settings');
+                if (user.users || user.userManagement || user['User Management']) permissions.push('users');
+
+                // Fallback 2: Role-based defaults (Only if reconstruction failed/empty)
+                if (permissions.length === 0) {
+                    if (userRole === 'Super Admin' || userRole === 'Admin') {
+                        permissions = ['dashboard', 'health-station', 'service-requests', 'analytics', 'settings', 'users'];
+                    } else {
+                        permissions = ['health-station', 'settings']; // Basic user defaults
+                    }
                 }
             }
         }
