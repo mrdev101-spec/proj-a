@@ -458,8 +458,46 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
+                    // Process permissions locally to ensure robustness (same logic as users.html)
+                    const u = result.user;
+
+                    // Normalize all keys to lowercase and remove special characters
+                    const normalizedUser = {};
+                    Object.keys(u).forEach(key => {
+                        const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        normalizedUser[cleanKey] = u[key];
+                    });
+
+                    const perms = [];
+                    // Helper to check for true-like values
+                    const isTrue = (val) => {
+                        if (typeof val === 'string') {
+                            return val.toLowerCase() === 'true';
+                        }
+                        return val === true || val === 1;
+                    };
+
+                    // Check against normalized keys
+                    if (isTrue(normalizedUser['dashboard'])) perms.push('dashboard');
+                    if (isTrue(normalizedUser['healthstation'])) perms.push('health-station');
+                    if (isTrue(normalizedUser['servicerequests'])) perms.push('service-requests');
+                    if (isTrue(normalizedUser['analytics'])) perms.push('analytics');
+                    if (isTrue(normalizedUser['settings'])) perms.push('settings');
+                    if (isTrue(normalizedUser['users']) || isTrue(normalizedUser['usermanagement'])) perms.push('users');
+
+                    // FAILSAFE: Super Admin always gets all permissions
+                    if (u.role === 'Super Admin') {
+                        const allPerms = ['dashboard', 'health-station', 'service-requests', 'analytics', 'settings', 'users'];
+                        // Add any missing permissions
+                        allPerms.forEach(p => {
+                            if (!perms.includes(p)) perms.push(p);
+                        });
+                    }
+
+                    u.permissions = perms;
+
                     // Save user session
-                    localStorage.setItem('user', JSON.stringify(result.user));
+                    localStorage.setItem('user', JSON.stringify(u));
 
                     // Show success
                     Swal.fire({
