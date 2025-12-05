@@ -9,59 +9,55 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        // Prevent white flash on load - MUST BE FIRST SCRIPT
-        color: #e2e8f0!important;
-        }
-
+    <style>
         /* Custom Scrollbar */
-        :: -webkit - scrollbar {
+        ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
 
-        :: -webkit - scrollbar - track {
+        ::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        :: -webkit - scrollbar - thumb {
+        ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border - radius: 3px;
+            border-radius: 3px;
         }
 
-        .dark:: -webkit - scrollbar - thumb {
+        .dark::-webkit-scrollbar-thumb {
             background: #475569;
         }
 
-        :: -webkit - scrollbar - thumb:hover {
+        ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
 
-        .dark:: -webkit - scrollbar - thumb:hover {
+        .dark::-webkit-scrollbar-thumb:hover {
             background: #64748b;
         }
 
-        .glass - effect {
+        .glass-effect {
             background: rgba(255, 255, 255, 0.9);
-            backdrop - filter: blur(10px);
-            -webkit - backdrop - filter: blur(10px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
-        .dark.glass - effect {
+        .dark .glass-effect {
             background: rgba(30, 41, 59, 0.9);
         }
-    </style >
-            <script src="https://cdn.tailwindcss.com"></script>
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-            tailwind.config = {
-                darkMode: 'class',
+        tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
-                fontFamily: {sans: ['Outfit', 'sans-serif'], },
-            colors: {primary: {50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', } },
-            animation: {'fade-in-up': 'fadeInUp 0.5s ease-out forwards', 'slide-in-left': 'slideInLeft 0.5s ease-out forwards', },
-            keyframes: {fadeInUp: {'0%': {opacity: '0', transform: 'translateY(10px)' }, '100%': {opacity: '1', transform: 'translateY(0)' }, }, slideInLeft: {'0%': {opacity: '0', transform: 'translateX(-20px)' }, '100%': {opacity: '1', transform: 'translateX(0)' }, } }
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], },
+                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', } },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards', 'slide-in-left': 'slideInLeft 0.5s ease-out forwards', },
+                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' }, }, slideInLeft: { '0%': { opacity: '0', transform: 'translateX(-20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' }, } }
                 }
             }
         }
@@ -83,6 +79,8 @@
         }
     </style>
 </head>
+
+
 
 <body
     class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300 preload">
@@ -112,7 +110,8 @@
                                 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                                 Service Centers</p>
                             <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="stat-centers-value">
-                                จำนวนศูนย์บริการ: <span class="text-blue-600 dark:text-blue-400">...</span></h3>
+                                จำนวนศูนย์บริการ: <span class="text-blue-600 dark:text-blue-400">...</span>
+                            </h3>
                         </div>
                     </div>
                     <div
@@ -128,7 +127,8 @@
                                 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                                 Total Districts</p>
                             <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="stat-districts-value">
-                                จำนวนอำเภอทั้งหมด: <span class="text-indigo-600 dark:text-indigo-400">...</span></h3>
+                                จำนวนอำเภอทั้งหมด: <span class="text-indigo-600 dark:text-indigo-400">...</span>
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -140,6 +140,19 @@
                         class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
                         <!-- Filters -->
                         <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                            <div class="relative group">
+                                <select id="province-filter"
+                                    class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 w-full sm:w-48">
+                                    <option value="">เลือกจังหวัดทั้งหมด</option>
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
                             <div class="relative group">
                                 <select id="district-filter"
                                     class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 w-full sm:w-48">
@@ -224,9 +237,11 @@
                                         <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                                             data-i18n="th_no">No</th>
                                         <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                            data-i18n="th_serial_number">Serial Number</th>
+                                            data-i18n="th_serial_number">Serial Number
+                                        </th>
                                         <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                            data-i18n="th_service_center">Service Center</th>
+                                            data-i18n="th_service_center">Service Center
+                                        </th>
                                         <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                                             data-i18n="th_hcode">HCode</th>
                                         <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
@@ -245,571 +260,364 @@
                                     class="divide-y divide-slate-100 dark:divide-slate-700/50">
                                     <!-- Rows will be populated by JS -->
                                 </tbody>
-                                </style>
-                                <script src="https://cdn.tailwindcss.com"></script>
-                                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                                <script>
-            tailwind.config = {
-                darkMode: 'class',
-            theme: {
-                extend: {
-                fontFamily: {sans: ['Outfit', 'sans-serif'], },
-            colors: {primary: {50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', } },
-            animation: {'fade-in-up': 'fadeInUp 0.5s ease-out forwards', 'slide-in-left': 'slideInLeft 0.5s ease-out forwards', },
-            keyframes: {fadeInUp: {'0%': {opacity: '0', transform: 'translateY(10px)' }, '100%': {opacity: '1', transform: 'translateY(0)' }, }, slideInLeft: {'0%': {opacity: '0', transform: 'translateX(-20px)' }, '100%': {opacity: '1', transform: 'translateX(0)' }, } }
-                                            }
-                                        }
-                                    }
-                                </script>
-                                <style>
-                                    /* Fix Flash & Flicker */
-                                    html.dark {
-                                        background-color: #0f172a;
-                                    }
+                            </table>
+                        </div>
 
-                                    body.preload {
-                                        opacity: 0 !important;
-                                        pointer-events: none !important;
-                                    }
+                        <!-- Pagination -->
+                        <div
+                            class="pagination p-4 border-t border-slate-100 dark:border-slate-700/50 flex justify-center gap-2">
+                            <!-- Pagination buttons will be generated by JS -->
+                        </div>
+                    </div>
+                </div>
 
-                                    body {
-                                        transition: opacity 0.2s ease-in-out;
-                                        opacity: 1;
-                                    }
-                                </style>
-                                </head>
+                <!-- Details View -->
+                <div id="details-view" class="hidden space-y-6 transition-all duration-300 ease-in-out">
+                    <!-- Header & Back Button -->
+                    <div
+                        class="flex items-center justify-between bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
+                        <div class="flex items-center gap-4">
+                            <button onclick="showList()"
+                                class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500 dark:text-slate-400">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                            </button>
+                            <div class="flex flex-col">
+                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white" id="detail-name"
+                                    style="display: none;">Health
+                                    Station Name</h2>
+                                <div class="flex items-center gap-2 text-slate-800 dark:text-white text-xl font-bold">
+                                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                    </svg>
+                                    <span id="detail-hcode">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="detail-action-btns" class="flex items-center gap-3 animate-fade-in-up">
+                            <button id="detail-edit-btn"
+                                class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all active:scale-95 font-medium">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                <span>Edit</span>
+                            </button>
+                        </div>
+                    </div>
 
-                                <body
-                                    class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300 preload">
-                                    <div class="flex h-screen overflow-hidden">
-                                        <!-- Sidebar -->
-                                        <div id="sidebar-container"></div>
+                    <!-- Content Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left Column -->
+                        <div class="lg:col-span-1 space-y-6">
+                            <!-- Basic Info -->
+                            <div
+                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
+                                <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+                                    Basic Information</h3>
+                                <div class="space-y-1">
+                                    <label
+                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Serial
+                                        Number</label>
+                                    <p class="text-slate-800 dark:text-slate-200 font-mono" id="detail-serial">-</p>
+                                </div>
+                                <div class="space-y-1">
+                                    <label
+                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Service
+                                        Center</label>
+                                    <p class="text-slate-800 dark:text-slate-200" id="detail-service-center">-</p>
+                                </div>
+                                <div class="space-y-1">
+                                    <label
+                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">PC-ID</label>
+                                    <p class="text-slate-800 dark:text-slate-200 font-mono" id="detail-pcid">-</p>
+                                </div>
+                            </div>
+                        </div>
 
-                                        <!-- Main Content -->
-                                        <main
-                                            class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900">
-                                            <!-- Header -->
-                                            <div id="header-container"></div>
-
-                                            <!-- Dashboard Content -->
-                                            <div class="w-full px-6 sm:px-8 lg:px-10 py-8 space-y-8">
-                                                <!-- Stats Cards -->
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div
-                                                        class="stat-card bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700/50 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
-                                                        <div
-                                                            class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                                            <svg class="w-24 h-24 text-blue-600" fill="currentColor"
-                                                                viewBox="0 0 24 24">
-                                                                <path
-                                                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8.5 13.5c-2.49 0-4.5-2.01-4.5-4.5s2.01-4.5 4.5-4.5 4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z" />
-                                                            </svg>
-                                                        </div>
-                                                        <div class="relative z-10">
-                                                            <p
-                                                                class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                                                Service Centers</p>
-                                                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white"
-                                                                id="stat-centers-value">
-                                                                จำนวนศูนย์บริการ: <span
-                                                                    class="text-blue-600 dark:text-blue-400">...</span>
-                                                            </h3>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        class="stat-card bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700/50 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
-                                                        <div
-                                                            class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                                            <svg class="w-24 h-24 text-indigo-600" fill="currentColor"
-                                                                viewBox="0 0 24 24">
-                                                                <path
-                                                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                                                            </svg>
-                                                        </div>
-                                                        <div class="relative z-10">
-                                                            <p
-                                                                class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                                                Total Districts</p>
-                                                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white"
-                                                                id="stat-districts-value">
-                                                                จำนวนอำเภอทั้งหมด: <span
-                                                                    class="text-indigo-600 dark:text-indigo-400">...</span>
-                                                            </h3>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- List View -->
-                                                <div id="list-view"
-                                                    class="space-y-6 transition-all duration-300 ease-in-out">
-                                                    <!-- Controls -->
-                                                    <div
-                                                        class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-                                                        <!-- Filters -->
-                                                        <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                                                            <div class="relative group">
-                                                                <select id="district-filter"
-                                                                    class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 w-full sm:w-48">
-                                                                    <option value="">เลือกอำเภอทั้งหมด</option>
-                                                                </select>
-                                                                <div
-                                                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                                                                    <svg class="h-4 w-4" fill="none"
-                                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M19 9l-7 7-7-7" />
-                                                                    </svg>
-                                                                </div>
-                                                            </div>
-                                                            <div class="relative group w-full sm:w-64">
-                                                                <div
-                                                                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                    <svg class="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors"
-                                                                        fill="none" stroke="currentColor"
-                                                                        viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                                                    </svg>
-                                                                </div>
-                                                                <input type="text" id="search-input"
-                                                                    placeholder="ค้นหา HCode / ชื่อ / อำเภอ..."
-                                                                    class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                                                            </div>
-                                                            <div class="relative group">
-                                                                <select id="rows-filter"
-                                                                    class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800">
-                                                                    <option value="5">5 rows</option>
-                                                                    <option value="10">10 rows</option>
-                                                                    <option value="20">20 rows</option>
-                                                                    <option value="50">50 rows</option>
-                                                                </select>
-                                                                <div
-                                                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                                                                    <svg class="h-4 w-4" fill="none"
-                                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M19 9l-7 7-7-7" />
-                                                                    </svg>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Buttons -->
-                                                        <div class="flex gap-2 w-full md:w-auto">
-                                                            <button onclick="openAddModal()"
-                                                                class="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium"
-                                                                type="button">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2" d="M12 4v16m8-8H4" />
-                                                                </svg>
-                                                                <span id="add-btn-text"
-                                                                    data-i18n="add_btn">เพิ่มรายการ</span>
-                                                            </button>
-                                                            <button
-                                                                class="refresh-btn flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto font-medium"
-                                                                type="button">
-                                                                <svg class="w-5 h-5 animate-spin-slow" fill="none"
-                                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                                </svg>
-                                                                <span data-i18n="refresh_btn">รีเฟรช</span>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Table Card -->
-                                                    <div
-                                                        class="table-card bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700/50 overflow-hidden relative">
-                                                        <!-- Table Loading Overlay -->
-                                                        <div id="table-loading-overlay"
-                                                            class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hidden">
-                                                            <div
-                                                                class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-3">
-                                                            </div>
-                                                            <span class="text-slate-600 dark:text-slate-300 font-medium"
-                                                                data-i18n="loading">Updating...</span>
-                                                        </div>
-
-                                                        <div class="overflow-x-auto">
-                                                            <table class="w-full text-left border-collapse">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_no">No</th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_serial_number">Serial Number
-                                                                        </th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_service_center">Service Center
-                                                                        </th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_hcode">HCode</th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_province">Province</th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_pcid">PC-ID</th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-                                                                            data-i18n="th_anydesk">AnyDesk ID</th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center"
-                                                                            data-i18n="th_map">Map</th>
-                                                                        <th class="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center"
-                                                                            data-i18n="th_details">Details</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody id="health-station-list"
-                                                                    class="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                                                    <!-- Rows will be populated by JS -->
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-
-                                                        <!-- Pagination -->
-                                                        <div
-                                                            class="pagination p-4 border-t border-slate-100 dark:border-slate-700/50 flex justify-center gap-2">
-                                                            <!-- Pagination buttons will be generated by JS -->
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Details View -->
-                                                <div id="details-view"
-                                                    class="hidden space-y-6 transition-all duration-300 ease-in-out">
-                                                    <!-- Header & Back Button -->
-                                                    <div
-                                                        class="flex items-center justify-between bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-                                                        <div class="flex items-center gap-4">
-                                                            <button onclick="showList()"
-                                                                class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500 dark:text-slate-400">
-                                                                <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                                                </svg>
-                                                            </button>
-                                                            <div>
-                                                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white"
-                                                                    id="detail-name">Health Station Name</h2>
-                                                                <p class="text-slate-500 dark:text-slate-400"
-                                                                    id="detail-hcode">HCode: 12345</p>
-                                                            </div>
-                                                        </div>
-                                                        <button id="detail-edit-btn"
-                                                            class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all active:scale-95 font-medium">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                            <span>Edit</span>
-                                                        </button>
-                                                    </div>
-
-                                                    <!-- Details Content -->
-                                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                                        <!-- Basic Info -->
-                                                        <div
-                                                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
-                                                            <h3
-                                                                class="text-lg font-semibold text-slate-800 dark:text-white mb-4">
-                                                                Basic Information</h3>
-                                                            <div class="space-y-1">
-                                                                <label
-                                                                    class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Serial
-                                                                    Number</label>
-                                                                <p class="text-slate-800 dark:text-slate-200 font-mono"
-                                                                    id="detail-serial">-</p>
-                                                            </div>
-                                                            <div class="space-y-1">
-                                                                <label
-                                                                    class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Service
-                                                                    Center</label>
-                                                                <p class="text-slate-800 dark:text-slate-200"
-                                                                    id="detail-service-center">-</p>
-                                                            </div>
-                                                            <div class="space-y-1">
-                                                                <label
-                                                                    class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">PC-ID</label>
-                                                                <p class="text-slate-800 dark:text-slate-200 font-mono"
-                                                                    id="detail-pcid">-</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Location & Contact -->
-                                                        <div
-                                                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
-                                                            <h3
-                                                                class="text-lg font-semibold text-slate-800 dark:text-white mb-4">
-                                                                Location & Contact</h3>
-                                                            <div class="grid grid-cols-2 gap-4">
-                                                                <div class="space-y-1">
-                                                                    <label
-                                                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Sub-District</label>
-                                                                    <p class="text-slate-800 dark:text-slate-200"
-                                                                        id="detail-sub-district">-</p>
-                                                                </div>
-                                                                <div class="space-y-1">
-                                                                    <label
-                                                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">District</label>
-                                                                    <p class="text-slate-800 dark:text-slate-200"
-                                                                        id="detail-district">-</p>
-                                                                </div>
-                                                                <div class="space-y-1">
-                                                                    <label
-                                                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Province</label>
-                                                                    <p class="text-slate-800 dark:text-slate-200"
-                                                                        id="detail-province">-</p>
-                                                                </div>
-                                                                <div class="space-y-1">
-                                                                    <label
-                                                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Zip
-                                                                        Code</label>
-                                                                    <p class="text-slate-800 dark:text-slate-200"
-                                                                        id="detail-zip-code">-</p>
-                                                                </div>
-                                                            </div>
-                                                            <div
-                                                                class="space-y-1 pt-2 border-t border-slate-100 dark:border-slate-700">
-                                                                <label
-                                                                    class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">AnyDesk
-                                                                    ID</label>
-                                                                <div class="flex items-center gap-2">
-                                                                    <p class="text-slate-800 dark:text-slate-200 font-mono text-lg"
-                                                                        id="detail-anydesk">-</p>
-                                                                    <button id="detail-copy-anydesk"
-                                                                        class="text-blue-500 hover:text-blue-600">
-                                                                        <svg class="w-5 h-5" fill="none"
-                                                                            stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                                        </svg>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Log Book -->
-                                                        <div
-                                                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
-                                                            <h3
-                                                                class="text-lg font-semibold text-slate-800 dark:text-white mb-4">
-                                                                Log Book</h3>
-                                                            <div
-                                                                class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl h-48 overflow-y-auto border border-slate-200 dark:border-slate-700">
-                                                                <p class="text-slate-600 dark:text-slate-300 whitespace-pre-wrap text-sm"
-                                                                    id="detail-log-book">-</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </main>
+                        <!-- Middle Column -->
+                        <div class="lg:col-span-1 space-y-6">
+                            <!-- Location -->
+                            <div
+                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
+                                <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+                                    Location & Contact</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <label
+                                            class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Sub-District</label>
+                                        <p class="text-slate-800 dark:text-slate-200" id="detail-sub-district">-</p>
                                     </div>
-
-                                    <!-- Toast Notification -->
-                                    <div id="toast"
-                                        class="fixed bottom-8 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-slate-800 dark:bg-white text-white dark:text-slate-900 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none flex items-center gap-3">
-                                        <svg class="w-5 h-5 text-green-400 dark:text-green-600" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span class="font-medium" data-i18n="copied">Copied to clipboard!</span>
+                                    <div class="space-y-1">
+                                        <label
+                                            class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">District</label>
+                                        <p class="text-slate-800 dark:text-slate-200" id="detail-district">-</p>
                                     </div>
-
-                                    <!-- Edit Modal -->
-                                    <div id="edit-modal"
-                                        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
-                                        aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                                        <div
-                                            class="modal-content bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-transform duration-300 border border-slate-100 dark:border-slate-700">
-                                            <div
-                                                class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700">
-                                                <h2 id="modal-title"
-                                                    class="text-xl font-bold text-slate-800 dark:text-white"
-                                                    data-i18n="edit_modal_title">Edit Information</h2>
-                                                <button onclick="closeEditModal()"
-                                                    class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                            <div class="p-6">
-                                                <form id="edit-form" class="space-y-4">
-                                                    <div class="form-group"><label for="edit-hcode"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">HCode</label><input
-                                                            type="text" id="edit-hcode" readonly
-                                                            class="readonly-input block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 cursor-not-allowed focus:outline-none">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-serial-number"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serial
-                                                            Number</label><input type="text" id="edit-serial-number"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-name"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Health
-                                                            Station Name</label><input type="text" id="edit-name"
-                                                            required
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-district"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">District</label><input
-                                                            type="text" id="edit-district" required
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-sub-district"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sub-District</label><input
-                                                            type="text" id="edit-sub-district"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-province"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Province</label><input
-                                                            type="text" id="edit-province"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-zip-code"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Zip
-                                                            Code</label><input type="text" id="edit-zip-code"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-pcid"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PC-ID</label><input
-                                                            type="text" id="edit-pcid"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-anydesk"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">AnyDesk
-                                                            ID</label><input type="text" id="edit-anydesk"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="edit-log-book"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Log
-                                                            Book</label><textarea id="edit-log-book" rows="3"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></textarea>
-                                                    </div>
-                                                    <div class="form-actions flex justify-end gap-3 mt-6">
-                                                        <button type="button" id="delete-btn-modal"
-                                                            class="mr-auto px-5 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors flex items-center gap-2"><svg
-                                                                class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg><span class="delete-btn-text"
-                                                                data-i18n="delete_btn">Delete</span></button>
-                                                        <button type="button" onclick="closeEditModal()"
-                                                            class="btn-cancel px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors"
-                                                            data-i18n="cancel_btn">Cancel</button>
-                                                        <button type="submit"
-                                                            class="btn-save px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95"
-                                                            data-i18n="save_btn">Save</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
+                                    <div class="space-y-1">
+                                        <label
+                                            class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Province</label>
+                                        <p class="text-slate-800 dark:text-slate-200" id="detail-province">-</p>
                                     </div>
-
-                                    <!-- Add Modal -->
-                                    <div id="add-modal"
-                                        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
-                                        aria-labelledby="add-modal-title" role="dialog" aria-modal="true">
-                                        <div
-                                            class="modal-content bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-transform duration-300 border border-slate-100 dark:border-slate-700">
-                                            <div
-                                                class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700">
-                                                <h2 id="add-modal-title"
-                                                    class="text-xl font-bold text-slate-800 dark:text-white"
-                                                    data-i18n="add_modal_title">Add New Health Station</h2>
-                                                <button onclick="closeAddModal()"
-                                                    class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                            <div class="p-6">
-                                                <form id="add-form" class="space-y-4">
-                                                    <div class="form-group"><label for="add-hcode"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">HCode</label><input
-                                                            type="text" id="add-hcode" required
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-serial-number"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serial
-                                                            Number</label><input type="text" id="add-serial-number"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-name"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Health
-                                                            Station Name</label><input type="text" id="add-name"
-                                                            required
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-district"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">District</label><input
-                                                            type="text" id="add-district" required
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-sub-district"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sub-District</label><input
-                                                            type="text" id="add-sub-district"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-province"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Province</label><input
-                                                            type="text" id="add-province"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-zip-code"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Zip
-                                                            Code</label><input type="text" id="add-zip-code"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-pcid"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PC-ID</label><input
-                                                            type="text" id="add-pcid"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-anydesk"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">AnyDesk
-                                                            ID</label><input type="text" id="add-anydesk"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                                                    </div>
-                                                    <div class="form-group"><label for="add-log-book"
-                                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Log
-                                                            Book</label><textarea id="add-log-book" rows="3"
-                                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></textarea>
-                                                    </div>
-                                                    <div class="form-actions flex justify-end gap-3 mt-6">
-                                                        <button type="button" onclick="closeAddModal()"
-                                                            class="btn-cancel px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors"
-                                                            data-i18n="cancel_btn">Cancel</button>
-                                                        <button type="submit"
-                                                            class="btn-save-add px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium shadow-lg shadow-green-500/30 transition-all active:scale-95"
-                                                            data-i18n="save_btn">Save</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
+                                    <div class="space-y-1">
+                                        <label
+                                            class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Zip
+                                            Code</label>
+                                        <p class="text-slate-800 dark:text-slate-200 font-mono" id="detail-zip-code">-
+                                        </p>
                                     </div>
+                                </div>
+                                <div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-1">
+                                    <label
+                                        class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">AnyDesk
+                                        ID</label>
+                                    <div id="container-anydesk" class="flex items-center gap-2">
+                                        <p class="text-slate-800 dark:text-slate-200 font-mono text-lg"
+                                            id="detail-anydesk">-
+                                        </p>
+                                        <button id="detail-copy-anydesk"
+                                            class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                            title="Copy ID">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <script type="module" src="firebase-config.js"></script>
-                                    <script src="common.js?v=9"></script>
-                                    <script src="components.js?v=12"></script>
-                                    <script src="script.js"></script>
-                                </body>
+                        <!-- Right Column -->
+                        <div class="lg:col-span-1 space-y-6">
+                            <!-- Log Book -->
+                            <div
+                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 h-full">
+                                <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-4">Log Book</h3>
+                                <div id="container-log-book" class="h-[calc(100%-3rem)] overflow-y-auto">
+                                    <p class="text-slate-600 dark:text-slate-300 whitespace-pre-line text-sm leading-relaxed"
+                                        id="detail-log-book">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-8 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-slate-800 dark:bg-white text-white dark:text-slate-900 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none flex items-center gap-3">
+        <svg class="w-5 h-5 text-green-400 dark:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="font-medium" data-i18n="copied">Copied to clipboard!</span>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
+        aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div
+            class="modal-content bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-transform duration-300 border border-slate-100 dark:border-slate-700">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700">
+                <h2 id="modal-title" class="text-xl font-bold text-slate-800 dark:text-white"
+                    data-i18n="edit_modal_title">Edit Information</h2>
+                <button onclick="closeEditModal()"
+                    class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="edit-form" class="space-y-4">
+                    <div class="form-group"><label for="edit-hcode"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">HCode</label><input
+                            type="text" id="edit-hcode" readonly
+                            class="readonly-input block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 cursor-not-allowed focus:outline-none">
+                    </div>
+                    <div class="form-group"><label for="edit-serial-number"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serial
+                            Number</label><input type="text" id="edit-serial-number"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-name"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Health
+                            Station Name</label><input type="text" id="edit-name" required
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-service-center"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Service
+                            Center</label><input type="text" id="edit-service-center"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-pcid"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PC-ID</label><input
+                            type="text" id="edit-pcid"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-anydesk"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">AnyDesk
+                            ID</label><input type="text" id="edit-anydesk"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-district"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">District</label><input
+                            type="text" id="edit-district" required
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-sub-district"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sub-District</label><input
+                            type="text" id="edit-sub-district"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-province"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Province</label><input
+                            type="text" id="edit-province"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-zip-code"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Zip
+                            Code</label><input type="text" id="edit-zip-code"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="form-group"><label for="edit-log-book"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Log
+                            Book</label><textarea id="edit-log-book" rows="3"
+                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></textarea>
+                    </div>
+                    <div class="form-actions flex justify-end gap-3 mt-6">
+                        <button type="button" id="delete-btn-modal"
+                            class="mr-auto px-5 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors flex items-center gap-2"><svg
+                                class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg><span class="delete-btn-text" data-i18n="delete_btn">Delete</span></button>
+                        <button type="button" onclick="closeEditModal()"
+                            class="btn-cancel px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors"
+                            data-i18n="cancel_btn">Cancel</button>
+                        <button type="submit"
+                            class="btn-save px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+                            data-i18n="save_btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div id="add-modal-v3"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
+        aria-labelledby="add-modal-title" role="dialog" aria-modal="true">
+        <div
+            class="modal-content bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-7xl mx-4 transform scale-95 transition-transform duration-300 border border-slate-100 dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                <h2 id="add-modal-title" class="text-xl font-bold text-slate-800 dark:text-white"
+                    data-i18n="add_modal_title">Add New Health Station</h2>
+                <button onclick="closeAddModal()"
+                    class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <form id="add-form" class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Column 1: Basic Info -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-4">Basic Information</h3>
+                            <div class="form-group"><label for="add-serial-number"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serial
+                                    Number</label><input type="text" id="add-serial-number"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group"><label for="add-hcode"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">HCode</label><input
+                                    type="text" id="add-hcode" required
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group"><label for="add-service-center"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Service
+                                    Center</label><input type="text" id="add-service-center"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Location -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-4">Location</h3>
+                            <div class="form-group"><label for="add-sub-district"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sub-District</label><input
+                                    type="text" id="add-sub-district"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group"><label for="add-district"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">District</label><input
+                                    type="text" id="add-district" required
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group"><label for="add-province"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Province</label><input
+                                    type="text" id="add-province"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group"><label for="add-zip-code"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Zip
+                                    Code</label><input type="text" id="add-zip-code"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Identifiers & Log Book -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-4">Other & Log Book</h3>
+                            <div class="form-group"><label for="add-pcid"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PC-ID</label><input
+                                    type="text" id="add-pcid"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group"><label for="add-anydesk"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">AnyDesk
+                                    ID</label><input type="text" id="add-anydesk"
+                                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="form-group h-full">
+                                <label for="add-log-book"
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Log
+                                    Book</label>
+                                <textarea id="add-log-book"
+                                    class="block w-full h-[calc(100%-4rem)] px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                                    placeholder="Enter log details..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="form-actions flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <button type="button" onclick="closeAddModal()"
+                            class="btn-cancel px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors"
+                            data-i18n="cancel_btn">Cancel</button>
+                        <button type="submit"
+                            class="btn-save-add px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+                            data-i18n="save_btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script src="common.js?v=9"></script>
+    <script src="components.js?v=12"></script>
+    <script src="script.js?v=23"></script>
+</body>
 
 </html>
