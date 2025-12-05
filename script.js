@@ -25,7 +25,7 @@ const tableCard = document.querySelector('.table-card');
 // Modal Elements
 const editModal = document.getElementById('edit-modal');
 const editForm = document.getElementById('edit-form');
-const addModal = document.getElementById('add-modal-v2');
+const addModal = document.getElementById('add-modal-v3');
 const addForm = document.getElementById('add-form');
 const closeModalBtn = document.querySelector('.close-modal');
 const cancelBtn = document.querySelector('.btn-cancel');
@@ -43,7 +43,7 @@ const translations = {
         nav_logout: 'ออกจากระบบ',
         stat_centers: 'จำนวนศูนย์บริการ',
         stat_districts: 'จำนวนอำเภอทั้งหมด',
-        search_placeholder: 'ค้นหา HCode / ชื่อ / อำเภอ...',
+        search_placeholder: 'ค้นหา Serial / HCode / ชื่อ / อำเภอ / ศูนย์...',
         filter_province_default: 'เลือกจังหวัดทั้งหมด',
         filter_district_default: 'เลือกอำเภอทั้งหมด',
         refresh_btn: 'รีเฟรช',
@@ -88,7 +88,7 @@ const translations = {
         nav_logout: 'Logout',
         stat_centers: 'Service Centers',
         stat_districts: 'Total Districts',
-        search_placeholder: 'Search HCode / Name / District...',
+        search_placeholder: 'Search Serial / HCode / Name / District / Center...',
         filter_province_default: 'All Province',
         filter_district_default: 'All Districts',
         refresh_btn: 'Refresh',
@@ -143,9 +143,13 @@ async function init() {
         if (editForm) {
             editForm.addEventListener('submit', handleEditSubmit);
         }
+
         if (addForm) {
             addForm.addEventListener('submit', handleAddSubmit);
         }
+
+        // Start fetching Thai Address Data in background
+        fetchThaiAddressData();
 
         console.log('Fetching data...');
 
@@ -245,6 +249,14 @@ async function init() {
     } finally {
         // toggleGlobalLoading(false); // Removed
     }
+
+    // Setup Validation
+    setupValidation('add-form');
+    setupValidation('edit-form');
+
+    // Setup Auto-fill
+    setupZipCodeAutoFill('add-form');
+    setupZipCodeAutoFill('edit-form');
 }
 
 function filterData() {
@@ -258,7 +270,9 @@ function filterData() {
         const matchesSearch = query ? (
             (h.name && h.name.toLowerCase().includes(query)) ||
             (h.district && h.district.toLowerCase().includes(query)) ||
-            (h.hcode && h.hcode.toLowerCase().includes(query))
+            (h.hcode && h.hcode.toLowerCase().includes(query)) ||
+            (h.serial_number && h.serial_number.toLowerCase().includes(query)) ||
+            (h.service_center && h.service_center.toLowerCase().includes(query))
         ) : true;
 
         return matchesProvince && matchesDistrict && matchesSearch;
@@ -292,15 +306,37 @@ function updateLocalUIText() {
 
     // Update Modal Labels
     const updateLabels = (formId) => {
-        const form = document.getElementById(formId);
-        if (!form) return;
-        const formLabels = form.querySelectorAll('label');
-        if (formLabels.length >= 5) {
-            formLabels[0].textContent = currentLang === 'th' ? 'HCode (รหัสสถานบริการ)' : 'HCode';
-            formLabels[1].textContent = currentLang === 'th' ? 'ชื่อสถานบริการ' : 'Hospital Name';
-            formLabels[2].textContent = currentLang === 'th' ? 'อำเภอ' : 'District';
-            formLabels[3].textContent = currentLang === 'th' ? 'PC-ID' : 'PC-ID';
-            formLabels[4].textContent = currentLang === 'th' ? 'AnyDesk ID' : 'AnyDesk ID';
+        const prefix = formId.split('-')[0]; // 'add' or 'edit'
+
+        const setLabel = (suffix, textTh, textEn) => {
+            const label = document.querySelector(`label[for="${prefix}-${suffix}"]`);
+            if (label) {
+                const hasStar = label.querySelector('.text-red-500');
+                const text = currentLang === 'th' ? textTh : textEn;
+
+                if (hasStar) {
+                    label.innerHTML = `${text} <span class="text-red-500">*</span>`;
+                } else {
+                    label.textContent = text;
+                }
+            }
+        };
+
+        setLabel('hcode', 'Hospital Code (รหัสสถานบริการ)', 'Hospital Code');
+        setLabel('serial-number', 'Serial Number', 'Serial Number');
+        setLabel('pcid', 'PC-ID', 'PC-ID');
+        setLabel('anydesk', 'AnyDesk ID', 'AnyDesk ID');
+        setLabel('district', 'อำเภอ', 'District');
+        setLabel('sub-district', 'ตำบล', 'Sub-District');
+        setLabel('province', 'จังหวัด', 'Province');
+        setLabel('zip-code', 'รหัสไปรษณีย์', 'Zip Code');
+        setLabel('log-book', 'สมุดบันทึก', 'Log Book');
+
+        if (prefix === 'add') {
+            setLabel('service-center', 'ศูนย์บริการสุขภาพ', 'Health Center');
+        } else {
+            setLabel('name', 'ชื่อสถานบริการ', 'Health Station Name');
+            setLabel('service-center', 'หน่วยบริการ', 'Service Center');
         }
     };
 
@@ -392,6 +428,15 @@ async function fetchData() {
             healthStations.push({ id: doc.id, ...doc.data() });
         });
 
+        // Sort by createdAt descending (Newest first)
+        healthStations.sort((a, b) => {
+            const dateA = a.createdAt || '';
+            const dateB = b.createdAt || '';
+            if (dateA > dateB) return -1;
+            if (dateA < dateB) return 1;
+            return 0;
+        });
+
         saveToCache(healthStations);
         console.log(`Loaded ${healthStations.length} hospitals from Firestore`);
     } catch (error) {
@@ -414,7 +459,11 @@ function populateProvinces() {
         option.textContent = province;
         provinceFilter.appendChild(option);
     });
-    if (currentVal) provinceFilter.value = currentVal;
+    if (currentVal && provinces.includes(currentVal)) {
+        provinceFilter.value = currentVal;
+    } else {
+        provinceFilter.value = ""; // Reset if valid option not found
+    }
 }
 
 function populateDistricts() {
@@ -430,7 +479,11 @@ function populateDistricts() {
         option.textContent = district;
         districtFilter.appendChild(option);
     });
-    if (currentVal) districtFilter.value = currentVal;
+    if (currentVal && districts.includes(currentVal)) {
+        districtFilter.value = currentVal;
+    } else {
+        districtFilter.value = ""; // Reset if valid option not found
+    }
 }
 
 function updateStats() {
@@ -578,6 +631,15 @@ async function handleEditSubmit(e) {
     e.preventDefault();
     const t = translations[currentLang];
 
+    // Validate Form
+    if (!validateForm('edit-form')) {
+        const firstError = document.querySelector('#edit-form .val-error');
+        if (firstError) {
+            firstError.previousElementSibling.focus(); // Focus first invalid input
+        }
+        return;
+    }
+
     const hcode = document.getElementById('edit-hcode').value;
     const newData = {
         serial_number: document.getElementById('edit-serial-number').value,
@@ -716,6 +778,27 @@ async function showDetails(id) {
         `;
         editBtn.className = 'flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all active:scale-95 font-medium';
         editBtn.disabled = false;
+
+        // Add Delete Button if not exists
+        let deleteBtn = document.getElementById('detail-delete-btn');
+        if (!deleteBtn) {
+            deleteBtn = document.createElement('button');
+            deleteBtn.id = 'detail-delete-btn';
+            deleteBtn.className = 'flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl shadow-sm transition-all active:scale-95 font-medium ml-3';
+            deleteBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Delete</span>
+            `;
+            // Insert after Edit button
+            editBtn.parentNode.insertBefore(deleteBtn, editBtn.nextSibling);
+        }
+        deleteBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            confirmDelete(station.id);
+        };
     }
 
     // Switch views
@@ -943,6 +1026,92 @@ function cancelInlineEdit(id) {
     }
 }
 
+function confirmDelete(id) {
+    const t = translations[currentLang];
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, delete it!',
+        customClass: {
+            popup: 'dark:bg-slate-800 dark:text-white'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Force immediate view switch before processing delete
+            showList();
+            deleteItem(id);
+        }
+    });
+}
+
+async function deleteItem(id) {
+    const t = translations[currentLang];
+    console.log('deleteItem called for ID:', id);
+
+    // 1. Optimistic UI: Switch back to list immediately
+    showList();
+
+    // 2. Optimistic Data Update: Remove locally first
+    const originalStations = [...healthStations]; // Backup in case of error
+    const stationIndex = healthStations.findIndex(s => s.id === id);
+
+    if (stationIndex === -1) {
+        console.warn('Station not found locally');
+        // Even if not found locally, we might still want to try deleting from DB if ID is valid
+        // But for UI purpose, we just return/proceed.
+    } else {
+        // Remove from local array
+        healthStations.splice(stationIndex, 1);
+    }
+
+    // Refresh Dropdown Filters using the updated local data
+    populateProvinces();
+    populateDistricts();
+
+    // Refresh Table & Stats IMMEDIATELY (After filters are potentially reset)
+    filterData();
+    updateStats();
+
+    // Success Toast Immediately (Optimistic)
+    if (window.showToast) {
+        showToast('Deleted successfully');
+    } else {
+        console.log('Deleted successfully');
+    }
+
+    try {
+        // 3. Perform Actual Delete
+        await window.firebase.deleteDoc(window.firebase.doc(window.firebase.db, COLLECTION_NAME, id));
+
+        // 4. Update Cache to prevent "stuck" data on refresh
+        if (typeof saveToCache === 'function') {
+            saveToCache(healthStations);
+        }
+
+    } catch (error) {
+        console.error('Delete error, rolling back:', error);
+
+        // Rollback
+        healthStations = originalStations;
+        filterData();
+        updateStats();
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to delete item from database. Changes reverted. ' + error.message,
+            customClass: {
+                popup: 'dark:bg-slate-800 dark:text-white'
+            }
+        });
+    }
+}
+
+
 function renderTable(data, startIndex = 0) {
     const tbody = document.getElementById('health-station-list');
     if (!tbody) return;
@@ -975,7 +1144,18 @@ function renderTable(data, startIndex = 0) {
 
         row.innerHTML = `
             <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">${startIndex + index + 1}</td>
-            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">${station.serial_number || '-'}</td>
+            <td class="py-4 px-6 text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="font-mono font-medium text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30 px-2 py-1 rounded-md border border-amber-100 dark:border-amber-800/50">${station.serial_number || '-'}</span>
+                    ${station.serial_number ? `
+                    <button onclick="copyToClipboard('${station.serial_number}', this)" class="group/copy relative p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors" title="Copy Serial Number">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span class="copy-feedback absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-slate-800 rounded opacity-0 transition-opacity pointer-events-none whitespace-nowrap">Copied!</span>
+                    </button>` : ''}
+                </div>
+            </td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-medium">${station.service_center || '-'}</td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300"><span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 py-1 px-2 rounded-lg text-xs font-semibold">${station.hcode}</span></td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">${station.province || '-'}</td>
@@ -1011,29 +1191,55 @@ function renderTable(data, startIndex = 0) {
 
 // addModal and addForm are defined at the top
 
+// Debug-enhanced openAddModal
 window.openAddModal = function () {
-    console.log('openAddModal called');
-    let modal = document.getElementById('add-modal-v3');
+    console.log('openAddModal called - Debug v1');
+    const modalId = 'add-modal-v3';
+    let modal = document.getElementById(modalId);
+
     if (!modal) {
-        console.error('Add modal not found!');
+        console.error(`CRITICAL: Modal with ID '${modalId}' not found in DOM!`);
+        // Fallback attempt to find ANY add modal
+        modal = document.querySelector('[id^="add-modal"]');
+        if (modal) console.log('Found alternative modal:', modal.id);
+    }
+
+    if (!modal) {
+        alert('Error: Add Modal not found. Please refresh the page.');
         return;
     }
 
-    if (addForm) addForm.reset();
+    console.log('Modal found:', modal);
 
+    if (addForm) {
+        addForm.reset();
+        console.log('Form reset');
+    }
+
+    // Force visible
     modal.classList.remove('hidden');
-    // Force a reflow
+    modal.style.display = 'flex'; // Direct override
+
+    // Force reflow
     void modal.offsetWidth;
 
-    requestAnimationFrame(() => {
+    // Animation
+    setTimeout(() => {
         modal.classList.remove('opacity-0');
         const content = modal.querySelector('.modal-content');
-        if (content) content.classList.remove('scale-95');
-    });
+        if (content) {
+            content.classList.remove('scale-95');
+        }
+    }, 10);
 };
 
 window.closeAddModal = function () {
-    let modal = document.getElementById('add-modal-v3');
+    const modalId = 'add-modal-v3';
+    let modal = document.getElementById(modalId);
+
+    // Fallback search if ID fetch fails (consistency with open)
+    if (!modal) modal = document.querySelector('[id^="add-modal"]');
+
     if (!modal) return;
 
     modal.classList.add('opacity-0');
@@ -1042,8 +1248,209 @@ window.closeAddModal = function () {
 
     setTimeout(() => {
         modal.classList.add('hidden');
+        modal.style.display = 'none'; // CRITICAL: Clear the inline flex
+        if (addForm) addForm.reset();
     }, 300);
 };
+
+// --- Address Auto-fill Functions ---
+let thaiAddressDB = null;
+
+async function fetchThaiAddressData() {
+    try {
+        console.log('Starting address fetch...');
+        const response = await fetch('https://raw.githubusercontent.com/earthchie/jquery.Thailand.js/master/jquery.Thailand.js/database/raw_database/raw_database.json');
+        if (!response.ok) throw new Error('Network response was not ok');
+        thaiAddressDB = await response.json();
+        console.log('Thai Address Data loaded:', thaiAddressDB.length, 'entries');
+        if (thaiAddressDB.length > 0) {
+            console.log('Sample DB Entry:', thaiAddressDB[0]);
+        }
+    } catch (error) {
+        console.warn('Auto-fill data failed to load:', error);
+        // Fallback or retry logic could go here
+    }
+}
+
+function lookupAddress(zipCode) {
+    if (!thaiAddressDB) return null;
+
+    // Normalize input
+    const zipInt = parseInt(zipCode, 10);
+
+    // Search for match by zip code
+    const match = thaiAddressDB.find(item => {
+        const z = item.z || item.zipcode;
+        if (Array.isArray(z)) {
+            return z.some(code => code == zipCode || code == zipInt);
+        }
+        return z == zipCode || z == zipInt;
+    });
+
+    if (match) {
+        return {
+            subDistrict: match.d || match.district || match.sub_district || '',
+            district: match.a || match.amphoe || match.amphur || match.district || '',
+            province: match.p || match.province || ''
+        };
+    }
+    return null;
+}
+
+function setupZipCodeAutoFill(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const prefix = formId.split('-')[0]; // 'add' or 'edit'
+    const zipInput = document.getElementById(`${prefix}-zip-code`);
+
+    if (!zipInput) return; // Exit if input not found
+
+    zipInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/\D/g, ''); // Digits only
+
+        // Auto-fill trigger when 5 digits
+        if (value.length === 5) {
+            if (!thaiAddressDB) {
+                // Show a small non-intrusive notification if data is still loading
+                const t = translations[currentLang];
+                if (window.showToast) window.showToast('Loading address data... please wait');
+                return;
+            }
+
+            const address = lookupAddress(value);
+            if (address) {
+                const subDistrictInput = document.getElementById(`${prefix}-sub-district`);
+                const districtInput = document.getElementById(`${prefix}-district`);
+                const provinceInput = document.getElementById(`${prefix}-province`);
+
+                if (subDistrictInput) {
+                    subDistrictInput.value = address.subDistrict;
+                    clearError(subDistrictInput);
+                }
+                if (districtInput) {
+                    districtInput.value = address.district;
+                    clearError(districtInput);
+                }
+                if (provinceInput) {
+                    provinceInput.value = address.province;
+                    clearError(provinceInput);
+                }
+            }
+        }
+    });
+}
+
+// --- Validation Functions ---
+
+function showError(input, message) {
+    const formGroup = input.closest('.form-group') || input.parentElement;
+    clearError(input); // Clear existing first
+
+    input.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+    input.classList.remove('border-slate-200', 'dark:border-slate-600', 'focus:border-blue-500', 'focus:ring-blue-500');
+
+    const errorMsg = document.createElement('p');
+    errorMsg.className = 'val-error text-red-500 text-xs mt-1 animate-fade-in-up';
+    errorMsg.textContent = message;
+    formGroup.appendChild(errorMsg);
+}
+
+function clearError(input) {
+    const formGroup = input.closest('.form-group') || input.parentElement;
+
+    input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+    input.classList.add('border-slate-200', 'dark:border-slate-600', 'focus:border-blue-500', 'focus:ring-blue-500');
+
+    const existingMsg = formGroup.querySelector('.val-error');
+    if (existingMsg) {
+        existingMsg.remove();
+    }
+}
+
+function validateField(input) {
+    const value = input.value.trim();
+    const id = input.id;
+    let isValid = true;
+    let message = '';
+
+    // Required check
+    if (input.hasAttribute('required') && !value) {
+        isValid = false;
+        message = 'Please fill out this field.';
+    }
+
+    // Specific Field Rules
+    if (isValid && value) {
+        if (id.includes('hcode')) {
+            if (value.length !== 5 || isNaN(value)) {
+                isValid = false;
+                message = 'Hospital Code must be 5 digits.';
+            }
+        }
+
+        if (id.includes('zip-code')) {
+            if (value.length !== 5 || isNaN(value)) {
+                isValid = false;
+                message = 'Zip Code must be 5 digits.';
+            }
+        }
+
+        if (id.includes('anydesk')) {
+            // Remove spaces and dashes for check
+            const cleanValue = value.replace(/[\s-]/g, '');
+            if (isNaN(cleanValue) || cleanValue.length < 9) {
+                isValid = false;
+                message = 'Invalid AnyDesk ID format.';
+            }
+        }
+    }
+
+    if (!isValid) {
+        showError(input, message);
+    } else {
+        clearError(input);
+    }
+
+    return isValid;
+}
+
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return true;
+
+    let isFormValid = true;
+    const inputs = form.querySelectorAll('input, select, textarea');
+
+    inputs.forEach(input => {
+        // Skip hidden or disabled fields if any
+        if (input.type === 'hidden' || input.disabled) return;
+
+        if (!validateField(input)) {
+            isFormValid = false;
+        }
+    });
+
+    return isFormValid;
+}
+
+function setupValidation(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        // Clear error on input
+        input.addEventListener('input', () => {
+            clearError(input);
+        });
+
+        // Validate on blur
+        input.addEventListener('blur', () => {
+            validateField(input);
+        });
+    });
+}
 
 // Event listener moved to init()
 
@@ -1051,10 +1458,25 @@ async function handleAddSubmit(e) {
     e.preventDefault();
     const t = translations[currentLang];
 
+    // Validate Form
+    if (!validateForm('add-form')) {
+        const firstError = document.querySelector('#add-form .val-error');
+        if (firstError) {
+            firstError.previousElementSibling.focus(); // Focus first invalid input
+        }
+        return;
+    }
+
+    const hcode = document.getElementById('add-hcode').value;
+    // Manual fallback check
+    if (!hcode) {
+        showError(document.getElementById('add-hcode'), 'Please enter Hospital Code');
+        return;
+    }
+
     const newData = {
-        hcode: document.getElementById('add-hcode').value,
+        hcode: hcode,
         serial_number: document.getElementById('add-serial-number').value,
-        name: document.getElementById('add-service-center').value, // Use Service Center as Name since Name field is removed
         service_center: document.getElementById('add-service-center').value,
         district: document.getElementById('add-district').value,
         sub_district: document.getElementById('add-sub-district').value,
@@ -1062,41 +1484,55 @@ async function handleAddSubmit(e) {
         zip_code: document.getElementById('add-zip-code').value,
         pcId: document.getElementById('add-pcid').value,
         anydesk: document.getElementById('add-anydesk').value,
-        log_book: document.getElementById('add-log-book').value
+        log_book: document.getElementById('add-log-book').value,
+        name: document.getElementById('add-service-center').value, // Use service center as name
+        createdAt: new Date().toISOString() // Add timestamp for sorting
     };
 
     const saveBtn = document.querySelector('.btn-save-add');
-    const originalText = saveBtn.textContent;
-    saveBtn.textContent = t.saving;
-    saveBtn.disabled = true;
-    saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    const originalText = saveBtn ? saveBtn.textContent : 'Save';
+    if (saveBtn) {
+        saveBtn.textContent = t.saving;
+        saveBtn.disabled = true;
+        saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    }
 
     try {
-        // Use hcode as document ID
-        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, newData.hcode);
+        // Check if exists
+        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, hcode);
+        const docSnap = await window.firebase.getDoc(docRef);
 
-        // Check if exists first to prevent overwrite? Or just setDoc (upsert/overwrite)
-        // For safety, let's use setDoc which overwrites if exists, or creates new.
+        if (docSnap.exists()) {
+            throw new Error('Health Station with this HCode already exists.');
+        }
+
         await window.firebase.setDoc(docRef, newData);
 
+        // Optimistic Update: Add to TOP of list
+        healthStations.unshift({ id: hcode, ...newData });
+
+        // Refresh Table & Stats & Filters IMMEDIATELY
+        filterData();
+        updateStats();
+        populateProvinces(); // Refresh Province Dropdown
+        populateDistricts(); // Refresh District Dropdown
+
+        // Update Cache
+        if (typeof saveToCache === 'function') {
+            saveToCache(healthStations);
+        }
+
+        // Close Modal
         closeAddModal();
+
         Swal.fire({
             icon: 'success',
             title: t.saved,
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
+            timer: 1500,
+            showConfirmButton: false,
             customClass: {
-                popup: 'dark:bg-slate-800 dark:text-white',
-                confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
+                popup: 'dark:bg-slate-800 dark:text-white'
             }
-        }).then(async () => {
-            // Refresh data after alert closes
-            toggleTableLoading(true);
-            await fetchData();
-            filterData();
-            updateStats();
-            populateDistricts(); // Update district filter
-            toggleTableLoading(false);
         });
 
     } catch (error) {
@@ -1111,83 +1547,16 @@ async function handleAddSubmit(e) {
             }
         });
     } finally {
-        saveBtn.textContent = originalText;
-        saveBtn.disabled = false;
-        saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        if (saveBtn) {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
     }
 }
 
 // Redefining deleteItem to be safe
-window.deleteItem = async function (hcode) {
-    const t = translations[currentLang];
 
-    const result = await Swal.fire({
-        title: t.confirm_delete_title,
-        text: t.confirm_delete_text,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: t.delete_btn,
-        cancelButtonText: t.cancel_btn,
-        customClass: {
-            popup: 'dark:bg-slate-800 dark:text-white'
-        }
-    });
-
-    if (result.isConfirmed) {
-        Swal.fire({
-            title: t.saving,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            },
-            customClass: {
-                popup: 'dark:bg-slate-800 dark:text-white'
-            }
-        });
-
-        try {
-            const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, hcode);
-            await window.firebase.deleteDoc(docRef);
-
-            Swal.fire({
-                title: t.deleted_success,
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false,
-                customClass: {
-                    popup: 'dark:bg-slate-800 dark:text-white'
-                }
-            });
-
-            // Remove from local array
-            healthStations = healthStations.filter(h => String(h.hcode) !== String(hcode));
-            filterData();
-            updateStats();
-            populateDistricts();
-
-            // Close modal if open
-            const editModal = document.getElementById('edit-modal');
-            if (editModal) {
-                editModal.classList.add('hidden');
-                editModal.style.setProperty('display', 'none', 'important');
-                editModal.classList.remove('opacity-0');
-            }
-
-        } catch (error) {
-            console.error('Delete error:', error);
-            Swal.fire({
-                title: t.delete_error,
-                text: error.message,
-                icon: 'error',
-                customClass: {
-                    popup: 'dark:bg-slate-800 dark:text-white'
-                }
-            });
-        }
-    }
-};
 
 // --- Helper Functions ---
 
