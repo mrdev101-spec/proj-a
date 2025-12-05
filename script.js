@@ -10,6 +10,7 @@ let toastTimeout;
 let healthStations = []; // Store fetched data
 let filteredHealthStations = []; // Store filtered data
 let currentPage = 1;
+let rowsPerPage = 5;
 // currentLang is managed by common.js
 const CACHE_KEY = 'health_station_data';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -47,6 +48,7 @@ const translations = {
         th_no: 'ลำดับ',
         th_health_station: 'สถานีสุขภาพ',
         th_hcode: 'HCode',
+        th_serial_number: 'Serial Number',
         th_district: 'อำเภอ',
         th_pcid: 'PC-ID',
         th_anydesk: 'AnyDesk ID',
@@ -90,6 +92,7 @@ const translations = {
         th_no: 'No',
         th_health_station: 'Health Station',
         th_hcode: 'HCode',
+        th_serial_number: 'Serial Number',
         th_district: 'District',
         th_pcid: 'PC-ID',
         th_anydesk: 'AnyDesk ID',
@@ -369,7 +372,7 @@ async function fetchData() {
         const querySnapshot = await window.firebase.getDocs(window.firebase.collection(window.firebase.db, COLLECTION_NAME));
         healthStations = [];
         querySnapshot.forEach((doc) => {
-            healthStations.push(doc.data());
+            healthStations.push({ id: doc.id, ...doc.data() });
         });
 
         saveToCache(healthStations);
@@ -396,51 +399,6 @@ function populateDistricts() {
         districtFilter.appendChild(option);
     });
     if (currentVal) districtFilter.value = currentVal;
-}
-
-function renderTable(data, startIndex = 0) {
-    console.log('renderTable called with', data ? data.length : 0, 'rows');
-    const t = translations[currentLang];
-
-    if (!tableBody) return;
-
-    if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 dark:text-slate-400">${t.no_data}</td></tr>`;
-        return;
-    }
-
-    tableBody.innerHTML = data.map((hospital, index) => `
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group border-b border-slate-100 dark:border-slate-700 last:border-0">
-            <td class="py-4 px-6 text-sm text-slate-500 dark:text-slate-400 font-mono">${startIndex + index + 1}</td>
-            <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-slate-100">${hospital.name}</td>
-            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono bg-slate-50/50 dark:bg-slate-800/50 rounded-lg">${hospital.hcode}</td>
-            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                    ${hospital.district}
-                </span>
-            </td>
-            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono whitespace-nowrap">${hospital.pcId}</td>
-            <td class="py-4 px-6">
-                <div class="flex items-center gap-2 group/copy relative">
-                    <span class="text-sm font-mono text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded select-all">${hospital.anydesk}</span>
-                    <button onclick="copyToClipboard('${hospital.anydesk}', this)" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all opacity-0 group-hover/copy:opacity-100 focus:opacity-100 relative" aria-label="Copy">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    </button>
-                    <span class="copy-feedback absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">Copied!</span>
-                </div>
-            </td>
-            <td class="py-4 px-6 text-center">
-                <button class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all" title="${t.map_btn}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 7m0 13V7m0 0L9.553 4.553A1 1 0 009 4.553"/></svg>
-                </button>
-            </td>
-            <td class="py-4 px-6 text-center">
-                <button onclick="openEditModal('${hospital.hcode}')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" title="Edit">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                </button>
-            </td>
-        </tr>
-    `).join('');
 }
 
 function updateStats() {
@@ -543,10 +501,15 @@ window.openEditModal = function (hcode) {
     if (!hospital) return;
 
     document.getElementById('edit-hcode').value = hospital.hcode;
+    document.getElementById('edit-serial-number').value = hospital.serial_number || '';
     document.getElementById('edit-name').value = hospital.name;
     document.getElementById('edit-district').value = hospital.district;
+    document.getElementById('edit-sub-district').value = hospital.sub_district || '';
+    document.getElementById('edit-province').value = hospital.province || '';
+    document.getElementById('edit-zip-code').value = hospital.zip_code || '';
     document.getElementById('edit-pcid').value = hospital.pcId;
     document.getElementById('edit-anydesk').value = hospital.anydesk;
+    document.getElementById('edit-log-book').value = hospital.log_book || '';
 
     editModal.classList.remove('hidden');
     // Animation
@@ -584,10 +547,15 @@ async function handleEditSubmit(e) {
 
     const hcode = document.getElementById('edit-hcode').value;
     const newData = {
+        serial_number: document.getElementById('edit-serial-number').value,
         name: document.getElementById('edit-name').value,
         district: document.getElementById('edit-district').value,
+        sub_district: document.getElementById('edit-sub-district').value,
+        province: document.getElementById('edit-province').value,
+        zip_code: document.getElementById('edit-zip-code').value,
         pcId: document.getElementById('edit-pcid').value,
-        anydesk: document.getElementById('edit-anydesk').value
+        anydesk: document.getElementById('edit-anydesk').value,
+        log_book: document.getElementById('edit-log-book').value
     };
 
     const saveBtn = document.querySelector('.btn-save');
@@ -630,8 +598,117 @@ async function handleEditSubmit(e) {
     } finally {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
-        saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        saveBtn.classList.remove('opacity-0', 'cursor-not-allowed');
     }
+}
+
+function showList() {
+    document.getElementById('details-view').classList.add('hidden');
+    document.getElementById('list-view').classList.remove('hidden');
+    // Clear details to avoid flashing old data next time
+    document.getElementById('detail-name').textContent = '';
+}
+
+async function showDetails(id) {
+    console.log('showDetails called with ID:', id);
+    console.log('Current healthStations:', healthStations);
+    const station = healthStations.find(s => s.id === id);
+    console.log('Found station:', station);
+
+    if (!station) {
+        console.error('Station not found for ID:', id);
+        return;
+    }
+
+    // Populate details
+    document.getElementById('detail-name').textContent = station.name || '-';
+    document.getElementById('detail-hcode').textContent = `HCode: ${station.hcode || '-'}`;
+
+    document.getElementById('detail-serial').textContent = station.serial_number || '-';
+    document.getElementById('detail-service-center').textContent = station.service_center || '-';
+    document.getElementById('detail-pcid').textContent = station.pcId || '-';
+
+    document.getElementById('detail-anydesk').textContent = station.anydesk || '-';
+    document.getElementById('detail-copy-anydesk').onclick = () => copyToClipboard(station.anydesk);
+
+    document.getElementById('detail-sub-district').textContent = station.sub_district || '-';
+    document.getElementById('detail-district').textContent = station.district || '-';
+    document.getElementById('detail-province').textContent = station.province || '-';
+    document.getElementById('detail-zip-code').textContent = station.zip_code || '-';
+
+    document.getElementById('detail-log-book').textContent = station.log_book || '-';
+
+    // Setup Edit Button
+    const editBtn = document.getElementById('detail-edit-btn');
+    editBtn.onclick = () => openEditModal(station.hcode);
+
+    // Switch views
+    document.getElementById('list-view').classList.add('hidden');
+    document.getElementById('details-view').classList.remove('hidden');
+}
+
+function renderTable(data, startIndex = 0) {
+    const tbody = document.getElementById('health-station-list');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="py-8 text-center text-slate-500 dark:text-slate-400">
+                    No health stations found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    // Data is already paginated by updateTableDisplay
+    const paginatedData = data;
+
+    paginatedData.forEach((station, index) => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0';
+
+        // Map Link
+        const mapLink = station.lat && station.lng
+            ? `<a href="https://www.google.com/maps?q=${station.lat},${station.lng}" target="_blank" class="text-blue-500 hover:text-blue-600 transition-colors">
+                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+               </a>`
+            : `<span class="text-slate-300 dark:text-slate-600 flex justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></span>`;
+
+        row.innerHTML = `
+            <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">${startIndex + index + 1}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">${station.serial_number || '-'}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-medium">${station.name}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300"><span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 py-1 px-2 rounded-lg text-xs font-semibold">${station.hcode}</span></td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">${station.province || '-'}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono">${station.pcId || '-'}</td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono">
+                <div class="flex items-center gap-2">
+                    <span>${station.anydesk || '-'}</span>
+                    ${station.anydesk ? `
+                    <button onclick="copyToClipboard('${station.anydesk}')" class="text-slate-400 hover:text-blue-500 transition-colors" title="Copy AnyDesk ID">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    </button>` : ''}
+                </div>
+            </td>
+            <td class="py-4 px-6 text-center">${mapLink}</td>
+            <td class="py-4 px-6 text-center">
+                <button onclick="showDetails('${station.id}')" class="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20" title="View Details">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    renderPagination(data.length);
 }
 
 // --- Add Functions ---
@@ -669,10 +746,15 @@ async function handleAddSubmit(e) {
 
     const newData = {
         hcode: document.getElementById('add-hcode').value,
+        serial_number: document.getElementById('add-serial-number').value,
         name: document.getElementById('add-name').value,
         district: document.getElementById('add-district').value,
+        sub_district: document.getElementById('add-sub-district').value,
+        province: document.getElementById('add-province').value,
+        zip_code: document.getElementById('add-zip-code').value,
         pcId: document.getElementById('add-pcid').value,
-        anydesk: document.getElementById('add-anydesk').value
+        anydesk: document.getElementById('add-anydesk').value,
+        log_book: document.getElementById('add-log-book').value
     };
 
     const saveBtn = document.querySelector('.btn-save-add');
@@ -847,4 +929,17 @@ function debounce(func, wait) {
 }
 
 
-// init(); // Removed to prevent race condition with module loading
+document.addEventListener('DOMContentLoaded', () => {
+    // Render Layout
+    if (typeof renderHeader === 'function') renderHeader('nav_health_station');
+    if (typeof renderSidebar === 'function') renderSidebar('health-station');
+
+    // Check Permissions
+    if (typeof checkPermission === 'function') checkPermission('health-station');
+
+    // Setup Logout
+    if (typeof setupLogout === 'function') setupLogout();
+
+    // Initialize Page Logic
+    init();
+});
