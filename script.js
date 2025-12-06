@@ -41,8 +41,9 @@ const translations = {
         nav_users: 'จัดการผู้ใช้งาน',
         nav_settings: 'การตั้งค่า',
         nav_logout: 'ออกจากระบบ',
-        stat_centers: 'จำนวนศูนย์บริการ',
-        stat_districts: 'จำนวนอำเภอทั้งหมด',
+        stat_health_stations: 'สถานีสุขภาพ',
+        stat_provinces: 'จำนวนจังหวัด',
+        stat_districts: 'จำนวนอำเภอ',
         search_placeholder: 'ค้นหา Serial / HCode / ชื่อ / อำเภอ / ศูนย์...',
         filter_province_default: 'เลือกจังหวัดทั้งหมด',
         filter_district_default: 'เลือกอำเภอทั้งหมด',
@@ -86,8 +87,9 @@ const translations = {
         nav_users: 'User Management',
         nav_settings: 'Settings',
         nav_logout: 'Logout',
-        stat_centers: 'Service Centers',
-        stat_districts: 'Total Districts',
+        stat_health_stations: 'Health Stations',
+        stat_provinces: 'Provinces',
+        stat_districts: 'Districts',
         search_placeholder: 'Search Serial / HCode / Name / District / Center...',
         filter_province_default: 'All Province',
         filter_district_default: 'All Districts',
@@ -216,6 +218,7 @@ async function init() {
 
         // Add event listeners
         if (provinceFilter) provinceFilter.addEventListener('change', () => {
+            populateDistricts();
             filterData();
         });
         if (districtFilter) districtFilter.addEventListener('change', filterData);
@@ -233,6 +236,8 @@ async function init() {
                 await new Promise(r => setTimeout(r, 500));
                 try {
                     await fetchData();
+                    populateProvinces(); // Refresh Province Dropdown
+                    populateDistricts(); // Refresh District Dropdown
                     filterData();
                     updateStats();
                 } catch (err) {
@@ -257,6 +262,17 @@ async function init() {
     // Setup Auto-fill
     setupZipCodeAutoFill('add-form');
     setupZipCodeAutoFill('edit-form');
+    setupAddressAutoFill('add-form');
+    setupAddressAutoFill('edit-form');
+
+    // Setup Serial Number Validation
+    // Setup Serial Number Validation
+    setupSerialNumberValidation();
+
+    // Setup Custom Dropdowns
+    setupCustomDropdown('province-filter');
+    setupCustomDropdown('district-filter');
+    setupCustomDropdown('rows-filter');
 }
 
 function filterData() {
@@ -471,7 +487,16 @@ function populateDistricts() {
     if (!districtFilter) return;
     const t = translations[currentLang];
     const currentVal = districtFilter.value;
-    const districts = [...new Set(healthStations.map(h => h.district))].sort();
+
+    // Filter districts based on selected province
+    const selectedProvince = provinceFilter ? provinceFilter.value : '';
+    let availableStations = healthStations;
+
+    if (selectedProvince) {
+        availableStations = healthStations.filter(h => h.province === selectedProvince);
+    }
+
+    const districts = [...new Set(availableStations.map(h => h.district).filter(d => d))].sort();
     districtFilter.innerHTML = `<option value="">${t.filter_district_default}</option>`;
     districts.forEach(district => {
         const option = document.createElement('option');
@@ -489,15 +514,27 @@ function populateDistricts() {
 function updateStats() {
     const t = translations[currentLang];
     const statCenters = document.getElementById('stat-centers-value');
+    const statProvinces = document.getElementById('stat-provinces-value');
     const statDistricts = document.getElementById('stat-districts-value');
 
-    if (statCenters && statDistricts) {
-        const totalCenters = healthStations.length;
-        const totalDistricts = new Set(healthStations.map(h => h.district)).size;
+    if (statCenters) {
+        // Health Station count based on Serial Number (filter out empty serials if needed, or just count all records)
+        // Request says "count from Serial Number", assuming non-empty serials or just total records. 
+        // Typically "count from serial number" implies counting entries that HAVE a serial number.
+        const totalHealthStations = healthStations.filter(h => h.serial_number && h.serial_number.trim() !== '').length;
+        // If they just mean "Total records", use healthStations.length. Sticking to "from Serial Number" interpretation:
 
-        // Use span for the number to keep color
-        statCenters.innerHTML = `${t.stat_centers}: <span class="text-blue-600 dark:text-blue-400">${totalCenters}</span>`;
-        statDistricts.innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${totalDistricts}</span>`;
+        statCenters.innerHTML = `${t.stat_health_stations}: <span class="text-blue-600 dark:text-blue-400">${totalHealthStations}</span>`;
+    }
+
+    if (statProvinces) {
+        const uniqueProvinces = new Set(healthStations.map(h => h.province ? h.province.trim() : '').filter(p => p !== '')).size;
+        statProvinces.innerHTML = `${t.stat_provinces}: <span class="text-emerald-600 dark:text-emerald-400">${uniqueProvinces}</span>`;
+    }
+
+    if (statDistricts) {
+        const uniqueDistricts = new Set(healthStations.map(h => h.district ? h.district.trim() : '').filter(d => d !== '')).size;
+        statDistricts.innerHTML = `${t.stat_districts}: <span class="text-indigo-600 dark:text-indigo-400">${uniqueDistricts}</span>`;
     }
 }
 
@@ -581,8 +618,8 @@ function showToast(message) {
 
 // --- Edit Functions ---
 
-window.openEditModal = function (hcode) {
-    const station = healthStations.find(h => String(h.hcode) === String(hcode));
+window.openEditModal = function (id) {
+    const station = healthStations.find(h => String(h.id) === String(id));
     if (!station) return;
 
     document.getElementById('edit-hcode').value = station.hcode || '';
@@ -608,7 +645,7 @@ window.openEditModal = function (hcode) {
     // Setup delete button in modal
     const deleteBtn = document.getElementById('delete-btn-modal');
     if (deleteBtn) {
-        deleteBtn.onclick = () => deleteItem(hcode);
+        deleteBtn.onclick = () => deleteItem(id);
     }
 };
 
@@ -640,10 +677,10 @@ async function handleEditSubmit(e) {
         return;
     }
 
-    const hcode = document.getElementById('edit-hcode').value;
+    const id = document.getElementById('edit-serial-number').value; // ID is now Serial Number
     const newData = {
+        hcode: document.getElementById('edit-hcode').value,
         serial_number: document.getElementById('edit-serial-number').value,
-        name: document.getElementById('edit-name').value,
         service_center: document.getElementById('edit-service-center').value,
         district: document.getElementById('edit-district').value,
         sub_district: document.getElementById('edit-sub-district').value,
@@ -661,10 +698,10 @@ async function handleEditSubmit(e) {
     saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
     try {
-        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, hcode);
+        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, id);
         await window.firebase.updateDoc(docRef, newData);
 
-        const index = healthStations.findIndex(h => String(h.hcode) === String(hcode));
+        const index = healthStations.findIndex(h => String(h.id) === String(id));
         if (index !== -1) {
             healthStations[index] = { ...healthStations[index], ...newData };
         }
@@ -699,10 +736,27 @@ async function handleEditSubmit(e) {
 }
 
 function showList() {
-    document.getElementById('details-view').classList.add('hidden');
-    document.getElementById('list-view').classList.remove('hidden');
+    const listView = document.getElementById('list-view');
+    const detailsView = document.getElementById('details-view');
+
+    // Toggle Views Immediately
+    if (detailsView) detailsView.classList.add('hidden');
+    if (listView) listView.classList.remove('hidden');
+
     // Clear details to avoid flashing old data next time
     document.getElementById('detail-name').textContent = '';
+
+    // Show Stats Container Immediately
+    const statsContainer = document.getElementById('stats-container');
+    if (statsContainer) {
+        statsContainer.classList.remove('max-h-0', 'mb-0', 'opacity-0', 'scale-95');
+        statsContainer.classList.add('max-h-[500px]', 'mb-8', 'opacity-100', 'scale-100');
+    }
+
+    // Refresh Table Data to reflect any changes made in Details View
+    // Note: This might reset pagination to page 1 depending on filterData implementation
+    if (typeof filterData === 'function') filterData();
+    if (typeof updateStats === 'function') updateStats();
 }
 
 async function showDetails(id) {
@@ -720,6 +774,13 @@ async function showDetails(id) {
         if (el) el.textContent = text;
     };
 
+    // Hide Stats Container in Details View Immediately
+    const statsContainer = document.getElementById('stats-container');
+    if (statsContainer) {
+        statsContainer.classList.remove('max-h-[500px]', 'mb-8', 'opacity-100', 'scale-100');
+        statsContainer.classList.add('max-h-0', 'mb-0', 'opacity-0', 'scale-95');
+    }
+
     // Populate details
     // Hide Name in Header as per request
     const nameEl = document.getElementById('detail-name');
@@ -728,17 +789,18 @@ async function showDetails(id) {
         nameEl.textContent = station.name || '-';
     }
 
-    safeSetText('detail-hcode', station.serial_number || '-');
+    // Header Title: S/N : [Serial Number]
+    safeSetText('detail-header-sn', station.serial_number ? `S/N : ${station.serial_number}` : '-');
 
+    // --- Station Details Card ---
     safeSetText('detail-serial', station.serial_number || '-');
-    safeSetText('detail-service-center', station.service_center || '-');
     safeSetText('detail-pcid', station.pcId || '-');
 
-    // AnyDesk - Restore View Structure
+    // AnyDesk
     const anydeskContainer = document.getElementById('container-anydesk');
     if (anydeskContainer) {
         anydeskContainer.innerHTML = `
-            <p class="text-slate-800 dark:text-slate-200 font-mono text-lg" id="detail-anydesk">${station.anydesk || '-'}</p>
+            <p class="text-slate-800 dark:text-slate-200 font-bold text-lg" id="detail-anydesk">${station.anydesk || '-'}</p>
             ${station.anydesk ? `
             <button id="detail-copy-anydesk" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Copy ID">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -750,6 +812,11 @@ async function showDetails(id) {
         const copyBtn = document.getElementById('detail-copy-anydesk');
         if (copyBtn) copyBtn.onclick = () => copyToClipboard(station.anydesk);
     }
+
+    // --- Location Card ---
+    safeSetText('detail-service-center', station.service_center || '-');
+    // FIX: Show HCode correctly (using id or hcode field)
+    safeSetText('detail-hcode', station.hcode || station.id || '-');
 
     safeSetText('detail-sub-district', station.sub_district || '-');
     safeSetText('detail-district', station.district || '-');
@@ -801,9 +868,10 @@ async function showDetails(id) {
         };
     }
 
-    // Switch views
+    // Switch views Immediately
     const listView = document.getElementById('list-view');
     const detailsView = document.getElementById('details-view');
+
     if (listView) listView.classList.add('hidden');
     if (detailsView) detailsView.classList.remove('hidden');
 }
@@ -814,6 +882,13 @@ function enableInlineEdit(id) {
     if (!station) {
         console.error('Station not found for inline edit');
         return;
+    }
+
+    // Animate Stats Container Out
+    const statsContainer = document.getElementById('stats-container');
+    if (statsContainer) {
+        statsContainer.classList.remove('max-h-[500px]', 'opacity-100', 'mb-8', 'scale-100');
+        statsContainer.classList.add('max-h-0', 'opacity-0', 'mb-0', 'scale-95');
     }
 
     const createInput = (val, eid) => `<input type="text" id="${eid}" value="${val || ''}" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm">`;
@@ -834,12 +909,13 @@ function enableInlineEdit(id) {
         // Replace text with inputs - Modern Styling
         // Custom styling for Header Name to match h2
         // Removed Name Input as per request - Name is now hidden in both View and Edit modes
-        // const nameInput = `<input type="text" id="edit-inline-name" value="${station.name || ''}" class="w-full bg-transparent border-b-2 border-slate-300 dark:border-slate-600 px-2 py-1 text-2xl font-bold text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 transition-all placeholder-slate-400">`;
+        // const nameInput = `< input type = "text" id = "edit-inline-name" value = "${station.name || ''}" class= "w-full bg-transparent border-b-2 border-slate-300 dark:border-slate-600 px-2 py-1 text-2xl font-bold text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 transition-all placeholder-slate-400" > `;
         // safeReplace('detail-name', nameInput);
 
         // Basic Info
         safeReplace('detail-serial', createInput(station.serial_number, 'edit-inline-serial'));
         safeReplace('detail-service-center', createInput(station.service_center, 'edit-inline-service-center'));
+        safeReplace('detail-hcode', createInput(station.hcode || station.id, 'edit-inline-hcode')); // Added HCode input
         safeReplace('detail-pcid', createInput(station.pcId, 'edit-inline-pcid'));
 
         // Location
@@ -885,7 +961,7 @@ function enableInlineEdit(id) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             <span>Save Changes</span>
-        `;
+    `;
         editBtn.onclick = () => saveInlineEdit(id);
         editBtn.className = 'flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl shadow-lg shadow-emerald-500/30 transition-all active:scale-95 font-medium';
 
@@ -896,20 +972,133 @@ function enableInlineEdit(id) {
             cancelBtn.id = 'detail-cancel-btn';
             cancelBtn.className = 'flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl shadow-sm transition-all active:scale-95 font-medium';
             cancelBtn.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>Cancel</span>
-            `;
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span>Cancel</span>
+        `;
             if (btnContainer) {
                 btnContainer.insertBefore(cancelBtn, editBtn); // Put Cancel before Save
             }
         }
         cancelBtn.onclick = () => cancelInlineEdit(id);
 
+        // Setup Auto-fill for Inline Edit
+        setupInlineAutoFill();
+
     } catch (e) {
         console.error('Error in enableInlineEdit:', e);
     }
+}
+
+function setupInlineAutoFill() {
+    const zipInput = document.getElementById('edit-inline-zip-code');
+    const subDistrictInput = document.getElementById('edit-inline-sub-district');
+    const districtInput = document.getElementById('edit-inline-district');
+    const provinceInput = document.getElementById('edit-inline-province');
+
+    let isAutoFilling = false; // Flag to prevent feedback loop
+
+    if (zipInput) {
+        zipInput.addEventListener('input', (e) => {
+            const value = e.target.value.replace(/\D/g, ''); // Digits only
+            if (value.length === 5) {
+                if (!thaiAddressDB) {
+                    if (window.showToast) window.showToast('Loading address data... please wait');
+                    return;
+                }
+                const addresses = lookupAllAddresses(value);
+                if (addresses && addresses.length > 0) {
+                    isAutoFilling = true; // Set flag
+                    const firstMatch = addresses[0];
+
+                    if (districtInput) {
+                        districtInput.value = firstMatch.district;
+                        districtInput.dispatchEvent(new Event('input'));
+                    }
+                    if (provinceInput) {
+                        provinceInput.value = firstMatch.province;
+                        provinceInput.dispatchEvent(new Event('input'));
+                    }
+
+                    if (subDistrictInput) {
+                        const existingSelect = document.getElementById('edit-inline-sub-district-select');
+
+                        if (addresses.length > 1) {
+                            let select = existingSelect;
+                            if (!select) {
+                                select = document.createElement('select');
+                                select.id = 'edit-inline-sub-district-select';
+                                select.className = subDistrictInput.className;
+                                select.classList.add('cursor-pointer');
+                                subDistrictInput.parentNode.insertBefore(select, subDistrictInput);
+                            }
+
+                            select.innerHTML = '';
+                            addresses.forEach(addr => {
+                                const option = document.createElement('option');
+                                option.value = addr.subDistrict;
+                                option.textContent = addr.subDistrict;
+                                select.appendChild(option);
+                            });
+
+                            subDistrictInput.style.display = 'none';
+                            select.style.display = 'block';
+
+                            select.value = firstMatch.subDistrict;
+                            subDistrictInput.value = firstMatch.subDistrict;
+                            subDistrictInput.dispatchEvent(new Event('input')); // Trigger update
+
+                            select.onchange = () => {
+                                subDistrictInput.value = select.value;
+                                subDistrictInput.dispatchEvent(new Event('input')); // Important for saving
+
+                                const selectedAddr = addresses.find(a => a.subDistrict === select.value);
+                                if (selectedAddr) {
+                                    if (districtInput) {
+                                        districtInput.value = selectedAddr.district;
+                                        districtInput.dispatchEvent(new Event('input'));
+                                    }
+                                    if (provinceInput) {
+                                        provinceInput.value = selectedAddr.province;
+                                        provinceInput.dispatchEvent(new Event('input'));
+                                    }
+                                }
+                            };
+                        } else {
+                            if (existingSelect) existingSelect.style.display = 'none';
+                            subDistrictInput.style.display = 'block';
+                            subDistrictInput.value = firstMatch.subDistrict;
+                            subDistrictInput.dispatchEvent(new Event('input'));
+                        }
+                    }
+                    // Reset flag after events have propagated
+                    setTimeout(() => isAutoFilling = false, 0);
+                }
+            }
+        });
+    }
+
+    // Reverse Auto-fill (Address -> Zip)
+    const handleReverseAutoFill = () => {
+        if (isAutoFilling) return; // Exit if triggered by forward auto-fill
+
+        if (subDistrictInput && districtInput && provinceInput && thaiAddressDB) {
+            // Ensure we have values to check
+            if (subDistrictInput.value && districtInput.value && provinceInput.value) {
+                if (typeof lookupZip === 'function') {
+                    const result = lookupZip(subDistrictInput.value, districtInput.value, provinceInput.value);
+                    if (result && zipInput) {
+                        zipInput.value = result;
+                    }
+                }
+            }
+        }
+    };
+
+    if (subDistrictInput) subDistrictInput.addEventListener('input', handleReverseAutoFill); // Changed to input for real-time feel
+    if (districtInput) districtInput.addEventListener('input', handleReverseAutoFill);
+    if (provinceInput) provinceInput.addEventListener('input', handleReverseAutoFill);
 }
 
 async function saveInlineEdit(id) {
@@ -940,6 +1129,7 @@ async function saveInlineEdit(id) {
             // name: getVal('edit-inline-name'), // Name is not editable anymore
             serial_number: getVal('edit-inline-serial'),
             service_center: getVal('edit-inline-service-center'),
+            hcode: getVal('edit-inline-hcode'), // Added HCode
             pcId: getVal('edit-inline-pcid'),
             sub_district: getVal('edit-inline-sub-district'),
             district: getVal('edit-inline-district'),
@@ -1119,10 +1309,10 @@ function renderTable(data, startIndex = 0) {
 
     if (!data || data.length === 0) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="9" class="py-8 text-center text-slate-500 dark:text-slate-400">
-                    No health stations found
-                </td>
+        <tr>
+        <td colspan="9" class="py-8 text-center text-slate-500 dark:text-slate-400">
+            No health stations found
+        </td>
             </tr>
         `;
         return;
@@ -1138,9 +1328,9 @@ function renderTable(data, startIndex = 0) {
         // Map Link
         const mapLink = station.lat && station.lng
             ? `<a href="https://www.google.com/maps?q=${station.lat},${station.lng}" target="_blank" class="text-blue-500 hover:text-blue-600 transition-colors">
-                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                </a>`
-            : `<span class="text-slate-300 dark:text-slate-600 flex justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></span>`;
+            : `<span class="text-slate-300 dark:text-slate-600 flex justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg></span>`;
 
         row.innerHTML = `
             <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">${startIndex + index + 1}</td>
@@ -1158,6 +1348,7 @@ function renderTable(data, startIndex = 0) {
             </td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-medium">${station.service_center || '-'}</td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300"><span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 py-1 px-2 rounded-lg text-xs font-semibold">${station.hcode}</span></td>
+            <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">${station.district || '-'}</td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300">${station.province || '-'}</td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono">${station.pcId || '-'}</td>
             <td class="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 font-mono">
@@ -1180,7 +1371,7 @@ function renderTable(data, startIndex = 0) {
                     </svg>
                 </button>
             </td>
-        `;
+    `;
         tbody.appendChild(row);
     });
 
@@ -1297,6 +1488,24 @@ function lookupAddress(zipCode) {
     return null;
 }
 
+function lookupAllAddresses(zipCode) {
+    if (!thaiAddressDB) return [];
+
+    const zipInt = parseInt(zipCode, 10);
+
+    return thaiAddressDB.filter(item => {
+        const z = item.z || item.zipcode;
+        if (Array.isArray(z)) {
+            return z.some(code => code == zipCode || code == zipInt);
+        }
+        return z == zipCode || z == zipInt;
+    }).map(item => ({
+        subDistrict: item.d || item.district || item.sub_district || '',
+        district: item.a || item.amphoe || item.amphur || item.district || '',
+        province: item.p || item.province || ''
+    }));
+}
+
 function setupZipCodeAutoFill(formId) {
     const form = document.getElementById(formId);
     if (!form) return;
@@ -1318,25 +1527,147 @@ function setupZipCodeAutoFill(formId) {
                 return;
             }
 
-            const address = lookupAddress(value);
-            if (address) {
+            const addresses = lookupAllAddresses(value);
+            if (addresses && addresses.length > 0) {
                 const subDistrictInput = document.getElementById(`${prefix}-sub-district`);
                 const districtInput = document.getElementById(`${prefix}-district`);
                 const provinceInput = document.getElementById(`${prefix}-province`);
 
-                if (subDistrictInput) {
-                    subDistrictInput.value = address.subDistrict;
-                    clearError(subDistrictInput);
-                }
+                // Always take District and Province from the first match (usually consistent per zip)
+                // Or we could logic check if they vary, but typically Zip -> District/Province is 1:1 or close enough for auto-fill default
+                const firstMatch = addresses[0];
+
                 if (districtInput) {
-                    districtInput.value = address.district;
+                    districtInput.value = firstMatch.district;
                     clearError(districtInput);
                 }
                 if (provinceInput) {
-                    provinceInput.value = address.province;
+                    provinceInput.value = firstMatch.province;
                     clearError(provinceInput);
                 }
+
+                if (subDistrictInput) {
+                    if (addresses.length > 1) {
+                        // Multiple matches: Convert input to select
+                        let select = document.getElementById(`${prefix}-sub-district-select`);
+
+                        // If select doesn't exist, create it and hide input
+                        if (!select) {
+                            select = document.createElement('select');
+                            select.id = `${prefix}-sub-district-select`;
+                            // Copy styling from input
+                            select.className = subDistrictInput.className;
+                            // Remove some unneeded classes if any, adding styling for select
+                            select.classList.add('cursor-pointer');
+
+                            subDistrictInput.parentNode.insertBefore(select, subDistrictInput);
+                        }
+
+                        // Populate options
+                        select.innerHTML = '';
+                        addresses.forEach(addr => {
+                            const option = document.createElement('option');
+                            option.value = addr.subDistrict;
+                            option.textContent = addr.subDistrict;
+                            select.appendChild(option);
+                        });
+
+                        // Switch visibility
+                        subDistrictInput.style.display = 'none';
+                        subDistrictInput.classList.add('hidden-by-autofill'); // Marker class
+                        select.style.display = 'block';
+
+                        // Sync value to hidden input
+                        select.value = addresses[0].subDistrict;
+                        subDistrictInput.value = addresses[0].subDistrict;
+                        clearError(subDistrictInput);
+
+                        // Add change listener to sync back to input (for saving logic stability)
+                        select.onchange = () => {
+                            subDistrictInput.value = select.value;
+                            // Potential: If sub-districts belong to different districts/provinces (rare but possible), update them too
+                            const selectedAddr = addresses.find(a => a.subDistrict === select.value);
+                            if (selectedAddr) {
+                                if (districtInput) districtInput.value = selectedAddr.district;
+                                if (provinceInput) provinceInput.value = selectedAddr.province;
+                            }
+                        };
+
+                    } else {
+                        // Single match: Revert to input if needed
+                        const select = document.getElementById(`${prefix}-sub-district-select`);
+                        if (select) {
+                            select.style.display = 'none';
+                        }
+                        subDistrictInput.style.display = 'block';
+                        subDistrictInput.classList.remove('hidden-by-autofill');
+
+                        subDistrictInput.value = firstMatch.subDistrict;
+                        clearError(subDistrictInput);
+                    }
+                }
             }
+        }
+    });
+}
+
+function lookupZip(subDistrict, district, province) {
+    if (!thaiAddressDB) return null;
+
+    // Normalize inputs
+    const sd = subDistrict?.trim();
+    const d = district?.trim();
+    const p = province?.trim();
+
+    if (!sd && !d && !p) return null;
+
+    // Find match
+    const match = thaiAddressDB.find(item => {
+        const matchP = p ? (item.p === p || item.province === p) : true;
+        const matchD = d ? (item.a === d || item.amphoe === d || item.amphur === d) : true;
+        const matchSD = sd ? (item.d === sd || item.district === sd || item.sub_district === sd) : true;
+
+        // Require at least District and Province match for accuracy, or SubDistrict and Province
+        // Searching by just District or SubDistrict matches too many locally
+        return matchP && (matchD || matchSD);
+    });
+
+    if (match) {
+        let z = match.z || match.zipcode;
+        return Array.isArray(z) ? z[0] : z;
+    }
+    return null;
+}
+
+function setupAddressAutoFill(formId) {
+    const prefix = formId.split('-')[0];
+    const subDistrictInput = document.getElementById(`${prefix}-sub-district`);
+    const districtInput = document.getElementById(`${prefix}-district`);
+    const provinceInput = document.getElementById(`${prefix}-province`);
+    const zipInput = document.getElementById(`${prefix}-zip-code`);
+
+    if (!zipInput) return;
+
+    const performLookup = () => {
+        if (!thaiAddressDB) return;
+
+        const zip = lookupZip(
+            subDistrictInput?.value,
+            districtInput?.value,
+            provinceInput?.value
+        );
+
+        if (zip) {
+            zipInput.value = zip;
+            clearError(zipInput);
+        }
+    };
+
+    // Attach listeners
+    [subDistrictInput, districtInput, provinceInput].forEach(input => {
+        if (input) {
+            input.addEventListener('change', performLookup); // Trigger on change (blur/enter) 
+            // Also optional: 'input' with debounce if desired, but 'change' is safer for exact text
         }
     });
 }
@@ -1467,16 +1798,17 @@ async function handleAddSubmit(e) {
         return;
     }
 
-    const hcode = document.getElementById('add-hcode').value;
+    const serialNumber = document.getElementById('add-serial-number').value.trim();
+
     // Manual fallback check
-    if (!hcode) {
-        showError(document.getElementById('add-hcode'), 'Please enter Hospital Code');
+    if (!serialNumber) {
+        showError(document.getElementById('add-serial-number'), 'Please enter Serial Number');
         return;
     }
 
     const newData = {
-        hcode: hcode,
-        serial_number: document.getElementById('add-serial-number').value,
+        hcode: document.getElementById('add-hcode').value,
+        serial_number: serialNumber,
         service_center: document.getElementById('add-service-center').value,
         district: document.getElementById('add-district').value,
         sub_district: document.getElementById('add-sub-district').value,
@@ -1485,7 +1817,6 @@ async function handleAddSubmit(e) {
         pcId: document.getElementById('add-pcid').value,
         anydesk: document.getElementById('add-anydesk').value,
         log_book: document.getElementById('add-log-book').value,
-        name: document.getElementById('add-service-center').value, // Use service center as name
         createdAt: new Date().toISOString() // Add timestamp for sorting
     };
 
@@ -1498,21 +1829,30 @@ async function handleAddSubmit(e) {
     }
 
     try {
-        // Check if exists
-        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, hcode);
+        // Check if exists using Serial Number as ID
+        const docRef = window.firebase.doc(window.firebase.db, COLLECTION_NAME, serialNumber);
         const docSnap = await window.firebase.getDoc(docRef);
 
         if (docSnap.exists()) {
-            throw new Error('Health Station with this HCode already exists.');
+            throw new Error('Health Station with this Serial Number already exists.');
         }
 
         await window.firebase.setDoc(docRef, newData);
 
         // Optimistic Update: Add to TOP of list
-        healthStations.unshift({ id: hcode, ...newData });
+        healthStations.unshift({ id: serialNumber, ...newData });
 
         // Refresh Table & Stats & Filters IMMEDIATELY
         filterData();
+        updateStats();
+        populateProvinces(); // Refresh Province Dropdown
+        populateDistricts(); // Refresh District Dropdown
+
+        // Clear validation icon
+        const iconContainer = document.getElementById('sn-status-icon');
+        if (iconContainer) iconContainer.innerHTML = '';
+
+        // Update Cache
         updateStats();
         populateProvinces(); // Refresh Province Dropdown
         populateDistricts(); // Refresh District Dropdown
@@ -1528,8 +1868,8 @@ async function handleAddSubmit(e) {
         Swal.fire({
             icon: 'success',
             title: t.saved,
-            timer: 1500,
             showConfirmButton: false,
+            timer: 1500,
             customClass: {
                 popup: 'dark:bg-slate-800 dark:text-white'
             }
@@ -1553,6 +1893,70 @@ async function handleAddSubmit(e) {
             saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
         }
     }
+}
+
+function setupSerialNumberValidation() {
+    const snInput = document.getElementById('add-serial-number');
+    const iconContainer = document.getElementById('sn-status-icon');
+    const saveBtn = document.querySelector('.btn-save-add');
+
+    if (!snInput || !iconContainer) return;
+
+    snInput.addEventListener('input', () => {
+        const val = snInput.value.trim();
+
+        if (!val) {
+            iconContainer.innerHTML = ''; // Empty
+            // Reset border
+            snInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500', 'border-green-500', 'focus:ring-green-500', 'focus:border-green-500');
+            snInput.classList.add('border-slate-200', 'dark:border-slate-600', 'focus:ring-blue-500', 'focus:border-blue-500');
+
+            // Re-enable save button (let validation handle empty required field on submit)
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            return;
+        }
+
+        const isDuplicate = healthStations.some(h => String(h.serial_number) === String(val));
+
+        if (isDuplicate) {
+            // Warning Icon
+            iconContainer.innerHTML = `
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            `;
+            // Add red border
+            snInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+            snInput.classList.remove('border-slate-200', 'dark:border-slate-600', 'focus:ring-blue-500', 'focus:border-blue-500', 'border-green-500', 'focus:ring-green-500', 'focus:border-green-500');
+
+            // Disable Save Button
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                saveBtn.title = 'Serial Number already exists';
+            }
+        } else {
+            // Correct Icon
+            iconContainer.innerHTML = `
+                <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            `;
+            // Add green border
+            snInput.classList.add('border-green-500', 'focus:ring-green-500', 'focus:border-green-500');
+            snInput.classList.remove('border-slate-200', 'dark:border-slate-600', 'focus:ring-blue-500', 'focus:border-blue-500', 'border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+
+            // Enable Save Button
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                saveBtn.title = '';
+            }
+        }
+    });
 }
 
 // Redefining deleteItem to be safe
@@ -1605,6 +2009,151 @@ function debounce(func, wait) {
     };
 }
 
+
+// Redefining deleteItem to be safe
+// (Assuming deleteItem is properly defined above or will be cleaned up, focusing on appending custom dropdown logic)
+
+function setupCustomDropdown(selectId) {
+    const originalSelect = document.getElementById(selectId);
+    if (!originalSelect) return;
+
+    // Check if already initialized
+    if (originalSelect.dataset.customDropdownInitialized) return;
+    originalSelect.dataset.customDropdownInitialized = 'true';
+
+    // Hide original select completely to prevent native popup
+    originalSelect.style.display = 'none';
+    originalSelect.classList.add('hidden'); // Tailwind hidden
+    originalSelect.style.visibility = 'hidden';
+    originalSelect.style.opacity = '0';
+    originalSelect.style.position = 'absolute'; // Remove from flow just in case
+    originalSelect.style.zIndex = '-1';
+
+    // Create Custom Wrapper
+    const wrapper = document.createElement('div');
+    // Check if original select has specific width classes or default to auto
+    const widthClass = originalSelect.classList.contains('sm:w-48') ? 'w-full sm:w-48' : 'w-auto min-w-[120px]';
+    wrapper.className = `relative ${widthClass}`;
+    originalSelect.parentNode.insertBefore(wrapper, originalSelect);
+
+    // Create Trigger Button
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'custom-dropdown-trigger w-full flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-sm hover:shadow-md transition-all cursor-pointer';
+
+    // Create text span
+    const selectedText = document.createElement('span');
+    selectedText.className = 'truncate mr-2';
+    trigger.appendChild(selectedText);
+
+    // Create Chevron Icon
+    const chevron = document.createElement('div');
+    chevron.innerHTML = `<svg class="w-4 h-4 text-slate-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+    trigger.appendChild(chevron);
+
+    wrapper.appendChild(trigger);
+
+    // Create Options List Container (Hidden by default)
+    const optionsList = document.createElement('div');
+    optionsList.className = 'absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto opacity-0 invisible scale-95 transition-all duration-200 origin-top';
+    wrapper.appendChild(optionsList);
+
+    // Filter native chevron if it exists in HTML (the SVG sibling)
+    const nativeChevron = originalSelect.nextElementSibling;
+    if (nativeChevron && nativeChevron.tagName === 'DIV') {
+        nativeChevron.style.display = 'none';
+    }
+
+    // State
+    let isOpen = false;
+
+    // Toggle Function
+    const toggleDropdown = () => {
+        isOpen = !isOpen;
+        if (isOpen) {
+            // Close other dropdowns
+            document.querySelectorAll('.custom-dropdown-options').forEach(el => {
+                if (el !== optionsList) {
+                    el.classList.add('opacity-0', 'invisible', 'scale-95');
+                    el.classList.remove('opacity-100', 'visible', 'scale-100');
+                    // Reset chevrons
+                    const otherChevron = el.parentElement.querySelector('svg');
+                    if (otherChevron) otherChevron.classList.remove('rotate-180');
+                }
+            });
+
+            optionsList.classList.remove('opacity-0', 'invisible', 'scale-95');
+            optionsList.classList.add('opacity-100', 'visible', 'scale-100');
+            chevron.firstElementChild.classList.add('rotate-180');
+        } else {
+            optionsList.classList.add('opacity-0', 'invisible', 'scale-95');
+            optionsList.classList.remove('opacity-100', 'visible', 'scale-100');
+            chevron.firstElementChild.classList.remove('rotate-180');
+        }
+    };
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDropdown();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            if (isOpen) {
+                isOpen = false;
+                optionsList.classList.add('opacity-0', 'invisible', 'scale-95');
+                optionsList.classList.remove('opacity-100', 'visible', 'scale-100');
+                chevron.firstElementChild.classList.remove('rotate-180');
+            }
+        }
+    });
+
+    // Function to populate options from native select
+    const syncOptions = () => {
+        optionsList.innerHTML = '';
+        const options = originalSelect.options;
+
+        // Update Trigger Text
+        if (originalSelect.selectedIndex >= 0) {
+            selectedText.textContent = options[originalSelect.selectedIndex].text;
+        }
+
+        Array.from(options).forEach((opt, index) => {
+            const item = document.createElement('div');
+            item.className = `px-4 py-2.5 text-sm cursor-pointer transition-colors hover:bg-blue-50 dark:hover:bg-slate-700/50 ${opt.selected ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/50 dark:bg-slate-700/30' : 'text-slate-700 dark:text-slate-300'}`;
+            item.textContent = opt.text;
+
+            item.addEventListener('click', () => {
+                originalSelect.selectedIndex = index;
+                originalSelect.dispatchEvent(new Event('change')); // Trigger native change
+                selectedText.textContent = opt.text;
+                toggleDropdown(); // Close
+
+                // Re-sync styling
+                syncOptions(); // To update bold/selected state in list
+            });
+
+            optionsList.appendChild(item);
+        });
+    };
+
+    // Initial Sync
+    syncOptions();
+
+    // Observe changes in native select (for populateProvinces etc.)
+    const observer = new MutationObserver(() => {
+        syncOptions();
+    });
+    observer.observe(originalSelect, { childList: true, subtree: true, attributes: true });
+
+    // Listen for manual value changes on native select (e.g. if updated via JS elsewhere)
+    originalSelect.addEventListener('change', () => {
+        if (originalSelect.selectedIndex >= 0) {
+            selectedText.textContent = originalSelect.options[originalSelect.selectedIndex].text;
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Render Layout
